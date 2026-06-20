@@ -72,20 +72,11 @@ class MongoDBManager:
         return db[collection_name]
 
 # MongoDB collections
-def get_videos_collection():
-    return MongoDBManager.get_collection("videos")
+def get_chat_history_collection():
+    return MongoDBManager.get_collection("chat_history")
 
-def get_quizzes_collection():
-    return MongoDBManager.get_collection("quizzes")
+def get_activity_logs_collection():
+    return MongoDBManager.get_collection("activity_logs")
 
-def get_materials_collection():
-    return MongoDBManager.get_collection("study_materials")
-
-def get_user_progress_collection():
-    return MongoDBManager.get_collection("user_progress")
-
-def get_learning_paths_collection():
-    return MongoDBManager.get_collection("learning_paths")
-
-def get_analytics_collection():
-    return MongoDBManager.get_collection("analytics_events")
+def get_daily_quests_collection():
+    return MongoDBManager.get_collection("daily_quests")

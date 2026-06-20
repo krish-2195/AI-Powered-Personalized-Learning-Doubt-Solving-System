@@ -23,6 +23,7 @@ class User(Base):
     learning_logs = relationship("LearningLog", back_populates="user")
     quiz_attempts = relationship("QuizAttempt", back_populates="user")
     performance_records = relationship("PerformanceRecord", back_populates="user")
+    topic_performances = relationship("TopicPerformance", back_populates="user")
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"
@@ -35,10 +36,65 @@ class UserProfile(Base):
     exam_target = Column(String)
     exam_timeline = Column(String)
     exam_date = Column(DateTime, nullable=True)
+    streak_count = Column(Integer, default=0)
+    last_active_date = Column(DateTime, nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationship
     user = relationship("User", back_populates="profile")
+
+class Subject(Base):
+    __tablename__ = "subjects"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String, unique=True, index=True, nullable=False)
+    description = Column(String)
+    
+    # Relationships
+    topics = relationship("Topic", back_populates="subject")
+
+class Topic(Base):
+    __tablename__ = "topics"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    subject_id = Column(Integer, ForeignKey("subjects.id"))
+    name = Column(String, index=True, nullable=False)
+    description = Column(String)
+    difficulty_level = Column(String)  # Beginner, Intermediate, Advanced
+    
+    # Relationships
+    subject = relationship("Subject", back_populates="topics")
+    content = relationship("Content", back_populates="topic")
+    topic_performances = relationship("TopicPerformance", back_populates="topic")
+
+class Content(Base):
+    __tablename__ = "content"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"))
+    content_type = Column(String)  # video, quiz, article
+    title = Column(String, nullable=False)
+    text_content = Column(String)  # Main text or summary for TF-IDF
+    difficulty = Column(String)
+    duration_minutes = Column(Integer)
+    url = Column(String)
+    
+    # Relationships
+    topic = relationship("Topic", back_populates="content")
+
+class TopicPerformance(Base):
+    __tablename__ = "topic_performance"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    topic_id = Column(Integer, ForeignKey("topics.id"))
+    ewma_accuracy = Column(Float, default=0.0)
+    mastery_level = Column(String, default="Beginner")  # Beginner, Intermediate, Expert
+    last_attempt_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    # Relationships
+    user = relationship("User", back_populates="topic_performances")
+    topic = relationship("Topic", back_populates="topic_performances")
 
 class LearningLog(Base):
     __tablename__ = "learning_logs"
@@ -47,7 +103,7 @@ class LearningLog(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     activity_type = Column(String)  # video, quiz, chat, revision
     resource_id = Column(String)
-    topic = Column(String)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
     duration_seconds = Column(Integer)
     completed = Column(Boolean, default=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
@@ -62,7 +118,7 @@ class QuizAttempt(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
     quiz_id = Column(String)
-    topic = Column(String)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
     questions_count = Column(Integer)
     correct_answers = Column(Integer)
     accuracy = Column(Float)
@@ -79,7 +135,7 @@ class PerformanceRecord(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    topic = Column(String)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
     accuracy = Column(Float)
     avg_time_seconds = Column(Float)
     total_attempts = Column(Integer)
@@ -95,25 +151,12 @@ class WeakTopic(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"))
-    topic = Column(String)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
     weakness_score = Column(Float)
     reason = Column(String)
     identified_at = Column(DateTime, default=datetime.utcnow)
     resolved = Column(Boolean, default=False)
     resolved_at = Column(DateTime, nullable=True)
-
-class ChatHistory(Base):
-    __tablename__ = "chat_history"
-    
-    id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    user_message = Column(String)
-    ai_response = Column(String)
-    topic_detected = Column(String, nullable=True)
-    confidence = Column(Float, nullable=True)
-    timestamp = Column(DateTime, default=datetime.utcnow)
-    helpful = Column(Boolean, nullable=True)
-    rating = Column(Integer, nullable=True)
 
 class Recommendation(Base):
     __tablename__ = "recommendations"
@@ -122,7 +165,7 @@ class Recommendation(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     recommendation_type = Column(String)  # video, quiz, revision
     resource_id = Column(String)
-    topic = Column(String)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
     reason = Column(String)
     relevance_score = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -140,3 +183,15 @@ class ExamReadiness(Base):
     predicted_score = Column(Float)
     improvement_tips = Column(JSON)
     calculated_at = Column(DateTime, default=datetime.utcnow)
+
+class QuestionBank(Base):
+    __tablename__ = "question_bank"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    topic = Column(String, index=True)
+    difficulty = Column(String)
+    question_text = Column(String, nullable=False)
+    options = Column(JSON, nullable=False) # Array of 4 strings
+    correct_answer_index = Column(Integer, nullable=False)
+    explanation = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
