@@ -5,13 +5,14 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic import BaseModel
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from sqlalchemy.orm import Session
 
 from backend.config import settings
 from database.connection import get_db
 from database.models.postgres_models import User, UserProfile
+from backend.utils.response_formatter import success_response, error_response
+from backend.services.gamification import GamificationService
 
 router = APIRouter()
 
@@ -28,14 +29,9 @@ class UserRegister(BaseModel):
     exam_target: str
     exam_timeline: str
 
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
 class LoginRequest(BaseModel):
     email: str
     password: str
-
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     return pwd_context.verify(plain_password, hashed_password)
@@ -47,7 +43,7 @@ def create_access_token(data: dict):
     encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
     return encoded_jwt
 
-@router.post("/register", response_model=Token)
+@router.post("/register")
 async def register(user: UserRegister, db: Session = Depends(get_db)):
     """Register a new user with profile information and persist to PostgreSQL."""
 
@@ -56,16 +52,10 @@ async def register(user: UserRegister, db: Session = Depends(get_db)):
         existing_user = db.query(User).filter(User.email == normalized_email).first()
     except SQLAlchemyError:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database unavailable. Please try again in a moment.",
-        )
+        return error_response("Database unavailable. Please try again in a moment.", "Registration Failed")
 
     if existing_user:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="User with this email already exists",
-        )
+        return error_response("User with this email already exists", "Registration Failed")
 
     hashed_password = pwd_context.hash(user.password.strip())
 
@@ -81,6 +71,7 @@ async def register(user: UserRegister, db: Session = Depends(get_db)):
         current_level=user.current_level,
         exam_target=user.exam_target.strip(),
         exam_timeline=user.exam_timeline,
+        # streak is initialized to 0, last_active_date to None by default
     )
 
     try:
@@ -91,43 +82,51 @@ async def register(user: UserRegister, db: Session = Depends(get_db)):
         db.commit()
     except IntegrityError:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Could not create user",
-        )
+        return error_response("Could not create user", "Registration Failed")
     except SQLAlchemyError:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database unavailable. Please try again in a moment.",
-        )
+        return error_response("Database unavailable. Please try again in a moment.", "Registration Failed")
 
     access_token = create_access_token(data={"sub": new_user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    # Return standard envelope format
+    user_data = {
+        "user_id": new_user.id,
+        "email": new_user.email,
+        "full_name": new_user.full_name,
+        "token": access_token
+    }
+    return success_response(data=user_data, message="User registered successfully")
 
-@router.post("/login", response_model=Token)
+@router.post("/login")
 async def login(payload: LoginRequest, db: Session = Depends(get_db)):
-    """Authenticate user credentials and return a JWT."""
+    """Authenticate user credentials, update streak logic, and return a JWT."""
 
     email = payload.email.strip().lower()
     try:
         user = db.query(User).filter(User.email == email).first()
     except SQLAlchemyError:
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail="Database unavailable. Please try again in a moment.",
-        )
+        return error_response("Database unavailable. Please try again in a moment.", "Login Failed")
 
     if not user or not verify_password(payload.password, user.hashed_password):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Incorrect email or password",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
+        return error_response("Incorrect email or password", "Login Failed")
+
+    # Call gamification service to handle streak and last active date
+    if user.profile:
+        GamificationService.update_streak_on_login(db, user.profile)
 
     access_token = create_access_token(data={"sub": user.email})
-    return {"access_token": access_token, "token_type": "bearer"}
+    
+    user_data = {
+        "user_id": user.id,
+        "email": user.email,
+        "full_name": user.full_name,
+        "streak_count": user.profile.streak_count if user.profile else 0,
+        "token": access_token
+    }
+    
+    return success_response(data=user_data, message="Login successful")
 
 @router.get("/me")
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
@@ -136,17 +135,18 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
-            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+            return error_response("Invalid authentication credentials", "Unauthorized")
     except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+        return error_response("Invalid authentication credentials", "Unauthorized")
     
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+        return error_response("User not found", "Unauthorized")
 
     profile = user.profile
 
-    return {
+    user_data = {
+        "user_id": user.id,
         "email": user.email,
         "full_name": user.full_name,
         "course": profile.course if profile else None,
@@ -154,4 +154,8 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
         "current_level": profile.current_level if profile else None,
         "exam_target": profile.exam_target if profile else None,
         "exam_timeline": profile.exam_timeline if profile else None,
+        "streak_count": profile.streak_count if profile else 0,
+        "last_active_date": profile.last_active_date if profile else None
     }
+    
+    return success_response(data=user_data, message="Profile fetched successfully")

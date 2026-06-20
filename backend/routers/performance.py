@@ -1,162 +1,123 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends, BackgroundTasks
 from pydantic import BaseModel
-from typing import List, Dict
+from typing import List, Dict, Optional
+from sqlalchemy.orm import Session
+from datetime import datetime
+
+from database.connection import get_db
+from database.models.postgres_models import PerformanceRecord, TopicPerformance, QuizAttempt, Topic
+from backend.services.ml_service import weak_topic_detector
+from backend.utils.response_formatter import success_response, error_response
 
 router = APIRouter()
 
-class TopicPerformance(BaseModel):
-    topic: str
-    accuracy: float
-    attempts: int
-    time_avg_seconds: float
-    status: str  # strong, moderate, weak
+class AnswerItem(BaseModel):
+    question_id: str
+    selected_answer: str
+    time_taken_seconds: int
+    is_correct: bool  # Backend ideally checks this against DB, mocked for now
 
-class WeakTopicAnalysis(BaseModel):
-    topic: str
-    weakness_score: float
-    reason: str
-    prerequisite_topics: List[str]
+class QuizSubmitPayload(BaseModel):
+    user_id: int
+    quiz_id: str
+    topic_id: int
+    answers: List[AnswerItem]
+    difficulty_weight: float = 2.0  # 1=easy, 2=med, 3=hard
 
-class WeakTopicDrilldown(BaseModel):
-    topic: str
-    weakness_score: float
-    signals: Dict[str, float]
-    top_mistakes: List[str]
-    recommended_prereqs: List[str]
-    suggested_practice: List[str]
-
-@router.get("/analyze/{user_id}")
-async def analyze_performance(user_id: str):
+def process_quiz_submission_async(db: Session, user_id: int, topic_id: int, accuracy: float, avg_time: float, attempt_count: int, diff_weight: float):
     """
-    Comprehensive performance analysis for a user
+    Background task to run ML model and update TopicPerformance
     """
-    # TODO: Fetch user data from database
-    # TODO: Run ML performance analysis model
-    # TODO: Calculate topic-wise metrics
-    
-    return {
-        "user_id": user_id,
-        "overall_performance": {
-            "average_accuracy": 75.5,
-            "total_topics_attempted": 15,
-            "strong_topics": 8,
-            "moderate_topics": 4,
-            "weak_topics": 3
-        },
-        "topic_breakdown": [
-            {
-                "topic": "Arrays",
-                "accuracy": 85.0,
-                "attempts": 10,
-                "time_avg_seconds": 120,
-                "status": "strong"
-            },
-            {
-                "topic": "Dynamic Programming",
-                "accuracy": 45.0,
-                "attempts": 5,
-                "time_avg_seconds": 300,
-                "status": "weak"
-            }
-        ]
+    features = {
+        "accuracy": accuracy,
+        "avg_time_seconds": avg_time,
+        "total_attempts": attempt_count,
+        "difficulty_weight": diff_weight
     }
-
-@router.get("/weak-topics/{user_id}", response_model=List[WeakTopicAnalysis])
-async def get_weak_topics(user_id: str):
-    """
-    Identify weak topics using ML classifier
-    """
-    # TODO: Run weak topic detection ML model
-    # TODO: Use knowledge graph to find prerequisites
     
-    return [
-        {
-            "topic": "Dynamic Programming",
-            "weakness_score": 0.75,
-            "reason": "Low accuracy (45%) and high time consumption",
-            "prerequisite_topics": ["Recursion", "Array Manipulation"]
-        },
-        {
-            "topic": "Graph Algorithms",
-            "weakness_score": 0.62,
-            "reason": "Multiple failed attempts and low completion rate",
-            "prerequisite_topics": ["Trees", "BFS", "DFS"]
-        }
-    ]
-
-@router.get("/heatmap/{user_id}")
-async def get_performance_heatmap(user_id: str):
-    """
-    Generate performance heatmap data for visualization
-    """
-    # TODO: Generate heatmap data
+    # 1. Random Forest prediction
+    status = weak_topic_detector.predict_topic_status(features)
     
-    return {
-        "user_id": user_id,
-        "heatmap_data": {
-            "topics": ["Arrays", "Linked Lists", "Trees", "Graphs", "DP"],
-            "metrics": ["Accuracy", "Speed", "Consistency"],
-            "values": [
-                [85, 90, 88],  # Arrays
-                [75, 70, 80],  # Linked Lists
-                [65, 60, 70],  # Trees
-                [50, 45, 55],  # Graphs
-                [40, 35, 45]   # DP
-            ]
-        },
-        "color_scale": {
-            "strong": "#4CAF50",
-            "moderate": "#FFC107",
-            "weak": "#F44336"
-        }
-    }
-
-@router.get("/trends/{user_id}")
-async def get_performance_trends(user_id: str, days: int = 30):
-    """
-    Get performance trends over time
-    """
-    # TODO: Calculate trends from historical data
+    # 2. Save the PerformanceRecord
+    perf_record = PerformanceRecord(
+        user_id=user_id,
+        topic_id=topic_id,
+        accuracy=accuracy,
+        avg_time_seconds=avg_time,
+        total_attempts=attempt_count,
+        status=status,
+        weakness_score=1.0 - accuracy if status == "Weak" else 0.0
+    )
+    db.add(perf_record)
     
-    return {
-        "user_id": user_id,
-        "trend_data": {
-            "dates": ["2025-12-05", "2025-12-12", "2025-12-19", "2025-12-26", "2026-01-02"],
-            "accuracy": [65, 68, 72, 74, 76],
-            "speed_improvement": [0, 5, 12, 18, 25],
-            "topics_mastered": [3, 5, 7, 9, 12]
-        },
-        "trend_direction": "improving",
-        "improvement_rate": 15.2
-    }
+    # 3. Update or Create TopicPerformance for EWMA
+    topic_perf = db.query(TopicPerformance).filter(
+        TopicPerformance.user_id == user_id, 
+        TopicPerformance.topic_id == topic_id
+    ).first()
+    
+    if not topic_perf:
+        topic_perf = TopicPerformance(user_id=user_id, topic_id=topic_id, ewma_accuracy=accuracy)
+        db.add(topic_perf)
+    else:
+        old_ewma = topic_perf.ewma_accuracy
+        new_ewma = (0.8 * old_ewma) + (0.2 * accuracy)
+        topic_perf.ewma_accuracy = new_ewma
+        
+        # Update mastery level based on EWMA
+        if new_ewma >= 0.8:
+            topic_perf.mastery_level = "Expert"
+        elif new_ewma >= 0.5:
+            topic_perf.mastery_level = "Intermediate"
+        else:
+            topic_perf.mastery_level = "Beginner"
+            
+    db.commit()
 
-
-@router.get("/weak-topics/{user_id}/drilldown", response_model=List[WeakTopicDrilldown])
-async def get_weak_topic_drilldown(user_id: str, top_n: int = 5):
+@router.post("/submit")
+async def submit_quiz(payload: QuizSubmitPayload, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
-    Provide drilldown for weak topics with signals and prerequisite recommendations.
+    Submit quiz answers, calculate score, and trigger async ML weak topic detection.
     """
-    # TODO: Aggregate quiz attempts, learning logs, and KG prerequisites
-    samples = [
-        WeakTopicDrilldown(
-            topic="Dynamic Programming",
-            weakness_score=0.78,
-            signals={"low_accuracy": 0.8, "slow_time": 0.6, "hint_usage": 0.5},
-            top_mistakes=[
-                "Off-by-one in base cases",
-                "Recomputing overlapping subproblems",
-                "Missing memo table init",
-            ],
-            recommended_prereqs=["Recursion", "Tabulation Basics"],
-            suggested_practice=["QUIZ_DP_BASE", "PRACTICE_DP_MED", "VIDEO_DP_PATTERNS"],
-        ),
-        WeakTopicDrilldown(
-            topic="Graph Algorithms",
-            weakness_score=0.65,
-            signals={"low_accuracy": 0.55, "slow_time": 0.6, "drop_off": 0.5},
-            top_mistakes=["Choosing DFS over BFS for shortest path", "Not marking visited nodes"],
-            recommended_prereqs=["BFS", "DFS", "Queue Fundamentals"],
-            suggested_practice=["QUIZ_GRAPH_BFS", "PRACTICE_SHORTEST_PATHS"],
-        ),
-    ]
-    return samples[:top_n]
+    total_q = len(payload.answers)
+    if total_q == 0:
+        return error_response("No answers submitted")
+        
+    correct_q = sum(1 for a in payload.answers if a.is_correct)
+    accuracy = correct_q / total_q
+    
+    total_time = sum(a.time_taken_seconds for a in payload.answers)
+    avg_time = total_time / total_q
+    
+    # Save Quiz Attempt
+    attempt = QuizAttempt(
+        user_id=payload.user_id,
+        quiz_id=payload.quiz_id,
+        topic_id=payload.topic_id,
+        questions_count=total_q,
+        correct_answers=correct_q,
+        accuracy=accuracy,
+        time_taken_seconds=total_time,
+        answers_data=[a.dict() for a in payload.answers]
+    )
+    db.add(attempt)
+    db.commit()
+    
+    # Count previous attempts for this topic
+    attempt_count = db.query(QuizAttempt).filter(
+        QuizAttempt.user_id == payload.user_id,
+        QuizAttempt.topic_id == payload.topic_id
+    ).count()
+    
+    # Fire off background task to run Random Forest and update EWMA
+    background_tasks.add_task(
+        process_quiz_submission_async, 
+        db, payload.user_id, payload.topic_id, accuracy, avg_time, attempt_count, payload.difficulty_weight
+    )
+    
+    return success_response(data={
+        "score": correct_q,
+        "total": total_q,
+        "accuracy": accuracy * 100,
+        "message": "Quiz submitted successfully. Performance stats are updating in the background."
+    })
