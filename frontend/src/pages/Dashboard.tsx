@@ -19,6 +19,9 @@ export default function Dashboard() {
           console.error("Failed to load dashboard data", err)
           setLoading(false)
         })
+    } else {
+      // If user is loaded but has no user_id (e.g. stale session), stop loading
+      setLoading(false)
     }
   }, [user])
 

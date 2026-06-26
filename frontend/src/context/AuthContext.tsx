@@ -5,6 +5,7 @@ interface User {
   user_id: number
   email: string
   full_name: string
+  streak_count: number
 }
 
 interface AuthContextValue {
@@ -69,6 +70,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user_id: data.data.user_id,
         email: data.data.email,
         full_name: data.data.full_name,
+        streak_count: data.data.streak_count || 0,
       })
     } catch (err: any) {
       setError(err.message || 'Login failed')
@@ -98,6 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         user_id: data.data.user_id,
         email: data.data.email,
         full_name: data.data.full_name,
+        streak_count: data.data.streak_count || 0,
       })
     } catch (err: any) {
       setError(err.message || 'Registration failed')

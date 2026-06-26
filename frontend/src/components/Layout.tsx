@@ -6,7 +6,7 @@ import PageTransition from './PageTransition'
 export default function Layout() {
   const location = useLocation()
   const navigate = useNavigate()
-  const { logout } = useAuth()
+  const { user, logout } = useAuth()
   
   const navItems = [
     { path: '/dashboard', icon: Home, label: 'Dashboard' },
@@ -37,7 +37,7 @@ export default function Layout() {
 
           <div className="pill">
             <Flame size={16} className="text-glow-600" />
-            <span className="font-semibold">Streak: 5 days 🔥</span>
+            <span className="font-semibold">Streak: {user?.streak_count || 0} days 🔥</span>
           </div>
 
           <nav className="mt-2 flex flex-col gap-2">
