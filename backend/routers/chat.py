@@ -93,3 +93,53 @@ async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_
         "source": "openai",
         "questions": quiz_data
     })
+
+@router.get("/session-summary/{user_id}")
+async def get_session_summary(user_id: int, db: Session = Depends(get_db)):
+    """Generates an AI summary of the user's recent chats."""
+    collection = get_chat_history_collection()
+    
+    # Get last 20 messages for context
+    cursor = collection.find({"user_id": user_id}).sort("timestamp", -1).limit(20)
+    history_docs = await cursor.to_list(length=20)
+    
+    if not history_docs:
+        return success_response(data={
+            "user_id": str(user_id),
+            "total_messages": 0,
+            "topics_covered": [],
+            "key_takeaways": [],
+            "unresolved_doubts": [],
+            "recommended_next_steps": ["Start asking the AI tutor questions to get a summary!"]
+        })
+        
+    chat_text = ""
+    for doc in reversed(history_docs):
+        chat_text += f"Student: {doc.get('user_message', '')}\nTutor: {doc.get('ai_response', '')}\n"
+        
+    prompt = (
+        "Analyze this tutoring session transcript and output a JSON object with these EXACT keys: "
+        "'topics_covered' (array of strings), 'key_takeaways' (array of strings), "
+        "'unresolved_doubts' (array of strings), 'recommended_next_steps' (array of strings). "
+        f"Transcript:\n{chat_text}"
+    )
+    
+    ai_response_text = ai_tutor_service.get_response(db, user_id, prompt, [])
+    
+    try:
+        start = ai_response_text.find('{')
+        end = ai_response_text.rfind('}') + 1
+        summary_data = json.loads(ai_response_text[start:end]) if start != -1 else json.loads(ai_response_text)
+    except Exception:
+        summary_data = {
+            "topics_covered": ["Could not parse summary"],
+            "key_takeaways": [],
+            "unresolved_doubts": [],
+            "recommended_next_steps": []
+        }
+        
+    summary_data["user_id"] = str(user_id)
+    summary_data["total_messages"] = len(history_docs) * 2
+    
+    return summary_data
+
