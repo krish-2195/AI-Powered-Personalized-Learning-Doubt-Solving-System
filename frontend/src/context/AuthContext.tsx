@@ -1,8 +1,15 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react'
 import api from '../lib/api'
 
+interface User {
+  user_id: number
+  email: string
+  full_name: string
+}
+
 interface AuthContextValue {
   token: string | null
+  user: User | null
   loading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<void>
@@ -24,22 +31,30 @@ interface RegisterInput {
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
 const TOKEN_KEY = 'auth_token'
+const USER_KEY = 'auth_user'
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [token, setToken] = useState<string | null>(() => {
     if (typeof window === 'undefined') return null
     return localStorage.getItem(TOKEN_KEY)
   })
+  const [user, setUser] = useState<User | null>(() => {
+    if (typeof window === 'undefined') return null
+    const saved = localStorage.getItem(USER_KEY)
+    return saved ? JSON.parse(saved) : null
+  })
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (token) {
+    if (token && user) {
       localStorage.setItem(TOKEN_KEY, token)
+      localStorage.setItem(USER_KEY, JSON.stringify(user))
     } else {
       localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(USER_KEY)
     }
-  }, [token])
+  }, [token, user])
 
   const login = async (email: string, password: string) => {
     setLoading(true)
@@ -49,7 +64,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
       })
-      setToken(data.access_token)
+      setToken(data.data.token)
+      setUser({
+        user_id: data.data.user_id,
+        email: data.data.email,
+        full_name: data.data.full_name,
+      })
     } catch (err: any) {
       setError(err.message || 'Login failed')
       throw err
@@ -73,7 +93,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         exam_timeline: input.examTimeline,
       }
       const { data } = await api.post('/api/auth/register', payload)
-      setToken(data.access_token)
+      setToken(data.data.token)
+      setUser({
+        user_id: data.data.user_id,
+        email: data.data.email,
+        full_name: data.data.full_name,
+      })
     } catch (err: any) {
       setError(err.message || 'Registration failed')
       throw err
@@ -84,10 +109,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = () => {
     setToken(null)
+    setUser(null)
   }
 
   return (
-    <AuthContext.Provider value={{ token, loading, error, login, register, logout }}>
+    <AuthContext.Provider value={{ token, user, loading, error, login, register, logout }}>
       {children}
     </AuthContext.Provider>
   )

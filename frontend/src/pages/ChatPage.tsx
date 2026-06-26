@@ -1,6 +1,7 @@
-﻿import { useMemo, useRef, useEffect, useState } from 'react'
+import { useMemo, useRef, useEffect, useState } from 'react'
 import { Send, Sparkles, CheckCircle2, XCircle, MessageSquare, BookOpen, BarChart2 } from 'lucide-react'
 import api from '../lib/api'
+import { useAuth } from '../context/AuthContext'
 
 type Tab = 'chat' | 'quiz' | 'summary'
 
@@ -40,7 +41,9 @@ export default function ChatPage() {
   const [detectedTopic, setDetectedTopic] = useState<string>('General Problem Solving')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
-  const userId = useMemo(() => 'current-user', [])
+  const { user } = useAuth()
+  const userId = user?.user_id || 1
+  const sessionId = useMemo(() => `session-${userId}-${Date.now()}`, [userId])
 
   useEffect(() => {
     if (activeTab === 'chat') {
@@ -58,25 +61,17 @@ export default function ChatPage() {
     setInput('')
 
     try {
-      const context = messages
-        .slice(-3)
-        .map((item) => `${item.role}: ${item.content}`)
-        .join('\n')
-      const { data } = await api.post('/api/chat/ask', {
+      const { data } = await api.post('/api/chat/message', {
         user_id: userId,
+        session_id: sessionId,
         message: text,
-        context,
       })
 
       setMessages((prev) => [
         ...prev,
         {
           role: 'ai',
-          content: `${data.response}${
-            data.follow_up_questions?.length
-              ? `\n\nTry next:\n- ${data.follow_up_questions.join('\n- ')}`
-              : ''
-          }`,
+          content: data.data?.response || data.response,
         },
       ])
 
@@ -98,13 +93,13 @@ export default function ChatPage() {
     setError(null)
     setSelectedAnswers({})
     try {
-      const { data } = await api.post('/api/chat/quiz/generate', {
+      const { data } = await api.post('/api/chat/generate-quiz', {
         user_id: userId,
         topic: detectedTopic,
         difficulty: 'medium',
         count: 5,
       })
-      setQuizQuestions(data.questions || [])
+      setQuizQuestions(data.data?.questions || data.questions || [])
       setActiveTab('quiz')
     } catch (err: any) {
       setError(err.message || 'Could not generate quiz')
@@ -119,6 +114,25 @@ export default function ChatPage() {
     ? quizQuestions.filter((q, i) => selectedAnswers[i] === q.answer_index).length
     : 0
   const quizDone = quizQuestions.length > 0 && Object.keys(selectedAnswers).length === quizQuestions.length
+
+  useEffect(() => {
+    if (quizDone) {
+      const answersPayload = quizQuestions.map((q, i) => ({
+        question_id: `q-${i}`,
+        selected_answer: q.options[selectedAnswers[i]],
+        time_taken_seconds: 30, // Mocked 30 seconds per question for now
+        is_correct: selectedAnswers[i] === q.answer_index
+      }))
+
+      api.post('/api/performance/submit', {
+        user_id: userId,
+        quiz_id: `quiz-${Date.now()}`,
+        topic_id: 1, // Mocked topic_id 1 since we don't have a Topic ID lookup here yet
+        answers: answersPayload,
+        difficulty_weight: 2.0
+      }).catch(err => console.error("Failed to submit performance", err))
+    }
+  }, [quizDone])
 
   const handleSessionSummary = async () => {
     setError(null)
@@ -149,21 +163,19 @@ export default function ChatPage() {
       <div className="flex items-center gap-1 border-b border-slate-200 shrink-0">
         <button
           onClick={() => setActiveTab('chat')}
-          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
-            activeTab === 'chat'
+          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${activeTab === 'chat'
               ? 'bg-white border border-b-white border-slate-200 text-primary-600 -mb-px'
               : 'text-slate-500 hover:text-slate-700'
-          }`}
+            }`}
         >
           <MessageSquare size={14} /> Chat
         </button>
         <button
           onClick={() => setActiveTab('quiz')}
-          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
-            activeTab === 'quiz'
+          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${activeTab === 'quiz'
               ? 'bg-white border border-b-white border-slate-200 text-primary-600 -mb-px'
               : 'text-slate-500 hover:text-slate-700'
-          }`}
+            }`}
         >
           <BookOpen size={14} />
           Quiz
@@ -175,11 +187,10 @@ export default function ChatPage() {
         </button>
         <button
           onClick={() => setActiveTab('summary')}
-          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${
-            activeTab === 'summary'
+          className={`flex items-center gap-1.5 px-4 py-2 text-sm font-medium rounded-t-lg transition-colors ${activeTab === 'summary'
               ? 'bg-white border border-b-white border-slate-200 text-primary-600 -mb-px'
               : 'text-slate-500 hover:text-slate-700'
-          }`}
+            }`}
         >
           <BarChart2 size={14} /> Summary
           {summary && <span className="ml-1 w-2 h-2 rounded-full bg-green-500 inline-block" />}
@@ -215,11 +226,10 @@ export default function ChatPage() {
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                 <div
-                  className={`max-w-[78%] p-4 rounded-2xl shadow-sm whitespace-pre-wrap break-words ${
-                    msg.role === 'user'
+                  className={`max-w-[78%] p-4 rounded-2xl shadow-sm whitespace-pre-wrap break-words ${msg.role === 'user'
                       ? 'bg-gradient-to-r from-primary-600 to-accent-500 text-white'
                       : 'bg-white text-gray-900 border border-white/70'
-                  }`}
+                    }`}
                 >
                   {msg.content}
                 </div>
@@ -302,15 +312,14 @@ export default function ChatPage() {
                         }
                         return (
                           <button key={optIdx} className={cls} disabled={answered} onClick={() => handleSelectAnswer(idx, optIdx)}>
-                            <span className={`w-6 h-6 rounded-full border text-xs flex items-center justify-center shrink-0 font-medium ${
-                              !answered ? 'border-slate-300 text-slate-500' :
-                              isCorrect ? 'border-green-500 bg-green-500 text-white' :
-                              isPicked ? 'border-red-400 bg-red-400 text-white' :
-                              'border-slate-200 text-slate-300'
-                            }`}>
+                            <span className={`w-6 h-6 rounded-full border text-xs flex items-center justify-center shrink-0 font-medium ${!answered ? 'border-slate-300 text-slate-500' :
+                                isCorrect ? 'border-green-500 bg-green-500 text-white' :
+                                  isPicked ? 'border-red-400 bg-red-400 text-white' :
+                                    'border-slate-200 text-slate-300'
+                              }`}>
                               {answered && isCorrect ? <CheckCircle2 size={14} /> :
-                               answered && isPicked ? <XCircle size={14} /> :
-                               String.fromCharCode(65 + optIdx)}
+                                answered && isPicked ? <XCircle size={14} /> :
+                                  String.fromCharCode(65 + optIdx)}
                             </span>
                             {opt}
                           </button>
