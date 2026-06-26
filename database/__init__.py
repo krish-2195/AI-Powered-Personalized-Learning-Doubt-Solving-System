@@ -3,9 +3,9 @@ from database.connection import (
     get_db, 
     init_postgres_db, 
     MongoDBManager,
-    get_videos_collection,
-    get_quizzes_collection,
-    get_materials_collection
+    get_chat_history_collection,
+    get_activity_logs_collection,
+    get_daily_quests_collection
 )
 from database.models.postgres_models import (
     User,
@@ -14,25 +14,33 @@ from database.models.postgres_models import (
     QuizAttempt,
     PerformanceRecord,
     WeakTopic,
-    ChatHistory,
     Recommendation,
-    ExamReadiness
+    ExamReadiness,
+    QuestionBank,
+    Subject,
+    Topic,
+    Content,
+    TopicPerformance
 )
 
 __all__ = [
     'get_db',
     'init_postgres_db',
     'MongoDBManager',
-    'get_videos_collection',
-    'get_quizzes_collection',
-    'get_materials_collection',
+    'get_chat_history_collection',
+    'get_activity_logs_collection',
+    'get_daily_quests_collection',
     'User',
     'UserProfile',
     'LearningLog',
     'QuizAttempt',
     'PerformanceRecord',
     'WeakTopic',
-    'ChatHistory',
     'Recommendation',
-    'ExamReadiness'
+    'ExamReadiness',
+    'QuestionBank',
+    'Subject',
+    'Topic',
+    'Content',
+    'TopicPerformance'
 ]
