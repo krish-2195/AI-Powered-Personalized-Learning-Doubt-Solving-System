@@ -289,27 +289,27 @@ Once the backend is running, visit:
 ### Key Endpoints
 
 #### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - Register new user and initialize profile
+- `POST /api/auth/login` - User login and JWT generation
 - `GET /api/auth/me` - Get current user
 
-#### Learning
-- `POST /api/learning/video/track` - Track video watch
+#### Analytics & Dashboard
+- `GET /api/dashboard/?user_id={user_id}` - Fetch live dashboard stats (Streak, Quests)
+- `GET /api/analytics/summary/{user_id}` - Get performance trends, weak topics, and readiness
+
+#### Admin Control Panel
+- `GET /api/admin/stats` - Fetch platform-wide health and usage statistics
+- `GET /api/admin/users` - Fetch list of all registered students
+- `POST /api/admin/question` - Manually insert questions into the Question Bank
+
+#### Recommendations & Learning
 - `POST /api/learning/quiz/submit` - Submit quiz attempt
-- `POST /api/learning/doubt/ask` - Ask a doubt
+- `GET /api/recommendations/personalized/{user_id}` - Get hybrid recommendations
 
-#### Performance
-- `GET /api/performance/analyze/{user_id}` - Get performance analysis
-- `GET /api/performance/weak-topics/{user_id}` - Get weak topics
-- `GET /api/performance/heatmap/{user_id}` - Get performance heatmap
-
-#### Recommendations
-- `GET /api/recommendations/personalized/{user_id}` - Get recommendations
-- `GET /api/recommendations/study-plan/{user_id}` - Get study plan
-
-#### AI Chat
-- `POST /api/chat/ask` - Ask AI tutor a question
-- `GET /api/chat/history/{user_id}` - Get chat history
+#### AI Chat & Tutoring
+- `POST /api/chat/message` - Ask AI tutor a question (MongoDB history maintained)
+- `POST /api/chat/generate-quiz` - Dynamically generate a multiple-choice quiz
+- `GET /api/chat/session-summary/{user_id}` - AI-generated summary of recent chat session
 
 ## 🎯 Key ML Models
 
