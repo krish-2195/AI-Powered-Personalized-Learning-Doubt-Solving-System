@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from typing import List
 
 from database.connection import get_db
-from backend.services.recommendation import recommendation_engine
+from ml.services.recommendation import recommendation_engine
 from backend.utils.response_formatter import success_response, error_response
 
 router = APIRouter()

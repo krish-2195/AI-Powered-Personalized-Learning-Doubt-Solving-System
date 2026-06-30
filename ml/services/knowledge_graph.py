@@ -1,32 +1,33 @@
 import networkx as nx
+import csv
+import os
 from typing import List
 
 class KnowledgeGraphService:
     def __init__(self):
         self.graph = nx.DiGraph()
-        self._build_static_graph()
+        self._build_graph_from_csv()
         
-    def _build_static_graph(self):
+    def _build_graph_from_csv(self):
         """
-        Builds the static syllabus dependency graph for CSE topics.
-        A directed edge A -> B means A is a prerequisite for B.
+        Builds the syllabus dependency graph by dynamically loading
+        from topic_relationships.csv.
+        A directed edge parent -> child means parent is a prerequisite for child.
         """
-        # --- Data Structures & Algorithms ---
-        self.graph.add_edge("Variables & Data Types", "Arrays")
-        self.graph.add_edge("Arrays", "Linked Lists")
-        self.graph.add_edge("Variables & Data Types", "Functions")
-        self.graph.add_edge("Functions", "Recursion")
-        self.graph.add_edge("Arrays", "Sorting Algorithms")
-        self.graph.add_edge("Arrays", "Searching Algorithms")
-        self.graph.add_edge("Recursion", "Trees")
-        self.graph.add_edge("Trees", "Binary Search Trees")
-        self.graph.add_edge("Trees", "Graphs")
-        self.graph.add_edge("Recursion", "Dynamic Programming")
+        csv_path = os.path.join(os.path.dirname(__file__), '../datasets/topic_relationships.csv')
         
-        # --- Database Management Systems ---
-        self.graph.add_edge("SQL Basics", "SQL Joins")
-        self.graph.add_edge("SQL Basics", "Normalization")
-        
+        if not os.path.exists(csv_path):
+            print(f"Warning: Knowledge Graph CSV not found at {csv_path}")
+            return
+            
+        with open(csv_path, 'r', encoding='utf-8') as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                parent = row.get('parent_topic')
+                child = row.get('child_topic')
+                if parent and child:
+                    self.graph.add_edge(parent.strip(), child.strip())
+                    
     def get_prerequisites(self, topic: str) -> List[str]:
         """Returns all prerequisite topics in topological order."""
         if topic not in self.graph:
@@ -37,6 +38,12 @@ class KnowledgeGraphService:
             return list(nx.topological_sort(subgraph))
         except nx.NetworkXUnfeasible:
             return prereqs
+
+    def get_next_topics(self, topic: str) -> List[str]:
+        """Returns immediate next topics that unlock after this topic."""
+        if topic not in self.graph:
+            return []
+        return list(self.graph.successors(topic))
 
     def identify_foundational_gaps(self, weak_topics: List[str]) -> List[str]:
         """
@@ -56,5 +63,5 @@ class KnowledgeGraphService:
         sorted_gaps = sorted(gap_counts.items(), key=lambda x: x[1], reverse=True)
         return [gap[0] for gap in sorted_gaps]
 
-# Singleton instance
+# Singleton instance initialized on startup
 knowledge_graph = KnowledgeGraphService()

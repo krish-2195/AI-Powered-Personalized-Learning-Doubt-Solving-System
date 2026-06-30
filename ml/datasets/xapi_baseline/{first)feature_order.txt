@@ -1,0 +1,16 @@
+gender
+NationalITy
+PlaceofBirth
+StageID
+GradeID
+SectionID
+Topic
+Semester
+Relation
+raisedhands
+VisITedResources
+AnnouncementsView
+Discussion
+ParentAnsweringSurvey
+ParentschoolSatisfaction
+StudentAbsenceDays

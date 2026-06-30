@@ -3,7 +3,7 @@ from typing import List, Dict
 import openai
 from sqlalchemy.orm import Session
 from database.models.postgres_models import TopicPerformance
-from backend.services.knowledge_graph import knowledge_graph
+from ml.services.knowledge_graph import knowledge_graph
 
 class AITutorService:
     def __init__(self):
