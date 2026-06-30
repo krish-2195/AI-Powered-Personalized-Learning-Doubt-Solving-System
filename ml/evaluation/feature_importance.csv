@@ -1,0 +1,14 @@
+Rank,Feature,Importance
+1,quiz_accuracy,0.3568
+2,ewma_accuracy,0.2377
+3,prerequisite_mastery,0.141
+4,avg_time_per_question,0.0912
+5,previous_attempt_accuracy,0.0777
+6,total_attempts,0.0259
+7,chatbot_questions,0.0171
+8,study_duration,0.0138
+9,topic_id,0.0128
+10,daily_streak,0.0085
+11,videos_watched,0.0062
+12,question_difficulty_enc,0.0059
+13,articles_read,0.0054
