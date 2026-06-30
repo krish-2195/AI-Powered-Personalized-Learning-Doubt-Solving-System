@@ -24,6 +24,8 @@ class User(Base):
     quiz_attempts = relationship("QuizAttempt", back_populates="user")
     performance_records = relationship("PerformanceRecord", back_populates="user")
     topic_performances = relationship("TopicPerformance", back_populates="user")
+    learning_sessions = relationship("LearningSession", back_populates="user")
+    recommendation_feedback = relationship("RecommendationFeedback", back_populates="user")
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"
@@ -158,6 +160,50 @@ class WeakTopic(Base):
     resolved = Column(Boolean, default=False)
     resolved_at = Column(DateTime, nullable=True)
 
+class LearningSession(Base):
+    __tablename__ = "learning_sessions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    login_time = Column(DateTime, default=datetime.utcnow)
+    logout_time = Column(DateTime, nullable=True)
+    study_duration = Column(Integer, nullable=True)
+    topics_completed = Column(Integer, default=0)
+    
+    user = relationship("User", back_populates="learning_sessions")
+
+class RecommendationFeedback(Base):
+    __tablename__ = "recommendation_feedback"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    content_id = Column(Integer, ForeignKey("content.id"))
+    recommended_at = Column(DateTime, default=datetime.utcnow)
+    clicked = Column(Boolean, default=False)
+    opened_at = Column(DateTime, nullable=True)
+    time_spent = Column(Integer, default=0)  # in seconds
+    completed = Column(Boolean, default=False)
+    liked = Column(Boolean, default=False)
+    bookmarked = Column(Boolean, default=False)
+    rating = Column(Float, nullable=True)
+    
+    user = relationship("User", back_populates="recommendation_feedback")
+    content = relationship("Content")
+
+class PredictionHistory(Base):
+    __tablename__ = "prediction_history"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    topic_id = Column(Integer, ForeignKey("topics.id"))
+    prediction = Column(String)  # Weak, Moderate, Strong
+    confidence = Column(Float)
+    model_version = Column(String)
+    timestamp = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User")
+    topic = relationship("Topic")
+
 class Recommendation(Base):
     __tablename__ = "recommendations"
     
@@ -188,10 +234,19 @@ class QuestionBank(Base):
     __tablename__ = "question_bank"
     
     id = Column(Integer, primary_key=True, index=True)
-    topic = Column(String, index=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"))
     difficulty = Column(String)
-    question_text = Column(String, nullable=False)
-    options = Column(JSON, nullable=False) # Array of 4 strings
-    correct_answer_index = Column(Integer, nullable=False)
+    question = Column(String, nullable=False)
+    option_a = Column(String, nullable=False)
+    option_b = Column(String, nullable=False)
+    option_c = Column(String, nullable=False)
+    option_d = Column(String, nullable=False)
+    correct_answer = Column(String, nullable=False)
     explanation = Column(String)
+    estimated_time = Column(Integer)
+    tags = Column(JSON)
+    bloom_level = Column(String)
+    learning_outcome = Column(String)
     created_at = Column(DateTime, default=datetime.utcnow)
+    
+    topic = relationship("Topic")
