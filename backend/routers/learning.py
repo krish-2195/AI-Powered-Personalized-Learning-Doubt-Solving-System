@@ -3,6 +3,9 @@ from typing import List, Optional
 
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
+from sqlalchemy.orm import Session
+from database.connection import get_db
+from database.models.postgres_models import QuizAttempt as DBQuizAttempt, PerformanceRecord, Topic
 
 router = APIRouter()
 
@@ -50,22 +53,68 @@ async def track_video_watch(watch_data: VideoWatch):
     }
 
 @router.post("/quiz/submit")
-async def submit_quiz(quiz_data: QuizAttempt):
+async def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db)):
     """
-    Submit quiz attempt and calculate performance
+    Submit quiz attempt, store in QuizAttempt, update PerformanceRecord,
+    and soon trigger ML prediction.
     """
-    # TODO: Save to database
-    # TODO: Trigger performance analysis
+    accuracy = (quiz_data.correct_answers / quiz_data.questions_count) * 100 if quiz_data.questions_count > 0 else 0
     
-    accuracy = (quiz_data.correct_answers / quiz_data.questions_count) * 100
+    # 1. Resolve Topic ID
+    topic = db.query(Topic).filter(Topic.name == quiz_data.topic).first()
+    topic_id = topic.id if topic else None
+
+    # Handle string user_ids passed from the frontend mockup
+    user_id_int = int(quiz_data.user_id) if quiz_data.user_id.isdigit() else 1
+
+    # 2. Save QuizAttempt
+    new_attempt = DBQuizAttempt(
+        user_id=user_id_int,
+        quiz_id=quiz_data.quiz_id,
+        topic_id=topic_id,
+        questions_count=quiz_data.questions_count,
+        correct_answers=quiz_data.correct_answers,
+        accuracy=accuracy,
+        time_taken_seconds=quiz_data.time_taken_seconds,
+        attempt_number=quiz_data.attempt_number
+    )
+    db.add(new_attempt)
+    
+    # 3. Update PerformanceRecord
+    perf = db.query(PerformanceRecord).filter(
+        PerformanceRecord.user_id == user_id_int,
+        PerformanceRecord.topic_id == topic_id
+    ).first()
+    
+    if not perf:
+        perf = PerformanceRecord(
+            user_id=user_id_int,
+            topic_id=topic_id,
+            accuracy=accuracy,
+            avg_time_seconds=quiz_data.time_taken_seconds,
+            total_attempts=1,
+            status="pending" # ML service will update this next
+        )
+        db.add(perf)
+    else:
+        # Update running averages
+        perf.accuracy = ((perf.accuracy * perf.total_attempts) + accuracy) / (perf.total_attempts + 1)
+        perf.avg_time_seconds = ((perf.avg_time_seconds * perf.total_attempts) + quiz_data.time_taken_seconds) / (perf.total_attempts + 1)
+        perf.total_attempts += 1
+        
+    db.commit()
+    
+    # 4. Trigger ML Service (Step 8 will hook in right here)
+    # ml_prediction = ml_service.predict_weakness(...)
     
     return {
-        "message": "Quiz submitted successfully",
+        "message": "Quiz submitted and recorded successfully",
         "accuracy": accuracy,
         "score": quiz_data.correct_answers,
         "total": quiz_data.questions_count,
         "time_taken": quiz_data.time_taken_seconds,
-        "performance_category": "good" if accuracy >= 70 else "needs_improvement"
+        "performance_category": "good" if accuracy >= 70 else "needs_improvement",
+        "recorded_in_db": True
     }
 
 @router.post("/doubt/ask")
