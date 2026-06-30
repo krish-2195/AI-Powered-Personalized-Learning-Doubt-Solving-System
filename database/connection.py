@@ -80,3 +80,6 @@ def get_activity_logs_collection():
 
 def get_daily_quests_collection():
     return MongoDBManager.get_collection("daily_quests")
+
+def get_session_summary_collection():
+    return MongoDBManager.get_collection("session_summary")
