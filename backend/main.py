@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.routers import auth, users, learning, performance, recommendations, chat, analytics, dashboard, admin
+from backend.routers import auth, users, learning, performance, recommendations, chat, analytics, dashboard, admin, content
 from backend.config import settings
 from database.connection import engine
 from database.models.postgres_models import Base
@@ -31,6 +31,7 @@ app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"]
 app.include_router(chat.router, prefix="/api/chat", tags=["AI Chat"])
 app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"])
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
+app.include_router(content.router, prefix="/api/content", tags=["Content"])
 
 
 from database.connection import engine, MongoDBManager

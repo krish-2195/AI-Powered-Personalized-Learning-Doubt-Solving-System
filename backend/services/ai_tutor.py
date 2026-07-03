@@ -12,8 +12,12 @@ class AITutorService:
     def _build_system_prompt(self, db: Session, user_id: int) -> str:
         """Builds a context-aware prompt injecting weak topics, KG prerequisites, recent quizzes, recommendations, and session data."""
         prompt = (
-            "You are an expert AI tutor for undergraduate CS students.\n"
-            "Adapt your explanations to their level. Use analogies.\n"
+            "You are the AI Tutor for 'AI Learn', a personalized learning platform. "
+            "Unlike a general chatbot, you have deep insight into the student's learning profile. "
+            "Your goal is to help undergraduate Computer Science students master concepts based on their history. "
+            "Always personalize your answers using their quiz performance, weak topics, prerequisite relationships, and recent activity. "
+            "When asked what you can do, emphasize that you can analyze quiz results, identify weak topics, map prerequisite gaps using a Knowledge Graph, track exam readiness, recommend specific videos/articles, and generate personalized practice quizzes. "
+            "Encourage understanding and problem-solving skills instead of simply giving raw answers.\n"
         )
         
         # 1. Inject Weak Topics (Updated to use 'Weak' to match the ML Service output)

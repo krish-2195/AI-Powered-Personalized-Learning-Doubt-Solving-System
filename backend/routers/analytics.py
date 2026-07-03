@@ -27,15 +27,33 @@ async def get_analytics_summary(user_id: int, db: Session = Depends(get_db)):
         topic_performance_data = [{"topic": p.topic.name, "score": round(p.ewma_accuracy * 100)} for p in all_performance if p.topic]
 
         # 3. Performance Trend over the last 5 weeks (Line Chart Data)
-        # In a full production app, we would group by week. For now, we will return a structured mock 
-        # or aggregate historical QuizAttempts if they exist.
-        trend_data = [
-            {"date": "Week 1", "accuracy": 50, "topics": 1},
-            {"date": "Week 2", "accuracy": 60, "topics": 2},
-            {"date": "Week 3", "accuracy": 65, "topics": 4},
-            {"date": "Week 4", "accuracy": 70, "topics": 5},
-            {"date": "Current", "accuracy": round(sum(p["score"] for p in topic_performance_data) / len(topic_performance_data)) if topic_performance_data else 0, "topics": len(topic_performance_data)},
-        ]
+        trend_data = []
+        now = datetime.utcnow()
+        for i in range(4, -1, -1):
+            start_date = now - timedelta(weeks=i+1)
+            end_date = now - timedelta(weeks=i)
+            
+            # Get quizzes for this week
+            quizzes_this_week = db.query(QuizAttempt).filter(
+                QuizAttempt.user_id == user_id,
+                QuizAttempt.timestamp >= start_date,
+                QuizAttempt.timestamp < end_date
+            ).all()
+            
+            if quizzes_this_week:
+                avg_acc = sum(q.accuracy * 100 for q in quizzes_this_week) / len(quizzes_this_week)
+                # Count unique topics
+                topics_count = len(set(q.topic_id for q in quizzes_this_week if q.topic_id))
+            else:
+                avg_acc = 0
+                topics_count = 0
+                
+            label = "Current" if i == 0 else f"Week -{i}"
+            trend_data.append({
+                "date": label,
+                "accuracy": round(avg_acc),
+                "topics": topics_count
+            })
 
         return success_response(data={
             "weak_topics": weak_topics_data,

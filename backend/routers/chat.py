@@ -8,7 +8,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
 from database.connection import get_db, get_chat_history_collection
-from database.models.postgres_models import QuestionBank
+from database.models.postgres_models import QuestionBank, Topic
 from backend.services.ai_tutor import ai_tutor_service
 from backend.utils.response_formatter import success_response, error_response
 
@@ -30,10 +30,24 @@ async def ask_ai_tutor(payload: ChatMessage, db: Session = Depends(get_db)):
     """Context-aware AI tutor response using OpenAI."""
     collection = get_chat_history_collection()
     
-    cursor = collection.find({"session_id": payload.session_id}).sort("timestamp", 1).limit(10)
+    # Fetch last 10 messages (sorted descending, then reversed for chronological order)
+    cursor = collection.find({"session_id": payload.session_id}).sort("timestamp", -1).limit(10)
     history_docs = await cursor.to_list(length=10)
+    history_docs.reverse()
+    
+    total_msgs = await collection.count_documents({"session_id": payload.session_id})
     
     chat_history = []
+    if total_msgs > 10:
+        # Provide a structural summary of older context to save tokens and improve speed
+        summary_context = (
+            f"[SYSTEM NOTE: This is a continuation of an ongoing session with {total_msgs} prior messages. "
+            "Older messages have been summarized/truncated to save context space. "
+            "Maintain the current tutoring flow.]"
+        )
+        chat_history.append({"role": "user", "content": summary_context})
+        chat_history.append({"role": "assistant", "content": "Understood. I have the summary."})
+        
     for doc in history_docs:
         chat_history.append({"role": "user", "content": doc["user_message"]})
         chat_history.append({"role": "assistant", "content": doc["ai_response"]})
@@ -60,24 +74,36 @@ async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_
     If not enough questions exist, uses OpenAI as a fallback dynamic generator.
     """
     # 1. Check PostgreSQL Database first
-    existing_questions = db.query(QuestionBank).filter(
-        QuestionBank.topic.ilike(f"%{payload.topic}%")
+    existing_questions = db.query(QuestionBank).join(Topic).filter(
+        Topic.name.ilike(f"%{payload.topic}%")
     ).limit(payload.count).all()
     
     if len(existing_questions) >= payload.count:
         # We have enough static questions in the bank
         quiz_data = []
         for q in existing_questions:
+            options = [q.option_a, q.option_b, q.option_c, q.option_d]
+            try:
+                answer_index = options.index(q.correct_answer)
+            except ValueError:
+                answer_index = 0
+                
             quiz_data.append({
-                "question": q.question_text,
-                "options": q.options,
-                "answer_index": q.correct_answer_index,
+                "question": q.question,
+                "options": options,
+                "answer_index": answer_index,
                 "explanation": q.explanation
             })
         return success_response(data={"topic": payload.topic, "source": "postgres", "questions": quiz_data})
         
     # 2. Fallback: OpenAI Dynamic Generation
-    prompt = f"Generate a {payload.count} question multiple choice quiz on the topic of {payload.topic} at a {payload.difficulty} difficulty. Output strictly as a JSON array of objects with keys: 'question', 'options' (array of 4 strings), 'answer_index' (0-3), and 'explanation'."
+    prompt = (
+        f"Generate a {payload.count} question multiple choice quiz on the topic of {payload.topic} at a {payload.difficulty} difficulty. "
+        "Output strictly as a JSON array of objects with keys: 'question', 'options' (array of 4 strings), 'answer_index' (0-3), and 'explanation'. "
+        "CRITICAL RULES: "
+        "1. Do NOT include ANY emojis (like checkmarks or cross marks) in the text. "
+        "2. Structure the 'explanation' string EXACTLY like this with markdown bolding: '**Why?** [Explanation of the correct answer]. **Key takeaway:** [Bullet point or short summary].'"
+    )
     
     ai_response_text = ai_tutor_service.get_response(db, payload.user_id, prompt, [])
     
@@ -143,3 +169,32 @@ async def get_session_summary(user_id: int, db: Session = Depends(get_db)):
     
     return summary_data
 
+@router.get("/history/{user_id}")
+async def get_latest_chat_history(user_id: int, db: Session = Depends(get_db)):
+    """Fetches the latest active chat session for a user from MongoDB."""
+    collection = get_chat_history_collection()
+    
+    # Find the most recent message to get the latest session_id
+    latest_msg = await collection.find_one(
+        {"user_id": user_id},
+        sort=[("timestamp", -1)]
+    )
+    
+    if not latest_msg:
+        return success_response(data={"session_id": f"session-{user_id}-{int(datetime.utcnow().timestamp())}", "messages": []})
+        
+    session_id = latest_msg.get("session_id")
+    
+    # Get all messages for this session
+    cursor = collection.find({"session_id": session_id}).sort("timestamp", 1)
+    history_docs = await cursor.to_list(length=100)
+    
+    messages = []
+    for doc in history_docs:
+        messages.append({"role": "user", "content": doc.get("user_message", "")})
+        messages.append({"role": "ai", "content": doc.get("ai_response", "")})
+        
+    # Filter out empty messages
+    messages = [m for m in messages if m["content"]]
+        
+    return success_response(data={"session_id": session_id, "messages": messages})
