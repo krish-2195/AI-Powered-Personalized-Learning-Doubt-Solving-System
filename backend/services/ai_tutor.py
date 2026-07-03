@@ -1,3 +1,5 @@
+import datetime
+from datetime import datetime
 from typing import List, Dict
 from sqlalchemy.orm import Session
 from database.models.postgres_models import TopicPerformance, QuizAttempt, LearningSession

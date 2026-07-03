@@ -1,6 +1,6 @@
-import { useMemo, useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Send, Sparkles, CheckCircle2, XCircle, MessageSquare, BookOpen, BarChart2, Zap, BrainCircuit, Target, AlertTriangle, Copy, Check, Plus } from 'lucide-react'
+import { Send, Sparkles, CheckCircle2, XCircle, BookOpen, BarChart2, Zap, BrainCircuit, Target, AlertTriangle, Copy, Check, Plus } from 'lucide-react'
 import api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import ReactMarkdown from 'react-markdown'
