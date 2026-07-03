@@ -1,18 +1,24 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { BookOpen, TrendingUp, Target, Clock, Sparkles, ArrowRight } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import api from '../lib/api'
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
-  const [dashboardData, setDashboardData] = useState<any>(null)
+  const [dashboardData, setDashboardData] = useState<any>(() => {
+    const cached = localStorage.getItem('dashboardData')
+    return cached ? JSON.parse(cached) : null
+  })
 
   useEffect(() => {
     if (user?.user_id) {
       api.get(`/api/dashboard/?user_id=${user.user_id}`)
         .then((res) => {
           setDashboardData(res.data.data)
+          localStorage.setItem('dashboardData', JSON.stringify(res.data.data))
           setLoading(false)
         })
         .catch((err) => {
@@ -25,8 +31,14 @@ export default function Dashboard() {
     }
   }, [user])
 
-  if (loading) {
-    return <div className="text-white text-center mt-20">Loading your personalized dashboard...</div>
+  if (loading && !dashboardData) {
+    return (
+      <div className="flex items-center justify-center mt-32 space-x-2">
+        <div className="w-3 h-3 bg-primary-500 rounded-full animate-bounce"></div>
+        <div className="w-3 h-3 bg-primary-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+        <div className="w-3 h-3 bg-primary-300 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+      </div>
+    )
   }
 
   if (!dashboardData) {
@@ -34,13 +46,15 @@ export default function Dashboard() {
   }
 
   const {
+    is_new_user,
     streak,
     dailyQuest,
     accuracyBoostTarget,
     todayFocus,
     stats,
     recentActivity,
-    examReadiness
+    examReadiness,
+    recommendations: apiRecommendations
   } = dashboardData
 
   const displayStats = {
@@ -51,11 +65,59 @@ export default function Dashboard() {
     topicsMastered: stats?.topicsMastered || 0,
   }
 
-  const recommendations = [
-    { type: 'video', title: 'DP Fundamentals', topic: 'Dynamic Programming', time: 25 },
-    { type: 'quiz', title: 'Recursion Practice', topic: 'Recursion', time: 15 },
-    { type: 'revision', title: 'Graph Traversal', topic: 'Graphs', time: 20 },
-  ]
+  // Use real recommendations from the API, or fallback to default ones if none exist
+  const recommendations = apiRecommendations && apiRecommendations.length > 0 
+    ? apiRecommendations 
+    : [
+        { type: 'video', title: 'DP Fundamentals', topic: 'Dynamic Programming', time: 25 },
+        { type: 'quiz', title: 'Recursion Practice', topic: 'Recursion', time: 15 },
+        { type: 'revision', title: 'Graph Traversal', topic: 'Graphs', time: 20 },
+      ]
+
+  if (is_new_user) {
+    return (
+      <div className="space-y-6 text-slate-100 max-w-5xl mx-auto">
+        <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary-600/80 via-primary-500/70 to-accent-500/60 backdrop-blur-xl rounded-3xl p-12 shadow-2xl shadow-purple-900/40 border border-white/20 text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-3xl rounded-full"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary-400/20 blur-3xl rounded-full"></div>
+          
+          <div className="bg-white/10 p-5 rounded-full mb-6 border border-white/20 shadow-xl">
+            <Sparkles size={48} className="text-white" />
+          </div>
+          
+          <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
+            Welcome to AI Learn, {user?.full_name?.split(' ')[0] || 'Student'}!
+          </h1>
+          
+          <p className="text-lg md:text-xl text-slate-100/90 max-w-2xl mx-auto mb-8 leading-relaxed">
+            Your personalized learning journey is almost ready. To unlock your custom study plan, weak topics analysis, and AI recommendations, we need to know where you stand.
+          </p>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl mb-10">
+            <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+              <div className="text-primary-300 font-bold text-xl mb-1">1.</div>
+              <p className="text-sm font-medium">Complete your first practice quiz</p>
+            </div>
+            <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+              <div className="text-primary-300 font-bold text-xl mb-1">2.</div>
+              <p className="text-sm font-medium">AI analyzes your performance</p>
+            </div>
+            <div className="bg-white/5 border border-white/10 p-4 rounded-xl">
+              <div className="text-primary-300 font-bold text-xl mb-1">3.</div>
+              <p className="text-sm font-medium">Unlock your dashboard & AI Tutor</p>
+            </div>
+          </div>
+          
+          <button 
+            onClick={() => navigate('/learning')}
+            className="bg-white text-primary-700 hover:bg-slate-50 px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition-all transform hover:scale-105 shadow-xl"
+          >
+            Start Learning <ArrowRight size={20} />
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6 text-slate-100">
@@ -183,7 +245,12 @@ export default function Dashboard() {
               <h3 className="font-semibold mt-2 text-slate-50">{rec.title}</h3>
               <p className="text-sm text-slate-400 mt-1">{rec.topic}</p>
               <p className="text-xs text-slate-500 mt-2">{rec.time} minutes</p>
-              <button className="btn-secondary w-full mt-3">Start</button>
+              <button 
+                onClick={() => navigate('/chat', { state: { prefill: `I want to start the recommended ${rec.type} on ${rec.topic}: ${rec.title}` } })}
+                className="btn-secondary w-full mt-3"
+              >
+                Start
+              </button>
             </div>
           ))}
         </div>

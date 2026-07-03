@@ -1,9 +1,13 @@
 import { useMemo, useRef, useEffect, useState } from 'react'
-import { Send, Sparkles, CheckCircle2, XCircle, MessageSquare, BookOpen, BarChart2, Zap, BrainCircuit, Target, AlertTriangle } from 'lucide-react'
+import { useLocation } from 'react-router-dom'
+import { Send, Sparkles, CheckCircle2, XCircle, MessageSquare, BookOpen, BarChart2, Zap, BrainCircuit, Target, AlertTriangle, Copy, Check, Plus } from 'lucide-react'
 import api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import remarkMath from 'remark-math'
+import rehypeKatex from 'rehype-katex'
+import 'katex/dist/katex.min.css'
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 
@@ -33,9 +37,12 @@ type SessionSummary = {
 
 export default function ChatPage() {
   const [activeTab, setActiveTab] = useState<Tab>('chat')
-  const [messages, setMessages] = useState<Message[]>([
-    { role: 'ai', content: "Hello! I'm your **AI tutor**. Ask me any questions about your subjects! I can explain concepts, generate practice quizzes, or review code snippets." },
-  ])
+  const [messages, setMessages] = useState<Message[]>(() => {
+    const saved = localStorage.getItem('chatMessages')
+    return saved ? JSON.parse(saved) : [
+      { role: 'ai', content: "Hello! I'm your **AI tutor**. Ask me any questions about your subjects! I can explain concepts, generate practice quizzes, or review code snippets." },
+    ]
+  })
   const [input, setInput] = useState('')
   const [isThinking, setIsThinking] = useState(false)
   const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([])
@@ -50,7 +57,64 @@ export default function ChatPage() {
 
   const { user } = useAuth()
   const userId = user?.user_id || 1
-  const sessionId = useMemo(() => `session-${userId}-${Date.now()}`, [userId])
+  
+  const [sessionId, setSessionId] = useState(() => {
+    const saved = localStorage.getItem('chatSessionId')
+    if (saved) return saved
+    const newId = `session-${userId}-${Date.now()}`
+    localStorage.setItem('chatSessionId', newId)
+    return newId
+  })
+  
+  const startNewSession = () => {
+    const newId = `session-${userId}-${Date.now()}`
+    setSessionId(newId)
+    const initialMessage: Message = { role: 'ai', content: "Hello! I'm your **AI tutor**. We've started a new study session. What would you like to learn today?" }
+    setMessages([initialMessage])
+    localStorage.setItem('chatSessionId', newId)
+    localStorage.setItem('chatMessages', JSON.stringify([initialMessage]))
+    setActiveTab('chat')
+  }
+
+  useEffect(() => {
+    const syncHistory = async () => {
+      try {
+        const { data } = await api.get(`/api/chat/history/${userId}`)
+        if (data.status === 'success' && data.data.messages.length > 0) {
+          const remoteSession = data.data.session_id
+          const remoteMessages = data.data.messages
+          
+          const localMessages = JSON.parse(localStorage.getItem('chatMessages') || '[]')
+          const localSession = localStorage.getItem('chatSessionId')
+          
+          // If remote session is newer or has more messages, use it
+          if (remoteSession !== localSession || remoteMessages.length > localMessages.length) {
+            setSessionId(remoteSession)
+            setMessages(remoteMessages)
+            localStorage.setItem('chatSessionId', remoteSession)
+            localStorage.setItem('chatMessages', JSON.stringify(remoteMessages))
+          }
+        }
+      } catch (err) {
+        console.error("Failed to sync chat history", err)
+      }
+    }
+    syncHistory()
+  }, [userId])
+  
+  const location = useLocation()
+
+  useEffect(() => {
+    localStorage.setItem('chatMessages', JSON.stringify(messages))
+  }, [messages])
+
+  useEffect(() => {
+    if (location.state?.prefill) {
+      setInput(location.state.prefill)
+      // Optional: Clear state so it doesn't prefill again on refresh
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   useEffect(() => {
     if (userId) {
@@ -180,6 +244,14 @@ export default function ChatPage() {
             <button onClick={() => setActiveTab('quiz')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'quiz' ? 'bg-white text-primary-700 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Quiz</button>
             <button onClick={() => setActiveTab('summary')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'summary' ? 'bg-white text-primary-700 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Summary</button>
           </div>
+          <div>
+            <button 
+              onClick={startNewSession}
+              className="flex items-center gap-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >
+              <Plus size={16} /> New Session
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -222,14 +294,25 @@ export default function ChatPage() {
                       ) : (
                         <div className="prose prose-slate max-w-none text-[16px] leading-[1.8]">
                           <ReactMarkdown
-                            remarkPlugins={[remarkGfm]}
+                            remarkPlugins={[remarkGfm, remarkMath]}
+                            rehypePlugins={[rehypeKatex]}
                             components={{
                               code({node, inline, className, children, ...props}: any) {
                                 const match = /language-(\w+)/.exec(className || '')
+                                const [copied, setCopied] = useState(false)
+                                const handleCopy = () => {
+                                  navigator.clipboard.writeText(String(children).replace(/\n$/, ''))
+                                  setCopied(true)
+                                  setTimeout(() => setCopied(false), 2000)
+                                }
                                 return !inline && match ? (
                                   <div className="rounded-2xl my-6 text-sm shadow-xl overflow-hidden border border-slate-800 bg-[#1e1e1e]">
-                                    <div className="flex items-center px-4 py-2 bg-slate-800 border-b border-slate-700/50 text-slate-400 text-xs font-mono uppercase">
-                                      {match[1]}
+                                    <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700/50 text-slate-400 text-xs font-mono uppercase">
+                                      <span>{match[1]}</span>
+                                      <button onClick={handleCopy} className="hover:text-white transition-colors flex items-center gap-1.5 p-1 rounded-md hover:bg-slate-700">
+                                        {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
+                                        {copied ? 'Copied!' : 'Copy'}
+                                      </button>
                                     </div>
                                     <SyntaxHighlighter
                                       style={vscDarkPlus}
@@ -340,16 +423,22 @@ export default function ChatPage() {
               </div>
             ) : (
               <div className="space-y-6 pb-10">
-                <div className="flex items-center justify-between bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                  <div>
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 gap-4">
+                  <div className="flex-1 w-full">
                     <h2 className="text-2xl font-bold text-slate-900">Practice Quiz</h2>
                     <p className="text-slate-500 mt-1">Topic: <span className="font-semibold text-slate-700">{detectedTopic}</span></p>
                   </div>
-                  {quizDone && (
-                    <div className={`px-5 py-3 rounded-xl font-bold text-lg ${quizScore === quizQuestions.length ? 'bg-green-100 text-green-700 border border-green-200' : 'bg-amber-50 text-amber-700 border border-amber-200'}`}>
-                      {quizScore}/{quizQuestions.length} Â· {quizScore === quizQuestions.length ? 'Perfect! ðŸŽ‰' : 'Keep practicing!'}
+                  <div className="flex-1 w-full md:text-right">
+                    <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">
+                      Question {Object.keys(selectedAnswers).length === quizQuestions.length ? quizQuestions.length : Object.keys(selectedAnswers).length + 1} of {quizQuestions.length}
+                    </p>
+                    <div className="h-3 w-full md:w-48 md:ml-auto bg-slate-100 rounded-full overflow-hidden shadow-inner flex mb-1">
+                      <div className="h-full bg-primary-500 transition-all duration-500" style={{width: `${(Object.keys(selectedAnswers).length / quizQuestions.length) * 100}%`}}></div>
                     </div>
-                  )}
+                    {quizDone && (
+                      <p className="text-sm font-bold text-slate-700 mt-2">Score: {quizScore}/{quizQuestions.length}</p>
+                    )}
+                  </div>
                 </div>
 
                 {quizQuestions.map((item, idx) => {
@@ -358,9 +447,12 @@ export default function ChatPage() {
                   const correct = picked === item.answer_index
                   return (
                     <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                      <p className="font-semibold text-lg text-slate-800 break-words leading-relaxed">
-                        <span className="text-primary-600 mr-2 bg-primary-50 px-2 py-1 rounded-lg">Q{idx + 1}</span> {item.question}
-                      </p>
+                      <div className="pb-4 border-b border-slate-100">
+                        <p className="text-sm text-slate-400 font-bold tracking-widest uppercase mb-3">Question {idx + 1} of {quizQuestions.length}</p>
+                        <p className="font-semibold text-xl text-slate-800 break-words leading-relaxed pl-4 border-l-4 border-primary-400">
+                          {item.question}
+                        </p>
+                      </div>
                       <div className="space-y-3 mt-4">
                         {(item.options ?? []).map((opt, optIdx) => {
                           const isCorrect = optIdx === item.answer_index
@@ -371,7 +463,7 @@ export default function ChatPage() {
                           } else if (isCorrect) {
                             cls += 'border-green-500 bg-green-50 text-green-800 shadow-sm'
                           } else if (isPicked) {
-                            cls += 'border-red-400 bg-red-50 text-red-700'
+                            cls += 'border-red-500 bg-red-50 text-red-700 shadow-sm'
                           } else {
                             cls += 'border-slate-100 text-slate-400 bg-slate-50/50 cursor-default'
                           }
@@ -379,7 +471,7 @@ export default function ChatPage() {
                             <button key={optIdx} className={cls} disabled={answered} onClick={() => handleSelectAnswer(idx, optIdx)}>
                               <span className={`w-7 h-7 rounded-full border-2 text-[13px] flex items-center justify-center shrink-0 font-bold ${!answered ? 'border-slate-300 text-slate-500' :
                                   isCorrect ? 'border-green-500 bg-green-500 text-white' :
-                                    isPicked ? 'border-red-400 bg-red-400 text-white' :
+                                    isPicked ? 'border-red-500 bg-red-500 text-white' :
                                       'border-slate-200 text-slate-300'
                                 }`}>
                                 {answered && isCorrect ? <CheckCircle2 size={16} /> :
@@ -392,9 +484,16 @@ export default function ChatPage() {
                         })}
                       </div>
                       {answered && (
-                        <div className={`text-[15px] p-5 rounded-xl mt-4 border ${correct ? 'bg-green-50/50 text-green-800 border-green-200' : 'bg-slate-50 text-slate-700 border-slate-200'}`}>
-                          <strong className={correct ? 'text-green-700' : 'text-slate-900'}>{correct ? 'âœ… Correct!' : `â Œ Incorrect. The correct answer was Option ${String.fromCharCode(65 + item.answer_index)}.`}</strong>
-                          <p className="mt-2 leading-relaxed opacity-90">{item.explanation}</p>
+                        <div className={`text-[15px] p-5 rounded-xl mt-4 border shadow-sm ${correct ? 'bg-green-50 text-green-900 border-green-200' : 'bg-red-50 text-red-900 border-red-200'}`}>
+                          <div className="flex items-center gap-2 mb-3">
+                            {correct ? <CheckCircle2 className="text-green-600" size={24}/> : <XCircle className="text-red-500" size={24}/>}
+                            <strong className="text-lg">{correct ? 'Correct!' : `Incorrect. The correct answer is Option ${String.fromCharCode(65 + item.answer_index)}.`}</strong>
+                          </div>
+                          <div className="prose prose-sm max-w-none opacity-90">
+                            <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
+                              {item.explanation.replace(/âœ…|â Œ/g, '').trim()}
+                            </ReactMarkdown>
+                          </div>
                         </div>
                       )}
                     </div>
@@ -402,9 +501,72 @@ export default function ChatPage() {
                 })}
 
                 {quizDone && (
-                  <button className="btn-primary w-full py-4 text-lg rounded-2xl shadow-lg" onClick={() => { setActiveTab('chat'); setTimeout(handleGenerateQuiz, 100) }}>
-                    Generate Another Quiz
-                  </button>
+                  <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl mt-8 text-white relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 blur-3xl rounded-full"></div>
+                    <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center md:items-start">
+                      
+                      <div className="flex-1 text-center md:text-left">
+                        <div className="inline-flex items-center justify-center p-4 bg-primary-500/20 rounded-full text-primary-400 mb-4">
+                          <Target size={40} />
+                        </div>
+                        <h2 className="text-3xl font-black mb-2">Quiz Complete!</h2>
+                        <p className="text-slate-300 text-lg mb-6">Topic: {detectedTopic}</p>
+                        
+                        <div className="flex justify-center md:justify-start gap-4 mb-6">
+                          <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center min-w-[100px]">
+                            <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Score</p>
+                            <p className="text-2xl font-bold">{quizScore} / {quizQuestions.length}</p>
+                          </div>
+                          <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center min-w-[100px]">
+                            <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Accuracy</p>
+                            <p className="text-2xl font-bold text-primary-400">{Math.round((quizScore / quizQuestions.length) * 100)}%</p>
+                          </div>
+                        </div>
+                        
+                        {prediction && (
+                          <div className="bg-slate-800/50 border border-slate-700/50 p-4 rounded-xl mb-6 flex items-center justify-between">
+                            <div>
+                              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">ML Prediction</p>
+                              <p className={`font-bold ${prediction.predicted_score === 'Weak' ? 'text-red-400' : prediction.predicted_score === 'Strong' ? 'text-green-400' : 'text-amber-400'}`}>
+                                {prediction.predicted_score} Mastery
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Confidence</p>
+                              <p className="font-bold">{prediction.confidence}%</p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex-1 w-full bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
+                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Recommended Next Steps</p>
+                        <div className="space-y-3 mb-6">
+                          <button className="w-full text-left bg-slate-800 hover:bg-slate-700 p-4 rounded-xl border border-slate-700 transition-colors flex items-center gap-3">
+                            <BookOpen className="text-blue-400" size={20} />
+                            <div>
+                              <p className="font-bold text-sm text-slate-200">Review {detectedTopic}</p>
+                              <p className="text-xs text-slate-400">Watch video lesson</p>
+                            </div>
+                          </button>
+                        </div>
+                        
+                        <div className="pt-6 border-t border-slate-700/50">
+                          <p className="text-sm text-slate-300 mb-3 text-center">Need help understanding {detectedTopic}?</p>
+                          <button 
+                            onClick={() => {
+                              setActiveTab('chat')
+                              handleSend(`I just got some questions wrong about ${detectedTopic}. Could you please explain this topic with simple examples?`)
+                            }}
+                            className="w-full py-4 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+                          >
+                            <BrainCircuit size={20}/> Ask AI Tutor
+                          </button>
+                        </div>
+                      </div>
+                      
+                    </div>
+                  </div>
                 )}
               </div>
             )}
@@ -515,11 +677,21 @@ export default function ChatPage() {
               <div>
                 <p className="text-[10px] text-slate-400 font-bold mb-3 uppercase tracking-widest flex items-center gap-1.5"><AlertTriangle size={12} className="text-amber-400"/> Needs Attention</p>
                 {contextData.todayFocus && contextData.todayFocus !== "General Review" ? (
-                  <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-3">
                     {contextData.todayFocus.split(' & ').map((topic: string) => (
-                      <div key={topic} className="flex items-center gap-2 bg-amber-500/10 border border-amber-500/20 rounded-xl px-3 py-2 text-amber-300">
-                        <div className="w-1.5 h-1.5 rounded-full bg-amber-400"></div>
-                        <span className="text-sm font-semibold">{topic}</span>
+                      <div key={topic} className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
+                        <div className="flex items-center gap-2 text-amber-300 mb-2">
+                          <AlertTriangle size={14} className="text-amber-400"/>
+                          <span className="text-sm font-bold">{topic}</span>
+                        </div>
+                        {prediction && prediction.predicted_score === 'Weak' && (
+                          <div className="mt-2 text-xs text-amber-200/80">
+                            <p>Accuracy: {contextData.stats?.averageScore || 0}%</p>
+                            {prediction.reasons && prediction.reasons.length > 0 && (
+                                <p className="mt-1 font-semibold text-amber-300/90">Recommendation: Review {prediction.reasons[0].toLowerCase()}</p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -531,13 +703,22 @@ export default function ChatPage() {
               {/* Exam Readiness */}
               <div className="bg-gradient-to-br from-slate-800/80 to-slate-800/40 rounded-2xl p-5 border border-slate-700/50">
                 <p className="text-[10px] text-slate-400 font-bold mb-3 uppercase tracking-widest">Exam Readiness</p>
-                <div className="flex items-end justify-between mb-3">
-                  <span className="text-3xl font-black text-white leading-none">{contextData.examReadiness?.score || 0}%</span>
-                  <span className="text-xs text-emerald-400 font-bold bg-emerald-400/10 px-2 py-1 rounded-md">{contextData.examReadiness?.label || 'Calculating...'}</span>
-                </div>
-                <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden shadow-inner">
-                  <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style={{width: `${contextData.examReadiness?.score || 0}%`}}></div>
-                </div>
+                {contextData.is_new_user || !contextData.examReadiness?.score ? (
+                  <div className="text-center py-2">
+                    <p className="text-sm font-bold text-slate-300 mb-1">Not Available Yet</p>
+                    <p className="text-xs text-slate-500">Complete 3 quizzes to unlock prediction.</p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="flex items-end justify-between mb-3">
+                      <span className="text-3xl font-black text-white leading-none">{contextData.examReadiness.score}%</span>
+                      <span className="text-xs text-emerald-400 font-bold bg-emerald-400/10 px-2 py-1 rounded-md">{contextData.examReadiness.label}</span>
+                    </div>
+                    <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden shadow-inner">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style={{width: `${contextData.examReadiness.score}%`}}></div>
+                    </div>
+                  </>
+                )}
               </div>
 
               {/* ML Prediction */}
