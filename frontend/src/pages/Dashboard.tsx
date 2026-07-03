@@ -43,13 +43,12 @@ export default function Dashboard() {
     examReadiness
   } = dashboardData
 
-  // We will mock some stats that the backend doesn't provide yet to keep the UI beautiful
   const displayStats = {
-    videosWatched: 45, // Mocked for now
-    quizzesCompleted: recentActivity.filter((a: any) => a.type === 'quiz').length || 10,
-    averageScore: stats.averageScore,
-    studyHours: 120, // Mocked for now
-    topicsMastered: stats.topicsMastered,
+    videosWatched: stats?.videosWatched || 0, 
+    quizzesCompleted: recentActivity?.filter((a: any) => a.type === 'quiz').length || 0,
+    averageScore: stats?.averageScore || 0,
+    studyHours: stats?.studyHours || 0, 
+    topicsMastered: stats?.topicsMastered || 0,
   }
 
   const recommendations = [

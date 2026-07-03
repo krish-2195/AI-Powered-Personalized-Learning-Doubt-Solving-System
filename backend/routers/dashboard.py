@@ -96,7 +96,9 @@ async def get_dashboard(user_id: int, db: Session = Depends(get_db)):
             "todayFocus": today_focus,
             "stats": {
                 "averageScore": round(avg_score, 1), 
-                "topicsMastered": topics_mastered
+                "topicsMastered": topics_mastered,
+                "videosWatched": 0,
+                "studyHours": 0
             },
             "recentActivity": recent_activity,
             "examReadiness": readiness
