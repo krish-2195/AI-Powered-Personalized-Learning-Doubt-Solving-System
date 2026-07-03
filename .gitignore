@@ -66,3 +66,7 @@ htmlcov/
 # Frontend specific
 frontend/dist/
 frontend/.vite/
+# Agent Files
+.agents/
+PENDING_TASKS.md
+PROJECT_STATUS.md
