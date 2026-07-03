@@ -71,7 +71,7 @@ async def register(user: UserRegister, db: Session = Depends(get_db)):
         current_level=user.current_level,
         exam_target=user.exam_target.strip(),
         exam_timeline=user.exam_timeline,
-        # streak is initialized to 0, last_active_date to None by default
+        streak_count=1,
     )
 
     try:

@@ -13,6 +13,14 @@ class LLMService:
         
         if self.openai_api_key:
             openai.api_key = self.openai_api_key
+            
+        self._gemini_model_instance = None
+        if self.gemini_api_key:
+            import warnings
+            warnings.filterwarnings("ignore", category=FutureWarning, module="google.generativeai")
+            import google.generativeai as genai
+            genai.configure(api_key=self.gemini_api_key)
+            self._gemini_model_instance = genai.GenerativeModel(self.gemini_model)
 
     def generate_response(self, system_prompt: str, user_message: str, chat_history: list = None, provider: str = None) -> str:
         """
@@ -56,16 +64,10 @@ class LLMService:
             return "Gemini API Key is missing."
             
         try:
-            import google.generativeai as genai
-            genai.configure(api_key=self.gemini_api_key)
+            # We already configured genai in __init__, just use it
+            model = self._gemini_model_instance
             
-            # Use model from .env (defaults to gemini-2.5-flash)
-            model = genai.GenerativeModel(self.gemini_model)
-            
-            # Gemini expects system prompt either in a specific system_instruction param 
-            # or pre-pended to the chat. We will prepend it to the first user message for simplicity.
             gemini_history = []
-            
             if chat_history:
                 for msg in chat_history[-10:]:
                     role = "user" if msg["role"] == "user" else "model"
@@ -73,14 +75,11 @@ class LLMService:
                     
             chat = model.start_chat(history=gemini_history)
             
-            # Inject system prompt dynamically into the user's latest query
             full_query = f"System Context: {system_prompt}\n\nUser Query: {user_message}"
             
             response = chat.send_message(full_query)
             return response.text.strip()
             
-        except ImportError:
-            return "Error: 'google-generativeai' package is not installed. Run `pip install google-generativeai`."
         except Exception as e:
             return f"Error connecting to Gemini: {e}"
 
