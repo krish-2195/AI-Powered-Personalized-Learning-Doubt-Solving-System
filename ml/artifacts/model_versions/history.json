@@ -1,0 +1,39 @@
+[
+    {
+        "version": "v2",
+        "dataset_used": "Combined (Synthetic + Real)",
+        "dataset_size": 4000,
+        "training_date": "2026-07-02T15:11:44.768064",
+        "metrics": {
+            "accuracy": 0.97,
+            "precision": 0.9706589397133518,
+            "recall": 0.97,
+            "f1": 0.9702011133018413
+        }
+    },
+    {
+        "version": "v3",
+        "dataset_used": "Combined (Synthetic + Real)",
+        "dataset_size": 4007,
+        "training_date": "2026-07-03T20:11:06.994393",
+        "metrics": {
+            "accuracy": 0.9638403990024937,
+            "precision": 0.9640043251839957,
+            "recall": 0.9638403990024937,
+            "f1": 0.9639014071787856
+        }
+    },
+    {
+        "version": "v4",
+        "status": "Deployed",
+        "dataset_strategy": "Synthetic Only (<5% real data)",
+        "dataset_size": 4000,
+        "training_date": "2026-07-03T20:26:31.323974",
+        "metrics": {
+            "accuracy": 0.97,
+            "precision": 0.9706589397133518,
+            "recall": 0.97,
+            "f1": 0.9702011133018413
+        }
+    }
+]

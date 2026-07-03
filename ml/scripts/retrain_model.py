@@ -33,8 +33,36 @@ def retrain_model():
         df_real = pd.read_csv(real_path)
         print(f"Loaded {len(df_real)} real student records.")
     
-    df_combined = pd.concat([df_synth, df_real], ignore_index=True)
+    real_rows = len(df_real)
+    synth_rows = len(df_synth)
     
+    if synth_rows == 0:
+        synth_rows = 1 # Avoid division by zero
+        
+    real_pct = real_rows / synth_rows
+    dataset_strategy = "Unknown"
+    
+    # Tiered Data Merging Strategy (Proportion-based)
+    if real_pct < 0.05:
+        df_combined = df_synth.copy()
+        dataset_strategy = "Synthetic Only (<5% real data)"
+    elif real_pct < 0.25:
+        df_combined = pd.concat([df_synth, df_real], ignore_index=True)
+        dataset_strategy = "Blend (5-25% real data)"
+    elif real_pct < 0.75:
+        # Sample down synthetic data to balance
+        df_synth_sampled = df_synth.sample(frac=0.3, random_state=42)
+        df_combined = pd.concat([df_synth_sampled, df_real], ignore_index=True)
+        dataset_strategy = "Weighted (25-75% real data)"
+    elif real_pct < 0.95:
+        df_synth_sampled = df_synth.sample(frac=0.05, random_state=42)
+        df_combined = pd.concat([df_synth_sampled, df_real], ignore_index=True)
+        dataset_strategy = "Mostly Real (>75% real data)"
+    else:
+        df_combined = df_real.copy()
+        dataset_strategy = "Real Only (>95% real data)"
+    
+    print(f"Strategy: {dataset_strategy}")
     print(f"Total dataset size for retraining: {len(df_combined)}")
     
     # Preprocessing
@@ -45,9 +73,11 @@ def retrain_model():
         'prerequisite_mastery', 'previous_attempt_accuracy'
     ]
     
+    # Separate features and target
     X = df_combined[feature_columns].fillna(0)
-    y = df_combined['label']
+    y = df_combined['label'].astype(str)
     
+    # Encode target labels
     label_encoder = LabelEncoder()
     y_encoded = label_encoder.fit_transform(y)
     
@@ -66,25 +96,44 @@ def retrain_model():
     
     print(f"Accuracy: {accuracy:.4f}")
     
-    # Versioning
+    # Load history to determine rollback and versioning
     history_path = os.path.join(artifacts_dir, 'history.json')
     history = []
+    prev_accuracy = 0.0
+    
     if os.path.exists(history_path):
         with open(history_path, 'r', encoding='utf-8') as f:
-            history = json.load(f)
+            try:
+                history = json.load(f)
+                if history:
+                    # Find the last deployed model's accuracy
+                    deployed_models = [h for h in history if h.get("status") == "Deployed"]
+                    if deployed_models:
+                        prev_accuracy = deployed_models[-1]["metrics"]["accuracy"]
+            except json.JSONDecodeError:
+                pass
             
     new_version = f"v{len(history) + 2}" # Assuming current is v2
     
-    # Save artifacts
-    model_path = os.path.join(models_dir, f'random_forest_{new_version}.pkl')
-    joblib.dump(model, model_path)
-    joblib.dump(label_encoder, os.path.join(models_dir, 'difficulty_label_encoder.pkl'))
-    joblib.dump(feature_columns, os.path.join(models_dir, 'feature_columns.pkl'))
+    # Model Rollback Evaluation
+    if accuracy >= prev_accuracy or prev_accuracy == 0.0:
+        status = "Deployed"
+        model_path = os.path.join(models_dir, f'random_forest_{new_version}.pkl')
+        joblib.dump(model, model_path)
+        joblib.dump(label_encoder, os.path.join(models_dir, 'difficulty_label_encoder.pkl'))
+        joblib.dump(feature_columns, os.path.join(models_dir, 'feature_columns.pkl'))
+        print(f"Model saved to {model_path} and deployed.")
+    else:
+        status = "Rejected (worse accuracy)"
+        model_path = os.path.join(artifacts_dir, f'random_forest_{new_version}_rejected.pkl')
+        joblib.dump(model, model_path)
+        print(f"Model rejected due to lower accuracy ({accuracy:.4f} < {prev_accuracy:.4f}). Saved as rejected artifact.")
     
     # Record history
     metrics = {
         "version": new_version,
-        "dataset_used": "Combined (Synthetic + Real)",
+        "status": status,
+        "dataset_strategy": dataset_strategy,
         "dataset_size": len(df_combined),
         "training_date": datetime.utcnow().isoformat(),
         "metrics": {

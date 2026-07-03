@@ -49,6 +49,13 @@ def export_training_data():
         if len(quiz_attempts) > 1:
             prev_acc = quiz_attempts[1].accuracy
             
+        if perf.accuracy >= 80:
+            label_val = "Strong"
+        elif perf.accuracy >= 50:
+            label_val = "Moderate"
+        else:
+            label_val = "Weak"
+            
         avg_time = perf.avg_time_seconds if perf.avg_time_seconds else 60.0
         
         row = {

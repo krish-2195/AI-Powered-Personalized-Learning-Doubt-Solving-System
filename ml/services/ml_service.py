@@ -2,7 +2,9 @@ import os
 import joblib
 import pandas as pd
 from sqlalchemy.orm import Session
-from database.models.postgres_models import PerformanceRecord, TopicPerformance, PredictionHistory
+from sqlalchemy import func
+from database.models.postgres_models import PerformanceRecord, TopicPerformance, PredictionHistory, Topic, LearningLog, UserProfile
+from ml.services.knowledge_graph import knowledge_graph
 
 class MLService:
     def __init__(self):
@@ -41,12 +43,48 @@ class MLService:
         confidence = 0.65
         
         if self.model and self.feature_columns:
+            # Fetch contextual data for features
+            topic = db.query(Topic).get(topic_id)
+            topic_name = topic.name if topic else ""
+            
+            # Prerequisite Mastery calculation
+            prereqs = knowledge_graph.get_prerequisites(topic_name)
+            prereq_mastery = 50.0 # Default if none
+            if prereqs:
+                prereq_tps = db.query(TopicPerformance).join(Topic).filter(
+                    TopicPerformance.user_id == user_id,
+                    Topic.name.in_(prereqs)
+                ).all()
+                if prereq_tps:
+                    prereq_mastery = sum(tp.ewma_accuracy for tp in prereq_tps) / len(prereq_tps)
+            
+            # Additional features
+            user_prof = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+            streak = user_prof.streak_count if user_prof else 0
+            
+            logs = db.query(LearningLog).filter(LearningLog.user_id == user_id).all()
+            videos = sum(1 for l in logs if l.activity_type == 'video' and l.completed)
+            articles = sum(1 for l in logs if l.activity_type == 'article' and l.completed)
+            chatbots = sum(1 for l in logs if l.activity_type == 'chat')
+            study_dur = sum(l.duration_seconds for l in logs) / 3600.0 if logs else 0.0
+            
+            tp_current = db.query(TopicPerformance).filter(
+                TopicPerformance.user_id == user_id, TopicPerformance.topic_id == topic_id
+            ).first()
+            ewma = tp_current.ewma_accuracy if tp_current else perf.accuracy
+            
             # Construct feature DataFrame mapping
             features = {col: 0 for col in self.feature_columns}
-            if 'quiz_accuracy' in features:
-                features['quiz_accuracy'] = perf.accuracy
-            if 'total_attempts' in features:
-                features['total_attempts'] = perf.total_attempts
+            if 'quiz_accuracy' in features: features['quiz_accuracy'] = perf.accuracy
+            if 'total_attempts' in features: features['total_attempts'] = perf.total_attempts
+            if 'prerequisite_mastery' in features: features['prerequisite_mastery'] = prereq_mastery
+            if 'videos_watched' in features: features['videos_watched'] = videos
+            if 'articles_read' in features: features['articles_read'] = articles
+            if 'chatbot_questions' in features: features['chatbot_questions'] = chatbots
+            if 'study_duration' in features: features['study_duration'] = study_dur
+            if 'daily_streak' in features: features['daily_streak'] = streak
+            if 'ewma_accuracy' in features: features['ewma_accuracy'] = ewma
+            if 'avg_time_per_question' in features: features['avg_time_per_question'] = perf.avg_time_seconds or 60.0
                 
             df = pd.DataFrame([features])
             
@@ -58,6 +96,25 @@ class MLService:
                 if hasattr(self.model, "predict_proba"):
                     probs = self.model.predict_proba(df)
                     confidence = float(max(probs[0]))
+                    
+                # Confidence Threshold Guardrail
+                if confidence < 0.60:
+                    prediction_class = "Moderate" # Default to Moderate to prevent aggressive personalization
+                
+                # Explainability: Determine reasons for the prediction
+                reasons = []
+                if features.get('quiz_accuracy', 100) < 60:
+                    reasons.append("Low quiz accuracy")
+                if features.get('prerequisite_mastery', 100) < 60:
+                    reasons.append("Poor prerequisite mastery")
+                if features.get('avg_time_per_question', 0) > 120:
+                    reasons.append("High response time")
+                if features.get('total_attempts', 0) > 3 and features.get('quiz_accuracy', 100) < 70:
+                    reasons.append("Struggling after multiple attempts")
+                    
+                if not reasons and prediction_class == "Weak":
+                    reasons.append("Pattern identified by ML model")
+                    
             except Exception as e:
                 print(f"Prediction failed: {e}")
         else:
@@ -108,7 +165,8 @@ class MLService:
         return {
             "prediction": prediction_class,
             "confidence": round(confidence, 2),
-            "model_version": history.model_version
+            "model_version": history.model_version,
+            "reasons": reasons if 'reasons' in locals() else []
         }
 
 ml_service = MLService()
