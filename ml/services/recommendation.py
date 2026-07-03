@@ -61,7 +61,7 @@ class HybridRecommendationEngine:
         # 1. Identify user's weak topics
         weak_perfs = db.query(TopicPerformance).filter(
             TopicPerformance.user_id == user_id,
-            TopicPerformance.mastery_level == "Beginner"
+            TopicPerformance.mastery_level == "Weak"
         ).all()
         
         weak_topic_names = [wp.topic.name for wp in weak_perfs if wp.topic]
@@ -105,4 +105,4 @@ class HybridRecommendationEngine:
         
         return results_sorted
 
-recommendation_engine = HybridRecommendationEngine()
+recommendation_service = HybridRecommendationEngine()

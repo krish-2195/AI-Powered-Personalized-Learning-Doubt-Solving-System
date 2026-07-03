@@ -6,6 +6,7 @@ from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from database.connection import get_db
 from database.models.postgres_models import QuizAttempt as DBQuizAttempt, PerformanceRecord, Topic
+from ml.services.ml_service import ml_service
 
 router = APIRouter()
 
@@ -39,15 +40,35 @@ class NextStep(BaseModel):
     estimated_time_minutes: int
     path: List[str]
 
+from database.models.postgres_models import LearningLog, TopicPerformance
+
 @router.post("/video/track")
-async def track_video_watch(watch_data: VideoWatch):
+async def track_video_watch(watch_data: VideoWatch, db: Session = Depends(get_db)):
     """
-    Track video watching activity
+    Track video watching activity in PostgreSQL
     """
-    # TODO: Save to database with timestamp
-    # TODO: Update user progress
+    try:
+        user_id_int = int(watch_data.user_id) if str(watch_data.user_id).isdigit() else 1
+    except ValueError:
+        user_id_int = 1
+        
+    topic = db.query(Topic).filter(Topic.name == watch_data.topic).first()
+    topic_id = topic.id if topic else None
+    
+    new_log = LearningLog(
+        user_id=user_id_int,
+        activity_type="video",
+        resource_id=watch_data.video_id,
+        topic_id=topic_id,
+        duration_seconds=watch_data.duration_seconds,
+        completed=watch_data.completed
+    )
+    
+    db.add(new_log)
+    db.commit()
+    
     return {
-        "message": "Video watch tracked",
+        "message": "Video watch tracked in PostgreSQL",
         "timestamp": datetime.utcnow(),
         "progress_updated": True
     }
@@ -65,7 +86,7 @@ async def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db)):
     topic_id = topic.id if topic else None
 
     # Handle string user_ids passed from the frontend mockup
-    user_id_int = int(quiz_data.user_id) if quiz_data.user_id.isdigit() else 1
+    user_id_int = int(quiz_data.user_id) if str(quiz_data.user_id).isdigit() else 1
 
     # 2. Save QuizAttempt
     new_attempt = DBQuizAttempt(
@@ -104,11 +125,12 @@ async def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db)):
         
     db.commit()
     
-    # 4. Trigger ML Service (Step 8 will hook in right here)
-    # ml_prediction = ml_service.predict_weakness(...)
+    # 4. Trigger ML Service
+    ml_prediction = ml_service.predict_weakness(db, user_id_int, topic_id)
     
     return {
         "message": "Quiz submitted and recorded successfully",
+        "ml_prediction": ml_prediction,
         "accuracy": accuracy,
         "score": quiz_data.correct_answers,
         "total": quiz_data.questions_count,
@@ -117,69 +139,67 @@ async def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db)):
         "recorded_in_db": True
     }
 
-@router.post("/doubt/ask")
-async def ask_doubt(doubt: DoubtQuery):
-    """
-    Record student doubt query
-    """
-    # TODO: Save to database
-    # TODO: Forward to AI chat system
-    return {
-        "message": "Doubt recorded",
-        "doubt_id": "DOUBT_" + str(datetime.utcnow().timestamp()),
-        "status": "pending_response"
-    }
-
 @router.get("/history/{user_id}")
-async def get_learning_history(user_id: str, limit: int = 50):
+async def get_learning_history(user_id: str, limit: int = 50, db: Session = Depends(get_db)):
     """
-    Get user's learning activity history
+    Get user's learning activity history from PostgreSQL LearningLogs and QuizAttempts
     """
-    # TODO: Fetch from database
+    try:
+        uid = int(user_id)
+    except ValueError:
+        uid = 1
+        
+    logs = db.query(LearningLog).filter(LearningLog.user_id == uid).order_by(LearningLog.timestamp.desc()).limit(limit).all()
+    
+    activities = []
+    for log in logs:
+        topic_name = "Unknown"
+        if log.topic_id:
+            topic = db.query(Topic).filter(Topic.id == log.topic_id).first()
+            if topic:
+                topic_name = topic.name
+                
+        activities.append({
+            "type": log.activity_type,
+            "topic": topic_name,
+            "timestamp": log.timestamp.isoformat(),
+            "completed": log.completed
+        })
+        
     return {
-        "user_id": user_id,
-        "activities": [
-            {
-                "type": "video",
-                "topic": "Linked Lists",
-                "timestamp": "2026-01-04T10:30:00",
-                "completed": True
-            },
-            {
-                "type": "quiz",
-                "topic": "Binary Trees",
-                "score": 8,
-                "total": 10,
-                "timestamp": "2026-01-04T11:15:00"
-            }
-        ],
-        "total_count": 2
+        "user_id": str(uid),
+        "activities": activities,
+        "total_count": len(activities)
     }
-
 
 @router.get("/next-steps/{user_id}", response_model=List[NextStep])
-async def get_next_steps(user_id: str):
+async def get_next_steps(user_id: str, db: Session = Depends(get_db)):
     """
-    Suggest next steps using knowledge graph prerequisites and recent performance signals.
+    Suggest next steps using live ML Recommendation Engine
     """
-    # TODO: Pull user progress, weak topics, and knowledge graph relations
-    return [
-        NextStep(
-            topic="Binary Search Trees",
-            rationale="You completed Trees with high accuracy; BST is the next prerequisite-aligned step.",
-            confidence=0.82,
-            prerequisites_met=True,
-            recommended_resources=["VIDEO_BST_INTRO", "QUIZ_BST_01"],
-            estimated_time_minutes=35,
-            path=["Trees", "Binary Search Trees", "AVL Trees"],
-        ),
-        NextStep(
-            topic="Recursion Practice",
-            rationale="Recursion speed is below cohort; reinforces DP prerequisites.",
-            confidence=0.76,
-            prerequisites_met=True,
-            recommended_resources=["QUIZ_REC_SPEED", "PRACTICE_REC_MED"],
-            estimated_time_minutes=25,
-            path=["Recursion", "Memoization", "Dynamic Programming"],
-        ),
-    ]
+    from ml.services.recommendation import recommendation_service
+    
+    try:
+        uid = int(user_id)
+    except ValueError:
+        uid = 1
+        
+    # Get live recommendations from our PostgreSQL + Knowledge Graph engine
+    recommendations = recommendation_service.get_recommendations(db, uid)
+    
+    next_steps = []
+    for rec in recommendations:
+        topic_name = rec.topic.name if rec.topic else "Unknown"
+        next_steps.append(
+            NextStep(
+                topic=topic_name,
+                rationale="Recommended based on your learning profile and weak topics.",
+                confidence=0.85, # Mocked confidence for this endpoint
+                prerequisites_met=True,
+                recommended_resources=[rec.title],
+                estimated_time_minutes=rec.duration_minutes or 15,
+                path=[]
+            )
+        )
+        
+    return next_steps
