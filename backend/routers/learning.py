@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from database.connection import get_db
 from database.models.postgres_models import QuizAttempt as DBQuizAttempt, PerformanceRecord, Topic
 from ml.services.ml_service import ml_service
+from backend.routers.auth import get_current_user
 
 router = APIRouter()
 
@@ -43,7 +44,7 @@ class NextStep(BaseModel):
 from database.models.postgres_models import LearningLog, TopicPerformance
 
 @router.post("/video/track")
-async def track_video_watch(watch_data: VideoWatch, db: Session = Depends(get_db)):
+def track_video_watch(watch_data: VideoWatch, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Track video watching activity in PostgreSQL
     """
@@ -74,7 +75,7 @@ async def track_video_watch(watch_data: VideoWatch, db: Session = Depends(get_db
     }
 
 @router.post("/quiz/submit")
-async def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db)):
+def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Submit quiz attempt, store in QuizAttempt, update PerformanceRecord,
     and soon trigger ML prediction.
@@ -140,7 +141,7 @@ async def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db)):
     }
 
 @router.get("/history/{user_id}")
-async def get_learning_history(user_id: str, limit: int = 50, db: Session = Depends(get_db)):
+def get_learning_history(user_id: str, limit: int = 50, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Get user's learning activity history from PostgreSQL LearningLogs and QuizAttempts
     """
@@ -173,7 +174,7 @@ async def get_learning_history(user_id: str, limit: int = 50, db: Session = Depe
     }
 
 @router.get("/next-steps/{user_id}", response_model=List[NextStep])
-async def get_next_steps(user_id: str, db: Session = Depends(get_db)):
+def get_next_steps(user_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Suggest next steps using live ML Recommendation Engine
     """

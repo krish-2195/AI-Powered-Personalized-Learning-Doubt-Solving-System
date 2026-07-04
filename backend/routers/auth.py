@@ -44,7 +44,7 @@ def create_access_token(data: dict):
     return encoded_jwt
 
 @router.post("/register")
-async def register(user: UserRegister, db: Session = Depends(get_db)):
+def register(user: UserRegister, db: Session = Depends(get_db)):
     """Register a new user with profile information and persist to PostgreSQL."""
 
     normalized_email = user.email.strip().lower()
@@ -99,7 +99,7 @@ async def register(user: UserRegister, db: Session = Depends(get_db)):
     return success_response(data=user_data, message="User registered successfully")
 
 @router.post("/login")
-async def login(payload: LoginRequest, db: Session = Depends(get_db)):
+def login(payload: LoginRequest, db: Session = Depends(get_db)):
     """Authenticate user credentials, update streak logic, and return a JWT."""
 
     email = payload.email.strip().lower()
@@ -129,7 +129,7 @@ async def login(payload: LoginRequest, db: Session = Depends(get_db)):
     return success_response(data=user_data, message="Login successful")
 
 @router.get("/me")
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """Return the authenticated user profile summary."""
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
@@ -139,7 +139,11 @@ async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = De
     except JWTError:
         return error_response("Invalid authentication credentials", "Unauthorized")
     
-    user = db.query(User).filter(User.email == email).first()
+    try:
+        user = db.query(User).filter(User.email == email).first()
+    except SQLAlchemyError:
+        return error_response("Database connection failed", "Unauthorized")
+
     if not user:
         return error_response("User not found", "Unauthorized")
 

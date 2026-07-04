@@ -19,7 +19,7 @@ class QuestionCreate(BaseModel):
     explanation: str
 
 @router.get("/stats")
-async def get_admin_stats(db: Session = Depends(get_db)):
+def get_admin_stats(db: Session = Depends(get_db)):
     """Fetch high-level statistics for the admin dashboard."""
     try:
         total_users = db.query(User).count()
@@ -36,7 +36,7 @@ async def get_admin_stats(db: Session = Depends(get_db)):
         return error_response(str(e), "Failed to fetch stats")
 
 @router.get("/users")
-async def get_all_users(db: Session = Depends(get_db)):
+def get_all_users(db: Session = Depends(get_db)):
     """Fetch all users and their basic profile info."""
     try:
         users = db.query(User).all()
@@ -56,7 +56,7 @@ async def get_all_users(db: Session = Depends(get_db)):
         return error_response(str(e), "Failed to fetch users")
 
 @router.post("/question")
-async def add_question(payload: QuestionCreate, db: Session = Depends(get_db)):
+def add_question(payload: QuestionCreate, db: Session = Depends(get_db)):
     """Add a new question manually to the Question Bank."""
     try:
         if len(payload.options) != 4:

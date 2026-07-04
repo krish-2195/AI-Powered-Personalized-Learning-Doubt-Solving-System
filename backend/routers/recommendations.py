@@ -5,11 +5,12 @@ from typing import List
 from database.connection import get_db
 from ml.services.recommendation import recommendation_service
 from backend.utils.response_formatter import success_response, error_response
+from backend.routers.auth import get_current_user
 
 router = APIRouter()
 
 @router.get("/personalized/{user_id}")
-async def get_personalized_recommendations(user_id: int, top_n: int = 10, db: Session = Depends(get_db)):
+def get_personalized_recommendations(user_id: int, top_n: int = 10, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Get personalized learning recommendations using TF-IDF + SVD hybrid filtering,
     adjusted dynamically by Knowledge Graph dependencies.
@@ -34,9 +35,32 @@ async def get_personalized_recommendations(user_id: int, top_n: int = 10, db: Se
     except Exception as e:
         return error_response(str(e), "Failed to generate recommendations")
 
+from database.models.postgres_models import RecommendationFeedback
+from pydantic import BaseModel
+from datetime import datetime
+
+class RecommendationFeedbackPayload(BaseModel):
+    user_id: int
+    content_id: int
+    clicked: bool = True
+    time_spent: int = 0
+
 @router.post("/feedback")
-async def record_recommendation_feedback():
+def record_recommendation_feedback(payload: RecommendationFeedbackPayload, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
-    Placeholder for capturing feedback on recommendations (e.g. clicks) to tune SVD weights.
+    Record feedback on recommendations (e.g. clicks) to tune SVD weights.
     """
-    return success_response(message="Feedback recorded")
+    try:
+        feedback = RecommendationFeedback(
+            user_id=payload.user_id,
+            content_id=payload.content_id,
+            clicked=payload.clicked,
+            opened_at=datetime.utcnow() if payload.clicked else None,
+            time_spent=payload.time_spent
+        )
+        db.add(feedback)
+        db.commit()
+        return success_response(message="Feedback recorded")
+    except Exception as e:
+        db.rollback()
+        return error_response(str(e), "Failed to record feedback")

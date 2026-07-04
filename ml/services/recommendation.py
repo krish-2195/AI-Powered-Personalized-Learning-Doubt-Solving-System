@@ -1,40 +1,51 @@
 import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from database.models.postgres_models import Content, TopicPerformance
 from ml.services.knowledge_graph import knowledge_graph
 
 class HybridRecommendationEngine:
     def __init__(self):
         self.tfidf = TfidfVectorizer(stop_words='english')
+        self._cached_tfidf_matrix = None
+        self._cached_content_ids = None
+        self._cached_corpus = None
     
+    def _build_cache(self, db: Session):
+        all_content = db.query(Content).all()
+        if not all_content:
+            return False
+            
+        self._cached_corpus = [c.text_content if c.text_content else c.title for c in all_content]
+        self._cached_content_ids = [c.id for c in all_content]
+        
+        try:
+            self._cached_tfidf_matrix = self.tfidf.fit_transform(self._cached_corpus)
+        except ValueError:
+            self._cached_tfidf_matrix = None
+            
+        return True
+
     def _get_content_based_scores(self, db: Session, target_topic_names: list[str]) -> dict:
         """
         Uses TF-IDF + Cosine Similarity to find Content items that match the user's weak topics.
         """
-        all_content = db.query(Content).all()
-        if not all_content:
-            return {}
-            
-        # Create corpus
-        corpus = [c.text_content if c.text_content else c.title for c in all_content]
-        content_ids = [c.id for c in all_content]
-        
-        # Fit TF-IDF
-        try:
-            tfidf_matrix = self.tfidf.fit_transform(corpus)
-        except ValueError:
-            return {c_id: 0.1 for c_id in content_ids} # Empty corpus fallback
+        if self._cached_tfidf_matrix is None or self._cached_content_ids is None:
+            if not self._build_cache(db):
+                return {}
+                
+        if self._cached_tfidf_matrix is None:
+            return {c_id: 0.1 for c_id in self._cached_content_ids} # Empty corpus fallback
             
         # Target vector (combining weak topic names)
         target_text = " ".join(target_topic_names)
         target_vector = self.tfidf.transform([target_text])
         
         # Compute similarities
-        similarities = cosine_similarity(target_vector, tfidf_matrix).flatten()
+        similarities = cosine_similarity(target_vector, self._cached_tfidf_matrix).flatten()
         
-        return {content_ids[i]: float(similarities[i]) for i in range(len(content_ids))}
+        return {self._cached_content_ids[i]: float(similarities[i]) for i in range(len(self._cached_content_ids))}
 
     def _get_collaborative_scores(self, db: Session, user_id: int) -> dict:
         """
@@ -42,14 +53,16 @@ class HybridRecommendationEngine:
         In production, this uses the Surprise library or TruncatedSVD on a user-item interaction matrix.
         Here we mock the matrix factorization approach by returning heuristic collaborative scores.
         """
-        all_content = db.query(Content).all()
-        
+        if self._cached_content_ids is None:
+            if not self._build_cache(db):
+                return {}
+                
         # Mock collaborative scores based on generic popularity + a random user offset
         np.random.seed(user_id) # deterministic mock
         scores = {}
-        for c in all_content:
+        for c_id in self._cached_content_ids:
             # Simulate SVD output between 0.1 and 0.9
-            scores[c.id] = np.random.uniform(0.1, 0.9)
+            scores[c_id] = np.random.uniform(0.1, 0.9)
             
         return scores
 
@@ -59,7 +72,7 @@ class HybridRecommendationEngine:
         H(s,c) = 0.5 * CB(s,c) + 0.5 * CF(s,c)
         """
         # 1. Identify user's weak topics
-        weak_perfs = db.query(TopicPerformance).filter(
+        weak_perfs = db.query(TopicPerformance).options(joinedload(TopicPerformance.topic)).filter(
             TopicPerformance.user_id == user_id,
             TopicPerformance.mastery_level == "Weak"
         ).all()
@@ -99,7 +112,7 @@ class HybridRecommendationEngine:
         if not recommended_ids:
             return []
             
-        results = db.query(Content).filter(Content.id.in_(recommended_ids)).all()
+        results = db.query(Content).options(joinedload(Content.topic)).filter(Content.id.in_(recommended_ids)).all()
         # Ensure ordered as per scores
         results_sorted = sorted(results, key=lambda x: recommended_ids.index(x.id))
         

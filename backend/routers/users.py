@@ -7,6 +7,7 @@ from sqlalchemy import func
 from database.connection import get_db
 from database.models.postgres_models import User, UserProfile as DBUserProfile, LearningLog, QuizAttempt, TopicPerformance
 from backend.utils.response_formatter import success_response, error_response
+from backend.routers.auth import get_current_user
 
 router = APIRouter()
 
@@ -29,7 +30,7 @@ class UpdateProfile(BaseModel):
     exam_timeline: Optional[str] = None
 
 @router.get("/profile/{user_id}", response_model=UserProfileResponse)
-async def get_user_profile(user_id: str, db: Session = Depends(get_db)):
+def get_user_profile(user_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Get user profile and learning preferences from PostgreSQL
     """
@@ -56,7 +57,7 @@ async def get_user_profile(user_id: str, db: Session = Depends(get_db)):
     )
 
 @router.put("/profile/{user_id}")
-async def update_user_profile(user_id: str, profile_data: UpdateProfile, db: Session = Depends(get_db)):
+def update_user_profile(user_id: str, profile_data: UpdateProfile, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Update user profile information in PostgreSQL
     """
@@ -88,7 +89,7 @@ async def update_user_profile(user_id: str, profile_data: UpdateProfile, db: Ses
     return success_response(data={"user_id": str(uid)}, message="Profile updated successfully")
 
 @router.get("/stats/{user_id}")
-async def get_user_stats(user_id: str, db: Session = Depends(get_db)):
+def get_user_stats(user_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Get user learning statistics by aggregating PostgreSQL records
     """
@@ -116,12 +117,12 @@ async def get_user_stats(user_id: str, db: Session = Depends(get_db)):
     avg_score = db.query(func.avg(QuizAttempt.accuracy)).filter(
         QuizAttempt.user_id == uid
     ).scalar() or 0.0
-    avg_score_percent = round(avg_score * 100, 1)
+    avg_score_percent = round(float(avg_score), 1)
     
     # Aggregate from TopicPerformance
     topics_mastered = db.query(func.count(TopicPerformance.id)).filter(
         TopicPerformance.user_id == uid,
-        TopicPerformance.mastery_level == 'Expert'  # Assuming Expert = Mastered
+        TopicPerformance.mastery_level == 'Strong'  # Assuming Strong = Mastered
     ).scalar() or 0
     
     weak_topics = db.query(func.count(TopicPerformance.id)).filter(

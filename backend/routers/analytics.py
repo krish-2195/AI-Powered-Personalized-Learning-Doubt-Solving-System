@@ -1,8 +1,9 @@
 from datetime import datetime, timedelta
 from typing import List, Dict, Any
 from fastapi import APIRouter, Depends
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
+from backend.routers.auth import get_current_user
 
 from database.connection import get_db
 from database.models.postgres_models import QuizAttempt, TopicPerformance
@@ -11,19 +12,19 @@ from backend.utils.response_formatter import success_response, error_response
 router = APIRouter()
 
 @router.get("/summary/{user_id}")
-async def get_analytics_summary(user_id: int, db: Session = Depends(get_db)):
+def get_analytics_summary(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """Fetch real performance trends and weak topics from PostgreSQL."""
     try:
         # 1. Fetch Weak Topics
-        weak_topics = db.query(TopicPerformance).filter(
+        weak_topics = db.query(TopicPerformance).options(joinedload(TopicPerformance.topic)).filter(
             TopicPerformance.user_id == user_id,
-            TopicPerformance.mastery_level == "Beginner"
+            TopicPerformance.mastery_level == "Weak"
         ).all()
         
         weak_topics_data = [{"topic": wt.topic.name, "reason": "Low accuracy and high time consumption"} for wt in weak_topics if wt.topic]
 
         # 2. Topic Performance (Bar Chart Data)
-        all_performance = db.query(TopicPerformance).filter(TopicPerformance.user_id == user_id).all()
+        all_performance = db.query(TopicPerformance).options(joinedload(TopicPerformance.topic)).filter(TopicPerformance.user_id == user_id).all()
         topic_performance_data = [{"topic": p.topic.name, "score": round(p.ewma_accuracy * 100)} for p in all_performance if p.topic]
 
         # 3. Performance Trend over the last 5 weeks (Line Chart Data)

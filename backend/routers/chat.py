@@ -11,6 +11,7 @@ from database.connection import get_db, get_chat_history_collection
 from database.models.postgres_models import QuestionBank, Topic
 from backend.services.ai_tutor import ai_tutor_service
 from backend.utils.response_formatter import success_response, error_response
+from backend.routers.auth import get_current_user
 
 router = APIRouter()
 
@@ -26,7 +27,7 @@ class QuizGenerateRequest(BaseModel):
     count: int = 5
 
 @router.post("/message")
-async def ask_ai_tutor(payload: ChatMessage, db: Session = Depends(get_db)):
+async def ask_ai_tutor(payload: ChatMessage, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """Context-aware AI tutor response using OpenAI."""
     collection = get_chat_history_collection()
     
@@ -68,7 +69,7 @@ async def ask_ai_tutor(payload: ChatMessage, db: Session = Depends(get_db)):
     }, message="AI Responded")
 
 @router.post("/generate-quiz")
-async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_db)):
+async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Checks the PostgreSQL QuestionBank first. 
     If not enough questions exist, uses OpenAI as a fallback dynamic generator.
@@ -121,7 +122,7 @@ async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_
     })
 
 @router.get("/session-summary/{user_id}")
-async def get_session_summary(user_id: int, db: Session = Depends(get_db)):
+async def get_session_summary(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """Generates an AI summary of the user's recent chats."""
     collection = get_chat_history_collection()
     
@@ -170,7 +171,7 @@ async def get_session_summary(user_id: int, db: Session = Depends(get_db)):
     return summary_data
 
 @router.get("/history/{user_id}")
-async def get_latest_chat_history(user_id: int, db: Session = Depends(get_db)):
+async def get_latest_chat_history(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """Fetches the latest active chat session for a user from MongoDB."""
     collection = get_chat_history_collection()
     
