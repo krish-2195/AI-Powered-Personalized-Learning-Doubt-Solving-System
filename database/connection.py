@@ -8,24 +8,33 @@ from backend.config import settings
 from database.models.postgres_models import Base
 
 # PostgreSQL setup
-POSTGRES_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}?sslmode=require"
+POSTGRES_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}?sslmode=require&connect_timeout=5&options=-c%20statement_timeout=10000"
 SQLITE_FALLBACK_URL = "sqlite:///./learning_platform.db"
 
 
+import time
+
 def _create_engine_with_fallback():
-    try:
-        pg_engine = create_engine(POSTGRES_URL, pool_pre_ping=True)
-        with pg_engine.connect() as conn:
-            conn.execute(text("SELECT 1"))
-        print("Connected to PostgreSQL successfully")
-        return pg_engine
-    except Exception as err:
-        print(f"PostgreSQL unavailable, falling back to SQLite: {err}")
-        return create_engine(
-            SQLITE_FALLBACK_URL,
-            connect_args={"check_same_thread": False},
-            pool_pre_ping=True,
-        )
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            pg_engine = create_engine(POSTGRES_URL, pool_pre_ping=True, pool_recycle=300)
+            with pg_engine.connect() as conn:
+                conn.execute(text("SELECT 1"))
+            print("Connected to PostgreSQL successfully")
+            return pg_engine
+        except Exception as err:
+            if attempt < max_retries - 1:
+                print(f"PostgreSQL connection attempt {attempt + 1} failed: {err}. Retrying in 2 seconds...")
+                time.sleep(2)
+            else:
+                print(f"PostgreSQL unavailable after {max_retries} attempts, falling back to SQLite: {err}")
+                
+    return create_engine(
+        SQLITE_FALLBACK_URL,
+        connect_args={"check_same_thread": False},
+        pool_pre_ping=True,
+    )
 
 engine = _create_engine_with_fallback()
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

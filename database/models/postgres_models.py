@@ -111,8 +111,9 @@ class LearningLog(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     extra_metadata = Column("metadata", JSON)  # Additional flexible data
     
-    # Relationship
+    # Relationships
     user = relationship("User", back_populates="learning_logs")
+    topic = relationship("Topic")
 
 class QuizAttempt(Base):
     __tablename__ = "quiz_attempts"
@@ -129,8 +130,9 @@ class QuizAttempt(Base):
     timestamp = Column(DateTime, default=datetime.utcnow)
     answers_data = Column(JSON)  # Store individual question responses
     
-    # Relationship
+    # Relationships
     user = relationship("User", back_populates="quiz_attempts")
+    topic = relationship("Topic")
 
 class PerformanceRecord(Base):
     __tablename__ = "performance_records"
