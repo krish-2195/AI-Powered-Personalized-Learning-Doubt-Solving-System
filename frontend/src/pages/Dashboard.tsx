@@ -1,11 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, TrendingUp, Target, Clock, Sparkles, ArrowRight } from 'lucide-react'
+import { BookOpen, TrendingUp, Target, Clock, Sparkles, ArrowRight, Check } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import api from '../lib/api'
 
 export default function Dashboard() {
-  const { user } = useAuth()
+  const { user, updateUser } = useAuth()
   const navigate = useNavigate()
   const [loading, setLoading] = useState(true)
   const [dashboardData, setDashboardData] = useState<any>(() => {
@@ -19,6 +19,9 @@ export default function Dashboard() {
         .then((res) => {
           setDashboardData(res.data.data)
           localStorage.setItem('dashboardData', JSON.stringify(res.data.data))
+          if (res.data.data.streak !== undefined && user?.streak_count !== res.data.data.streak) {
+            updateUser({ streak_count: res.data.data.streak })
+          }
           setLoading(false)
         })
         .catch((err) => {
@@ -30,6 +33,21 @@ export default function Dashboard() {
       setLoading(false)
     }
   }, [user])
+
+  const handleStartRecommendation = async (rec: any) => {
+    if (rec.resource_id) {
+      try {
+        await api.post('/api/recommendations/feedback', {
+          user_id: user?.user_id,
+          content_id: rec.resource_id,
+          clicked: true
+        })
+      } catch (err) {
+        console.error("Failed to log recommendation feedback", err)
+      }
+    }
+    navigate('/chat', { state: { prefill: `I want to start the recommended ${rec.type} on ${rec.topic}: ${rec.title}` } })
+  }
 
   if (loading && !dashboardData) {
     return (
@@ -48,7 +66,6 @@ export default function Dashboard() {
   const {
     is_new_user,
     streak,
-    dailyQuest,
     accuracyBoostTarget,
     todayFocus,
     stats,
@@ -208,9 +225,9 @@ export default function Dashboard() {
         </div>
 
         {/* Exam Readiness */}
-        <div className="card bg-white/10 border-white/10 text-slate-100">
+        <div className="card bg-white/10 border-white/10 text-slate-100 flex flex-col h-full">
           <h2 className="text-xl font-semibold mb-4">Exam Readiness</h2>
-          <div className="text-center space-y-4">
+          <div className="text-center space-y-4 flex-1">
             <div className="relative w-36 h-36 mx-auto">
               <div className="absolute inset-0 rounded-full bg-primary-500/20 blur-2xl animate-pulse" />
               <div
@@ -220,18 +237,48 @@ export default function Dashboard() {
                 }}
               >
                 <div className="w-[78%] h-[78%] rounded-full bg-[#0f172a] flex items-center justify-center border border-white/10">
-                  <span className="text-3xl font-bold">{examReadiness?.score}%</span>
+                  <span className="text-3xl font-bold">{examReadiness?.score || 0}%</span>
                 </div>
               </div>
             </div>
-            <p className="text-lg font-medium">
-              {examReadiness?.label}
-            </p>
-            <p className="text-sm text-slate-400">Color-coded confidence with a subtle pulse to keep momentum.</p>
-            <button className="btn-primary w-full flex items-center justify-center gap-2">
-              View Action Plan <ArrowRight size={16} />
-            </button>
+            
+            <div className="mt-4">
+              <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium border ${
+                examReadiness?.confidence === 'Low Confidence' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                examReadiness?.confidence === 'Medium Confidence' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
+                'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+              }`}>
+                {examReadiness?.confidence === 'Low Confidence' ? '🔴' : examReadiness?.confidence === 'Medium Confidence' ? '🟡' : '🟢'} {examReadiness?.confidence || 'Low Confidence'}
+              </div>
+            </div>
+
+            <div className="text-left bg-black/20 rounded-xl p-4 mt-4 border border-white/5">
+              <p className="text-xs text-slate-400 uppercase tracking-wider mb-2 font-semibold">Based on:</p>
+              <ul className="space-y-1.5 text-sm text-slate-300">
+                <li className="flex items-center gap-2">
+                  <Check size={14} className="text-primary-400" />
+                  <span>{examReadiness?.metrics?.quiz_count || 0} quizzes</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={14} className="text-primary-400" />
+                  <span>{examReadiness?.metrics?.unique_topics || 0} topics covered</span>
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={14} className="text-primary-400" />
+                  <span>{examReadiness?.metrics?.study_sessions || 0} study sessions</span>
+                </li>
+              </ul>
+              {examReadiness?.reason && (
+                <p className="text-xs text-slate-400 mt-3 pt-3 border-t border-white/10 italic leading-relaxed">
+                  {examReadiness.reason}
+                </p>
+              )}
+            </div>
           </div>
+          
+          <button className="btn-primary w-full flex items-center justify-center gap-2 mt-4">
+            View Action Plan <ArrowRight size={16} />
+          </button>
         </div>
       </div>
 
@@ -239,14 +286,14 @@ export default function Dashboard() {
       <div className="card bg-white/10 border-white/10 text-slate-100">
         <h2 className="text-xl font-semibold mb-4">Recommended for You</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {recommendations.map((rec, idx) => (
+          {recommendations.map((rec: any, idx: number) => (
             <div key={idx} className="p-4 rounded-xl bg-white/5 border border-white/10 shadow-sm hover:shadow-lg hover:-translate-y-1 transition cursor-pointer">
               <span className="text-xs uppercase text-primary-300 font-semibold">{rec.type}</span>
               <h3 className="font-semibold mt-2 text-slate-50">{rec.title}</h3>
               <p className="text-sm text-slate-400 mt-1">{rec.topic}</p>
               <p className="text-xs text-slate-500 mt-2">{rec.time} minutes</p>
               <button 
-                onClick={() => navigate('/chat', { state: { prefill: `I want to start the recommended ${rec.type} on ${rec.topic}: ${rec.title}` } })}
+                onClick={() => handleStartRecommendation(rec)}
                 className="btn-secondary w-full mt-3"
               >
                 Start

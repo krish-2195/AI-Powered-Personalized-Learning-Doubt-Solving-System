@@ -1,9 +1,166 @@
+import { useState, useEffect } from 'react'
+import { User, BookOpen, Clock, Activity, Target, Award, Brain } from 'lucide-react'
+import api from '../lib/api'
+import { useAuth } from '../context/AuthContext'
+
 export default function ProfilePage() {
+  const { user: authUser } = useAuth()
+  const [profile, setProfile] = useState<any>(null)
+  const [stats, setStats] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    if (!authUser?.user_id) return
+
+    const fetchProfileData = async () => {
+      try {
+        const [profileRes, statsRes] = await Promise.all([
+          api.get(`/api/users/profile/${authUser.user_id}`),
+          api.get(`/api/users/stats/${authUser.user_id}`)
+        ])
+        
+        // FastAPI returns { data: ..., message: ... } for these endpoints
+        setProfile(profileRes.data.data || profileRes.data)
+        setStats(statsRes.data.data || statsRes.data)
+      } catch (error) {
+        console.error("Failed to load profile data", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchProfileData()
+  }, [authUser])
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center mt-32 space-x-2">
+        <div className="w-4 h-4 rounded-full bg-primary-400 animate-bounce"></div>
+        <div className="w-4 h-4 rounded-full bg-primary-400 animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+        <div className="w-4 h-4 rounded-full bg-primary-400 animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+      </div>
+    )
+  }
+
+  if (!profile) {
+    return <div className="text-center mt-32 text-slate-400">Failed to load profile</div>
+  }
+
   return (
-    <div className="space-y-6">
-      <h1 className="text-3xl font-bold">Profile Settings</h1>
-      <div className="card">
-        <p className="text-gray-600">Profile information and settings</p>
+    <div className="space-y-6 max-w-6xl mx-auto">
+      <h1 className="text-3xl font-bold text-slate-100 flex items-center gap-3">
+        <User className="text-primary-400" size={32} />
+        Profile & Settings
+      </h1>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Profile Card */}
+        <div className="card bg-white/10 border-white/10 text-slate-100">
+          <div className="flex items-center gap-4 mb-6">
+            <div className="w-16 h-16 rounded-full bg-gradient-to-tr from-primary-600 to-accent-500 flex items-center justify-center text-2xl font-bold">
+              {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : 'U'}
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold">{profile.full_name}</h2>
+              <p className="text-sm text-slate-400">{profile.email}</p>
+            </div>
+          </div>
+          
+          <div className="space-y-4">
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <span className="text-xs uppercase text-slate-400 font-semibold flex items-center gap-2">
+                <BookOpen size={14} /> Course
+              </span>
+              <p className="mt-1 font-medium">{profile.course}</p>
+            </div>
+            
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <span className="text-xs uppercase text-slate-400 font-semibold flex items-center gap-2">
+                <Target size={14} /> Exam Target
+              </span>
+              <p className="mt-1 font-medium">{profile.exam_target} ({profile.exam_timeline})</p>
+            </div>
+
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <span className="text-xs uppercase text-slate-400 font-semibold flex items-center gap-2">
+                <Brain size={14} /> Current Level
+              </span>
+              <p className="mt-1 font-medium capitalize">{profile.current_level}</p>
+            </div>
+          </div>
+          
+          <div className="mt-6">
+            <button className="btn-secondary w-full" disabled>Edit Profile (Coming Soon)</button>
+          </div>
+        </div>
+
+        {/* Stats Card */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="card bg-white/10 border-white/10 text-slate-100">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Activity className="text-accent-400" size={20} /> Learning Statistics
+            </h2>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-4">
+                <div className="p-3 bg-primary-500/20 text-primary-300 rounded-lg">
+                  <BookOpen size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400 font-medium">Quizzes Completed</p>
+                  <p className="text-2xl font-bold">{stats?.total_quizzes_completed || 0}</p>
+                </div>
+              </div>
+              
+              <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-4">
+                <div className="p-3 bg-accent-500/20 text-accent-300 rounded-lg">
+                  <Clock size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400 font-medium">Hours Spent</p>
+                  <p className="text-2xl font-bold">{stats?.time_spent_hours || 0}</p>
+                </div>
+              </div>
+              
+              <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-4">
+                <div className="p-3 bg-green-500/20 text-green-400 rounded-lg">
+                  <Award size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400 font-medium">Topics Mastered</p>
+                  <p className="text-2xl font-bold">{stats?.topics_mastered || 0}</p>
+                </div>
+              </div>
+              
+              <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-4">
+                <div className="p-3 bg-red-500/20 text-red-400 rounded-lg">
+                  <Target size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400 font-medium">Weak Topics</p>
+                  <p className="text-2xl font-bold">{stats?.weak_topics || 0}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Subjects Grid */}
+          <div className="card bg-white/10 border-white/10 text-slate-100">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Brain className="text-primary-400" size={20} /> My Subjects
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              {profile.subjects && profile.subjects.map((sub: string, idx: number) => (
+                <span key={idx} className="px-4 py-2 bg-primary-500/10 text-primary-200 border border-primary-500/30 rounded-lg text-sm font-medium">
+                  {sub}
+                </span>
+              ))}
+              {(!profile.subjects || profile.subjects.length === 0) && (
+                <p className="text-slate-400 text-sm">No subjects selected.</p>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   )

@@ -62,9 +62,9 @@ export default function AdminPage() {
             </div>
           </div>
           <ul className="mt-3 space-y-1 text-sm text-slate-300 list-disc list-inside">
-            <li>Add real auth calls to /api/auth</li>
-            <li>Wire dashboards to /api/performance & /api/learning</li>
-            <li>Secure admin routes with role checks</li>
+            <li>Monitor API response times and throughput</li>
+            <li>Review user engagement and retention metrics</li>
+            <li>Analyze topic performance distributions</li>
           </ul>
         </div>
       </div>

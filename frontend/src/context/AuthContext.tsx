@@ -16,6 +16,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>
   register: (input: RegisterInput) => Promise<void>
   logout: () => void
+  updateUser: (updates: Partial<User>) => void
 }
 
 interface RegisterInput {
@@ -65,6 +66,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         email,
         password,
       })
+      if (data.success === false) {
+        throw new Error(data.error || data.message || 'Login failed')
+      }
       setToken(data.data.token)
       setUser({
         user_id: data.data.user_id,
@@ -95,6 +99,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         exam_timeline: input.examTimeline,
       }
       const { data } = await api.post('/api/auth/register', payload)
+      if (data.success === false) {
+        throw new Error(data.error || data.message || 'Registration failed')
+      }
       setToken(data.data.token)
       setUser({
         user_id: data.data.user_id,
@@ -115,8 +122,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }
 
+  const updateUser = (updates: Partial<User>) => {
+    setUser(prev => prev ? { ...prev, ...updates } : null)
+  }
+
   return (
-    <AuthContext.Provider value={{ token, user, loading, error, login, register, logout }}>
+    <AuthContext.Provider value={{ token, user, loading, error, login, register, logout, updateUser }}>
       {children}
     </AuthContext.Provider>
   )

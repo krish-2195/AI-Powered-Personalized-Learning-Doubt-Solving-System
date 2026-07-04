@@ -4,7 +4,6 @@ import Dashboard from './pages/Dashboard'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Learning from './pages/Learning'
-import QuizPage from './pages/QuizPage'
 import ChatPage from './pages/ChatPage'
 import ProfilePage from './pages/ProfilePage'
 import AnalyticsPage from './pages/AnalyticsPage'
@@ -29,7 +28,6 @@ function App() {
         <Route index element={isAuthenticated ? <Dashboard /> : redirect} />
         <Route path="dashboard" element={isAuthenticated ? <Dashboard /> : redirect} />
         <Route path="learning" element={isAuthenticated ? <Learning /> : redirect} />
-        <Route path="quiz/:quizId" element={isAuthenticated ? <QuizPage /> : redirect} />
         <Route path="chat" element={isAuthenticated ? <ChatPage /> : redirect} />
         <Route path="profile" element={isAuthenticated ? <ProfilePage /> : redirect} />
         <Route path="analytics" element={isAuthenticated ? <AnalyticsPage /> : redirect} />

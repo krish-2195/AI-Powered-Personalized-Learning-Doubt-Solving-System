@@ -113,6 +113,9 @@ export default function ChatPage() {
       setInput(location.state.prefill)
       // Optional: Clear state so it doesn't prefill again on refresh
       window.history.replaceState({}, document.title)
+    } else if (location.state?.generateQuiz && location.state?.topic) {
+      handleGenerateQuiz(location.state.topic)
+      window.history.replaceState({}, document.title)
     }
   }, [location.state])
 
@@ -170,17 +173,21 @@ export default function ChatPage() {
     }
   }
 
-  const handleGenerateQuiz = async () => {
+  const handleGenerateQuiz = async (topicOverride?: string) => {
     setError(null)
     setSelectedAnswers({})
+    const topic = topicOverride || detectedTopic
     try {
       const { data } = await api.post('/api/chat/generate-quiz', {
         user_id: userId,
-        topic: detectedTopic,
+        topic: topic,
         difficulty: 'medium',
         count: 5,
       })
       setQuizQuestions(data.data?.questions || data.questions || [])
+      if (topicOverride) {
+        setDetectedTopic(topicOverride)
+      }
       setActiveTab('quiz')
     } catch (err: any) {
       setError(err.message || 'Could not generate quiz')
@@ -208,7 +215,7 @@ export default function ChatPage() {
       api.post('/api/performance/submit', {
         user_id: userId,
         quiz_id: `quiz-${Date.now()}`,
-        topic_id: 1,
+        topic: detectedTopic,
         answers: answersPayload,
         difficulty_weight: 2.0
       }).catch(err => console.error("Failed to submit performance", err))
@@ -382,7 +389,7 @@ export default function ChatPage() {
               <div className="max-w-[850px] mx-auto pointer-events-auto">
                 <div className="flex flex-wrap gap-2.5 mb-4">
                   <button onClick={() => handleSend('Explain recursion simply')} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-primary-400 hover:text-primary-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><BrainCircuit size={14} className="text-primary-500"/> Explain Recursion</button>
-                  <button onClick={handleGenerateQuiz} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-accent-400 hover:text-accent-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><Target size={14} className="text-accent-500"/> Generate Quiz</button>
+                  <button onClick={() => handleGenerateQuiz()} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-accent-400 hover:text-accent-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><Target size={14} className="text-accent-500"/> Generate Quiz</button>
                   <button onClick={() => handleSend('Difference between DFS and BFS')} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-blue-400 hover:text-blue-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><BookOpen size={14} className="text-blue-500"/> DFS vs BFS</button>
                 </div>
                 

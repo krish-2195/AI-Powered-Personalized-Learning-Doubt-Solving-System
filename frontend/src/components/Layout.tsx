@@ -69,7 +69,7 @@ export default function Layout() {
             <div className="p-4 rounded-2xl bg-gradient-to-br from-primary-700 to-accent-600 text-white shadow-lg">
               <p className="text-sm opacity-90">Daily Quest</p>
               <p className="font-semibold mt-1">Finish 2 quizzes today</p>
-              <button className="btn-secondary mt-3 w-full bg-white/20 text-white border-white/30">Jump back in</button>
+              <button onClick={() => navigate('/chat')} className="btn-secondary mt-3 w-full bg-white/20 text-white border-white/30 hover:bg-white/30 transition-all cursor-pointer">Jump back in</button>
             </div>
 
             <button
