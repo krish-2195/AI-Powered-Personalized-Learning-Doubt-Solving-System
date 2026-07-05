@@ -1,83 +1,102 @@
-import { ShieldCheck, Activity, Server, RefreshCw, AlertTriangle } from 'lucide-react'
-import { useApiHealth } from '../hooks/useApiHealth'
+import { useState, useEffect } from 'react'
+import { ShieldCheck } from 'lucide-react'
+import api from '../lib/api'
+import DashboardTab from '../components/admin/DashboardTab'
+import UsersTab from '../components/admin/UsersTab'
+import ContentTab from '../components/admin/ContentTab'
 
 export default function AdminPage() {
-  const { data, isLoading, isError } = useApiHealth()
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'content'>('dashboard')
+  const [stats, setStats] = useState<any>(null)
+  const [activity, setActivity] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
 
-  const status = isLoading ? 'checking...' : isError ? 'unreachable' : data?.status || 'unknown'
-  const statusColor = isError || status !== 'healthy' ? 'text-amber-400' : 'text-accent-300'
-  const statusBg = isError || status !== 'healthy' ? 'bg-amber-500/15' : 'bg-accent-500/15'
+  useEffect(() => {
+    fetchStats()
+    fetchActivity()
+  }, [])
+
+  const fetchStats = async () => {
+    try {
+      setError(false)
+      const { data } = await api.get('/api/admin/stats')
+      setStats(data.data)
+    } catch (err) {
+      console.error("Failed to fetch admin stats", err)
+      setError(true)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleRetry = () => {
+    setLoading(true)
+    fetchStats()
+    fetchActivity()
+  }
+
+  const fetchActivity = async () => {
+    try {
+      const { data } = await api.get('/api/admin/activity')
+      setActivity(data.data)
+    } catch (err) {
+      console.error("Failed to fetch activity", err)
+    }
+  }
 
   return (
-    <div className="space-y-6 text-slate-100">
-      <div className="card bg-white/10 border-white/10 flex items-center justify-between">
-        <div>
-          <p className="text-sm text-slate-400">Control center</p>
-          <h1 className="text-3xl font-bold mt-1">Admin Portal</h1>
-          <p className="text-slate-400 mt-1">Monitor backend health and manage platform status.</p>
-        </div>
-        <div className="flex items-center gap-3">
-          <div className={`pill ${statusBg} border-white/10`}>Backend: <span className={statusColor}>{status}</span></div>
-          <RefreshCw className="text-white/70" size={18} />
+    <div className="space-y-6 pb-20 max-w-7xl mx-auto">
+      {/* Header */}
+      <div className="bg-slate-900 rounded-3xl p-8 border border-slate-700/50 shadow-2xl relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 blur-3xl rounded-full"></div>
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-white flex items-center gap-3">
+              <ShieldCheck className="text-primary-500" size={32} />
+              Admin Portal
+            </h1>
+            <p className="text-slate-400 mt-2 text-lg">Monitor platform health, AI models, and user activity.</p>
+          </div>
+          <div className="flex bg-slate-800/80 p-1.5 rounded-xl border border-slate-700 overflow-x-auto">
+            {['dashboard', 'users', 'content'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className={`px-6 py-2 rounded-lg font-semibold text-sm capitalize transition-all whitespace-nowrap ${activeTab === tab ? 'bg-primary-500 text-white shadow-lg' : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700/50'}`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="card bg-white/10 border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-primary-500/20 text-primary-200">
-              <ShieldCheck size={22} />
+      {loading ? (
+        <div className="flex justify-center p-20"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div></div>
+      ) : activeTab === 'dashboard' ? (
+        error || !stats ? (
+          <div className="bg-white p-10 rounded-2xl border border-red-200 text-center flex flex-col items-center">
+            <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mb-4">
+              <ShieldCheck size={32} />
             </div>
-            <div>
-              <p className="text-sm text-slate-400">API</p>
-              <p className="text-lg font-semibold">Health Status</p>
-            </div>
+            <h3 className="text-lg font-bold text-slate-800 mb-2">Failed to load Dashboard data</h3>
+            <p className="text-slate-500 mb-6 max-w-md">The database connection may have timed out while waking up. Please try again.</p>
+            <button 
+              onClick={handleRetry}
+              className="px-6 py-2 bg-primary-600 text-white font-bold rounded-lg hover:bg-primary-500 transition-colors"
+            >
+              Retry Connection
+            </button>
           </div>
-          <p className={`mt-3 font-semibold ${statusColor}`}>{status}</p>
-          <p className="text-sm text-slate-400">/health endpoint via React Query bridge.</p>
-        </div>
-
-        <div className="card bg-white/10 border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-accent-500/20 text-accent-200">
-              <Server size={22} />
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">Services</p>
-              <p className="text-lg font-semibold">Gateway Ready</p>
-            </div>
-          </div>
-          <p className="mt-3 text-sm text-slate-300">Base URL: {import.meta.env.VITE_API_URL || 'http://localhost:8000'}</p>
-          <p className="text-sm text-slate-400">Axios client configured with CORS-ready base URL.</p>
-        </div>
-
-        <div className="card bg-white/10 border-white/10">
-          <div className="flex items-center gap-3">
-            <div className="p-3 rounded-xl bg-glow-500/20 text-glow-200">
-              <Activity size={22} />
-            </div>
-            <div>
-              <p className="text-sm text-slate-400">Actions</p>
-              <p className="text-lg font-semibold">Next Steps</p>
-            </div>
-          </div>
-          <ul className="mt-3 space-y-1 text-sm text-slate-300 list-disc list-inside">
-            <li>Monitor API response times and throughput</li>
-            <li>Review user engagement and retention metrics</li>
-            <li>Analyze topic performance distributions</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="card bg-white/10 border-white/10">
-        <div className="flex items-center gap-2 mb-3">
-          <AlertTriangle size={18} className="text-amber-400" />
-          <h2 className="text-xl font-semibold">Debug Panel</h2>
-        </div>
-        <pre className="bg-black/40 border border-white/10 rounded-xl p-4 text-xs text-slate-200 overflow-x-auto">
-{JSON.stringify({ status, baseUrl: import.meta.env.VITE_API_URL || 'http://localhost:8000' }, null, 2)}
-        </pre>
-      </div>
+        ) : (
+          <DashboardTab stats={stats} activity={activity} />
+        )
+      ) : activeTab === 'users' ? (
+        <UsersTab />
+      ) : (
+        <ContentTab />
+      )}
     </div>
   )
 }

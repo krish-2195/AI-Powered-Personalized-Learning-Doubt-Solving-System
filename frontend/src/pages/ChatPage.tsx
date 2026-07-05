@@ -51,7 +51,9 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null)
   const [detectedTopic, setDetectedTopic] = useState<string>('General Problem Solving')
   const [contextData, setContextData] = useState<any>(null)
-  const [prediction, setPrediction] = useState<any>(null)
+  const [prediction, setPrediction] = useState<any>(null) // the general performance prediction
+  const [quizMLResult, setQuizMLResult] = useState<any>(null) // the specific quiz ML prediction
+  const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -176,6 +178,8 @@ export default function ChatPage() {
   const handleGenerateQuiz = async (topicOverride?: string) => {
     setError(null)
     setSelectedAnswers({})
+    setQuizMLResult(null)
+    setIsSubmittingQuiz(false)
     const topic = topicOverride || detectedTopic
     try {
       const { data } = await api.post('/api/chat/generate-quiz', {
@@ -204,23 +208,30 @@ export default function ChatPage() {
   const quizDone = quizQuestions.length > 0 && Object.keys(selectedAnswers).length === quizQuestions.length
 
   useEffect(() => {
-    if (quizDone) {
-      const answersPayload = quizQuestions.map((q, i) => ({
-        question_id: `q-${i}`,
-        selected_answer: q.options[selectedAnswers[i]],
-        time_taken_seconds: 30,
-        is_correct: selectedAnswers[i] === q.answer_index
-      }))
+    if (quizDone && !quizMLResult && !isSubmittingQuiz) {
+      setIsSubmittingQuiz(true)
 
-      api.post('/api/performance/submit', {
-        user_id: userId,
+      const payload = {
+        user_id: String(userId),
         quiz_id: `quiz-${Date.now()}`,
         topic: detectedTopic,
-        answers: answersPayload,
-        difficulty_weight: 2.0
-      }).catch(err => console.error("Failed to submit performance", err))
+        questions_count: quizQuestions.length,
+        correct_answers: quizScore,
+        time_taken_seconds: 120, // Estimated time taken
+        attempt_number: 1,
+        difficulty: "medium",
+        topic_id: null,
+        avg_time_per_question: 120 / quizQuestions.length
+      }
+
+      api.post('/api/learning/quiz/submit', payload)
+        .then(res => {
+          setQuizMLResult(res.data.ml_prediction || res.data)
+        })
+        .catch(err => console.error("Failed to submit quiz to ML Engine", err))
+        .finally(() => setIsSubmittingQuiz(false))
     }
-  }, [quizDone])
+  }, [quizDone, quizMLResult, isSubmittingQuiz, quizQuestions.length, quizScore, userId, detectedTopic])
 
   const handleSessionSummary = async () => {
     setError(null)
@@ -530,18 +541,33 @@ export default function ChatPage() {
                           </div>
                         </div>
                         
-                        {prediction && (
-                          <div className="bg-slate-800/50 border border-slate-700/50 p-4 rounded-xl mb-6 flex items-center justify-between">
-                            <div>
-                              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">ML Prediction</p>
-                              <p className={`font-bold ${prediction.predicted_score === 'Weak' ? 'text-red-400' : prediction.predicted_score === 'Strong' ? 'text-green-400' : 'text-amber-400'}`}>
-                                {prediction.predicted_score} Mastery
-                              </p>
+                        {quizMLResult && quizMLResult.prediction && (
+                          <div className="bg-slate-800/50 border border-slate-700/50 p-4 rounded-xl mb-6 space-y-4">
+                            <div className="flex items-center justify-between">
+                              <div>
+                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">ML Prediction</p>
+                                <p className={`font-bold ${quizMLResult.prediction === 'Weak' ? 'text-red-400' : quizMLResult.prediction === 'Strong' ? 'text-green-400' : 'text-amber-400'}`}>
+                                  {quizMLResult.prediction} Mastery
+                                </p>
+                              </div>
+                              <div className="text-right">
+                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Confidence</p>
+                                <p className="font-bold text-slate-100">{Math.round(quizMLResult.confidence * 100)}%</p>
+                              </div>
                             </div>
-                            <div className="text-right">
-                              <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Confidence</p>
-                              <p className="font-bold">{prediction.confidence}%</p>
-                            </div>
+                            
+                            {quizMLResult.reasons && quizMLResult.reasons.length > 0 && (
+                              <div className="pt-3 border-t border-slate-700/50">
+                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Reason</p>
+                                <p className="text-sm text-slate-300 italic">{quizMLResult.reasons[0]}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                        {isSubmittingQuiz && (
+                          <div className="flex items-center gap-3 text-slate-400 mb-6">
+                            <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                            <span className="text-sm">ML Engine is analyzing your performance...</span>
                           </div>
                         )}
                       </div>
@@ -549,13 +575,25 @@ export default function ChatPage() {
                       <div className="flex-1 w-full bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
                         <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Recommended Next Steps</p>
                         <div className="space-y-3 mb-6">
-                          <button className="w-full text-left bg-slate-800 hover:bg-slate-700 p-4 rounded-xl border border-slate-700 transition-colors flex items-center gap-3">
-                            <BookOpen className="text-blue-400" size={20} />
-                            <div>
-                              <p className="font-bold text-sm text-slate-200">Review {detectedTopic}</p>
-                              <p className="text-xs text-slate-400">Watch video lesson</p>
-                            </div>
-                          </button>
+                          {quizMLResult?.recommendations ? (
+                            quizMLResult.recommendations.map((rec: any, idx: number) => (
+                              <button key={idx} className="w-full text-left bg-slate-800 hover:bg-slate-700 p-4 rounded-xl border border-slate-700 transition-colors flex items-center gap-3">
+                                <BookOpen className="text-blue-400" size={20} />
+                                <div>
+                                  <p className="font-bold text-sm text-slate-200">{rec.action}</p>
+                                  <p className="text-xs text-slate-400">{rec.resource}</p>
+                                </div>
+                              </button>
+                            ))
+                          ) : (
+                            <button className="w-full text-left bg-slate-800 hover:bg-slate-700 p-4 rounded-xl border border-slate-700 transition-colors flex items-center gap-3">
+                              <BookOpen className="text-blue-400" size={20} />
+                              <div>
+                                <p className="font-bold text-sm text-slate-200">Review {detectedTopic}</p>
+                                <p className="text-xs text-slate-400">Watch recommended video lessons</p>
+                              </div>
+                            </button>
+                          )}
                         </div>
                         
                         <div className="pt-6 border-t border-slate-700/50">

@@ -11,12 +11,14 @@ import AdminPage from './pages/AdminPage'
 import { useAuth } from './context/AuthContext'
 
 function App() {
-  const { token } = useAuth()
+  const { token, user } = useAuth()
   const isAuthenticated = !!token
 
   const redirect = <Navigate to="/login" replace state={{ message: 'Please log in to continue.' }} />
-  const protectedLayout = isAuthenticated ? <Layout /> : redirect
-  const protectedAdmin = isAuthenticated ? <AdminPage /> : redirect
+  const protectedLayout = isAuthenticated 
+    ? (user?.role === 'admin' ? <Navigate to="/admin" replace /> : <Layout />)
+    : redirect
+  const protectedAdmin = isAuthenticated && user?.role === 'admin' ? <AdminPage /> : <Navigate to="/dashboard" replace />
 
   return (
     <Routes>

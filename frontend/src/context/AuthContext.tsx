@@ -6,6 +6,7 @@ interface User {
   email: string
   full_name: string
   streak_count: number
+  role: string
 }
 
 interface AuthContextValue {
@@ -13,8 +14,8 @@ interface AuthContextValue {
   user: User | null
   loading: boolean
   error: string | null
-  login: (email: string, password: string) => Promise<void>
-  register: (input: RegisterInput) => Promise<void>
+  login: (email: string, password: string) => Promise<User>
+  register: (input: RegisterInput) => Promise<User>
   logout: () => void
   updateUser: (updates: Partial<User>) => void
 }
@@ -58,6 +59,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [token, user])
 
+  useEffect(() => {
+    const verifySession = async () => {
+      if (token) {
+        try {
+          const { data } = await api.get('/api/auth/me')
+          if (data.success === false) {
+            logout()
+          } else if (data.data) {
+             // Sync latest role/streak on hard refresh
+             updateUser({
+               role: data.data.role,
+               streak_count: data.data.streak_count
+             })
+          }
+        } catch {
+          logout()
+        }
+      }
+    }
+    verifySession()
+  }, [])
+
   const login = async (email: string, password: string) => {
     setLoading(true)
     setError(null)
@@ -70,12 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error || data.message || 'Login failed')
       }
       setToken(data.data.token)
-      setUser({
+      const newUser = {
         user_id: data.data.user_id,
         email: data.data.email,
         full_name: data.data.full_name,
+        role: data.data.role || 'student',
         streak_count: data.data.streak_count || 0,
-      })
+      }
+      setUser(newUser)
+      return newUser
     } catch (err: any) {
       setError(err.message || 'Login failed')
       throw err
@@ -103,12 +129,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.error || data.message || 'Registration failed')
       }
       setToken(data.data.token)
-      setUser({
+      const newUser = {
         user_id: data.data.user_id,
         email: data.data.email,
         full_name: data.data.full_name,
+        role: data.data.role || 'student',
         streak_count: data.data.streak_count || 0,
-      })
+      }
+      setUser(newUser)
+      return newUser
     } catch (err: any) {
       setError(err.message || 'Registration failed')
       throw err

@@ -16,8 +16,12 @@ export default function Login() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
-      await login(formData.email, formData.password)
-      navigate('/dashboard')
+      const user = await login(formData.email, formData.password)
+      if (user.role === 'admin') {
+        navigate('/admin')
+      } else {
+        navigate('/dashboard')
+      }
     } catch {
       /* error handled in context */
     }
