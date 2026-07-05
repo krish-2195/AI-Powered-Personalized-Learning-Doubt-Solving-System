@@ -94,6 +94,7 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
         "user_id": new_user.id,
         "email": new_user.email,
         "full_name": new_user.full_name,
+        "role": new_user.role,
         "token": access_token
     }
     return success_response(data=user_data, message="User registered successfully")
@@ -122,6 +123,7 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         "user_id": user.id,
         "email": user.email,
         "full_name": user.full_name,
+        "role": user.role,
         "streak_count": user.profile.streak_count if user.profile else 0,
         "token": access_token
     }
@@ -159,7 +161,28 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         "exam_target": profile.exam_target if profile else None,
         "exam_timeline": profile.exam_timeline if profile else None,
         "streak_count": profile.streak_count if profile else 0,
-        "last_active_date": profile.last_active_date if profile else None
+        "last_active_date": profile.last_active_date if profile else None,
+        "role": user.role
     }
     
     return success_response(data=user_data, message="Profile fetched successfully")
+
+def get_current_admin(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """Return the authenticated admin user or raise 403."""
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    except JWTError:
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
+    
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+        
+    if user.role != "admin":
+        raise HTTPException(status_code=403, detail="Access Denied")
+        
+    return user
+

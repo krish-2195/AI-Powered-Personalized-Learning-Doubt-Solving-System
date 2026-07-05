@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func
+from sqlalchemy import func, case, literal
 from datetime import datetime
 from starlette.concurrency import run_in_threadpool
 
@@ -12,12 +12,13 @@ from backend.utils.response_formatter import success_response, error_response
 
 router = APIRouter()
 
-def calculate_exam_readiness(user_id: int, db: Session, total_topics: int) -> dict:
+def calculate_exam_readiness(quizzes: list, tp_counts: dict, study_sessions: int, total_topics: int) -> dict:
+    """
+    Optimized exam readiness using pre-fetched data (no additional DB queries).
+    """
     if total_topics == 0: 
         total_topics = 1
 
-    # 1. Quizzes and Accuracy
-    quizzes = db.query(QuizAttempt).filter(QuizAttempt.user_id == user_id).all()
     quiz_count = len(quizzes)
     
     if quiz_count == 0:
@@ -43,28 +44,18 @@ def calculate_exam_readiness(user_id: int, db: Session, total_topics: int) -> di
     unique_topics_attempted = len(set(q.topic_id for q in quizzes if q.topic_id))
     coverage = (unique_topics_attempted / total_topics) * 100
     
-    # 4. Mastery Ratio
-    topics_mastered = db.query(func.count(TopicPerformance.id)).filter(
-        TopicPerformance.user_id == user_id,
-        TopicPerformance.mastery_level == "Strong"
-    ).scalar() or 0
+    # 4. Mastery Ratio — use pre-fetched tp_counts
+    topics_mastered = tp_counts.get("strong", 0)
     mastery_ratio = (topics_mastered / total_topics) * 100
     
-    # 5. Weak Topic Ratio
-    weak_topics_count = db.query(func.count(TopicPerformance.id)).filter(
-        TopicPerformance.user_id == user_id,
-        TopicPerformance.mastery_level == "Weak"
-    ).scalar() or 0
-    
-    attempted_topics_count = db.query(func.count(TopicPerformance.id)).filter(
-        TopicPerformance.user_id == user_id
-    ).scalar() or 1
+    # 5. Weak Topic Ratio — use pre-fetched tp_counts
+    weak_topics_count = tp_counts.get("weak", 0)
+    attempted_topics_count = tp_counts.get("total", 1) or 1
     
     weak_ratio = weak_topics_count / attempted_topics_count
     weak_topic_score = max(0.0, 100.0 - (weak_ratio * 100))
     
-    # 6. Engagement (Dynamic)
-    study_sessions = db.query(LearningLog).filter(LearningLog.user_id == user_id).count()
+    # 6. Engagement (Dynamic) — use pre-fetched study_sessions
     engagement = min(100.0, (study_sessions * 5) + (quiz_count * 5))
     if engagement == 0:
         engagement = 75.0 # fallback
@@ -116,36 +107,62 @@ def calculate_exam_readiness(user_id: int, db: Session, total_topics: int) -> di
     }
 
 def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
-    # 1. Fetch User Profile for Streak
+    """
+    Optimized: fetches all dashboard data in 5-6 queries instead of ~19.
+    """
+    # ── QUERY 1: User Profile (1 query) ──
     profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
     if not profile:
         raise ValueError("User profile not found")
-        
-    # 3. Aggregate Performance Stats from PostgreSQL
-    quiz_attempts_count = db.query(QuizAttempt).filter(QuizAttempt.user_id == user_id).count()
-    is_new_user = quiz_attempts_count == 0
     
-    avg_score_query = db.query(func.avg(QuizAttempt.accuracy)).filter(QuizAttempt.user_id == user_id).scalar()
-    avg_score = float(avg_score_query) if avg_score_query else 0.0
+    # ── QUERY 2: All QuizAttempt aggregates in ONE query ──
+    # Combines: count, avg(accuracy), sum(time_taken) — was 4 separate queries
+    quiz_stats = db.query(
+        func.count(QuizAttempt.id).label("count"),
+        func.coalesce(func.avg(QuizAttempt.accuracy), 0).label("avg_accuracy"),
+        func.coalesce(func.sum(QuizAttempt.time_taken_seconds), 0).label("total_time")
+    ).filter(QuizAttempt.user_id == user_id).first()
     
-    topics_mastered = db.query(func.count(TopicPerformance.id)).filter(
-        TopicPerformance.user_id == user_id,
-        TopicPerformance.mastery_level == "Strong"
-    ).scalar() or 0       
+    quiz_count = quiz_stats.count or 0
+    avg_score = float(quiz_stats.avg_accuracy)
+    quiz_duration = int(quiz_stats.total_time)
+    is_new_user = quiz_count == 0
     
-    # Calculate Videos Watched
-    videos_watched = db.query(LearningLog).filter(
-        LearningLog.user_id == user_id,
-        LearningLog.activity_type == 'video',
-        LearningLog.completed == True
-    ).count()
+    # ── QUERY 3: All TopicPerformance counts in ONE query ──
+    # Combines: strong_count, weak_count, total_count — was 3 separate queries
+    tp_stats = db.query(
+        func.count(TopicPerformance.id).label("total"),
+        func.sum(case((TopicPerformance.mastery_level == "Strong", 1), else_=0)).label("strong"),
+        func.sum(case((TopicPerformance.mastery_level == "Weak", 1), else_=0)).label("weak")
+    ).filter(TopicPerformance.user_id == user_id).first()
     
-    # Calculate Study Hours
-    logs_duration = db.query(func.sum(LearningLog.duration_seconds)).filter(LearningLog.user_id == user_id).scalar() or 0
-    quiz_duration = db.query(func.sum(QuizAttempt.time_taken_seconds)).filter(QuizAttempt.user_id == user_id).scalar() or 0
+    topics_mastered = int(tp_stats.strong or 0)
+    tp_counts = {
+        "strong": int(tp_stats.strong or 0),
+        "weak": int(tp_stats.weak or 0),
+        "total": int(tp_stats.total or 0)
+    }
+    
+    # ── QUERY 4: All LearningLog stats in ONE query ──
+    # Combines: video_count, total_duration, session_count — was 3 separate queries
+    log_stats = db.query(
+        func.count(LearningLog.id).label("session_count"),
+        func.coalesce(func.sum(LearningLog.duration_seconds), 0).label("total_duration"),
+        func.sum(case(
+            (
+                (LearningLog.activity_type == 'video') & (LearningLog.completed == True),
+                1
+            ),
+            else_=0
+        )).label("videos_watched")
+    ).filter(LearningLog.user_id == user_id).first()
+    
+    videos_watched = int(log_stats.videos_watched or 0)
+    logs_duration = int(log_stats.total_duration or 0)
+    study_sessions = int(log_stats.session_count or 0)
     study_hours = round((logs_duration + quiz_duration) / 3600, 1)
 
-    # 4. Identify Today's Focus
+    # ── QUERY 5: Today's Focus (weak topics, limit 2) ──
     weak_topics = db.query(TopicPerformance).options(joinedload(TopicPerformance.topic)).filter(TopicPerformance.user_id == user_id)\
         .order_by(TopicPerformance.ewma_accuracy.asc()).limit(2).all()
         
@@ -154,7 +171,7 @@ def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
     else:
         today_focus = "General Review"
 
-    # 5. Fetch Recent Activity
+    # ── QUERY 6: Recent Activity (2 queries with eager loading) ──
     recent_activity = []
     recent_quizzes = db.query(QuizAttempt).options(joinedload(QuizAttempt.topic)).filter(QuizAttempt.user_id == user_id).order_by(QuizAttempt.timestamp.desc()).limit(5).all()
     recent_logs = db.query(LearningLog).options(joinedload(LearningLog.topic)).filter(LearningLog.user_id == user_id).order_by(LearningLog.timestamp.desc()).limit(5).all()
@@ -181,9 +198,16 @@ def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
     recent_activity.sort(key=lambda x: x["timestamp"], reverse=True)
     recent_activity = recent_activity[:5]
     
-    readiness = calculate_exam_readiness(user_id, db, total_topics)
+    # ── Exam Readiness (ZERO additional queries — reuses quiz data + tp_counts) ──
+    # Pass pre-fetched quizzes to avoid re-querying
+    quizzes_for_readiness = recent_quizzes  # We already have recent 5, but readiness needs ALL
+    if quiz_count > 5:
+        # Only re-fetch if we need more than the 5 we already have
+        quizzes_for_readiness = db.query(QuizAttempt).filter(QuizAttempt.user_id == user_id).all()
+    
+    readiness = calculate_exam_readiness(quizzes_for_readiness, tp_counts, study_sessions, total_topics)
 
-    # 7. Recommendations
+    # ── Recommendations ──
     try:
         recs_objects = recommendation_service.get_recommendations(db, user_id, 3)
         recs = [

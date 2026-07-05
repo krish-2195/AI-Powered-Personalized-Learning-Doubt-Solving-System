@@ -8,7 +8,7 @@ from backend.config import settings
 from database.models.postgres_models import Base
 
 # PostgreSQL setup
-POSTGRES_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}?sslmode=require&connect_timeout=5&options=-c%20statement_timeout=10000"
+POSTGRES_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}?sslmode=require&connect_timeout=15"
 SQLITE_FALLBACK_URL = "sqlite:///./learning_platform.db"
 
 
@@ -18,7 +18,20 @@ def _create_engine_with_fallback():
     max_retries = 3
     for attempt in range(max_retries):
         try:
-            pg_engine = create_engine(POSTGRES_URL, pool_pre_ping=True, pool_recycle=300)
+            pg_engine = create_engine(
+                POSTGRES_URL,
+                pool_pre_ping=True,
+                pool_recycle=1800,  # 30 minutes instead of 5 — fewer reconnections
+                pool_size=10,       # More persistent connections
+                max_overflow=5,     # Extra connections when busy
+                pool_timeout=30,    # Wait up to 30s for a connection
+                connect_args={
+                    "keepalives": 1,
+                    "keepalives_idle": 30,    # Send keepalive after 30s idle
+                    "keepalives_interval": 10, # Retry every 10s
+                    "keepalives_count": 5,     # Max retries before declaring dead
+                }
+            )
             with pg_engine.connect() as conn:
                 conn.execute(text("SELECT 1"))
             print("Connected to PostgreSQL successfully")

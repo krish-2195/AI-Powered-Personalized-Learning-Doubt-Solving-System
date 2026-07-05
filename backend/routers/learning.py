@@ -26,6 +26,9 @@ class QuizAttempt(BaseModel):
     correct_answers: int
     time_taken_seconds: int
     attempt_number: int
+    difficulty: str | None = None
+    topic_id: int | None = None
+    avg_time_per_question: float | None = None
 
 class DoubtQuery(BaseModel):
     user_id: str
