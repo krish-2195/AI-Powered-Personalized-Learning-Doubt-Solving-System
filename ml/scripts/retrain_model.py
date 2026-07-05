@@ -36,6 +36,12 @@ def retrain_model():
     real_rows = len(df_real)
     synth_rows = len(df_synth)
     
+    # Constraint: Only retrain if there's sufficient real data (unless we're starting from scratch)
+    production_model_path = os.path.join(models_dir, 'production.pkl')
+    if os.path.exists(production_model_path) and real_rows < 50:
+        print(f"Skipping retraining: insufficient real user records ({real_rows} < 50).")
+        return
+
     if synth_rows == 0:
         synth_rows = 1 # Avoid division by zero
         
@@ -84,8 +90,10 @@ def retrain_model():
     X_train, X_test, y_train, y_test = train_test_split(X, y_encoded, test_size=0.2, random_state=42)
     
     # Train
+    start_time = datetime.utcnow()
     model = RandomForestClassifier(n_estimators=100, random_state=42)
     model.fit(X_train, y_train)
+    training_time_seconds = (datetime.utcnow() - start_time).total_seconds()
     
     # Evaluate
     y_pred = model.predict(X_test)
@@ -118,15 +126,22 @@ def retrain_model():
     # Model Rollback Evaluation
     if accuracy >= prev_accuracy or prev_accuracy == 0.0:
         status = "Deployed"
-        model_path = os.path.join(models_dir, f'random_forest_{new_version}.pkl')
+        model_filename = f'random_forest_{new_version}.pkl'
+        model_path = os.path.join(models_dir, 'production.pkl')
+        artifact_path = os.path.join(artifacts_dir, model_filename)
+        
+        # Save to both production and artifacts
         joblib.dump(model, model_path)
+        joblib.dump(model, artifact_path)
         joblib.dump(label_encoder, os.path.join(models_dir, 'difficulty_label_encoder.pkl'))
         joblib.dump(feature_columns, os.path.join(models_dir, 'feature_columns.pkl'))
         print(f"Model saved to {model_path} and deployed.")
     else:
         status = "Rejected (worse accuracy)"
-        model_path = os.path.join(artifacts_dir, f'random_forest_{new_version}_rejected.pkl')
-        joblib.dump(model, model_path)
+        model_filename = f'random_forest_{new_version}_rejected.pkl'
+        model_path = os.path.join(artifacts_dir, model_filename)
+        artifact_path = model_path
+        joblib.dump(model, artifact_path)
         print(f"Model rejected due to lower accuracy ({accuracy:.4f} < {prev_accuracy:.4f}). Saved as rejected artifact.")
     
     # Record history
@@ -135,7 +150,11 @@ def retrain_model():
         "status": status,
         "dataset_strategy": dataset_strategy,
         "dataset_size": len(df_combined),
+        "synthetic_records": synth_rows if synth_rows != 1 else 0,
+        "real_records": real_rows,
         "training_date": datetime.utcnow().isoformat(),
+        "training_time_seconds": round(training_time_seconds, 2),
+        "model_path": artifact_path,
         "metrics": {
             "accuracy": float(accuracy),
             "precision": float(precision),

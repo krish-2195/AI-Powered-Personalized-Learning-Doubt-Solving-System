@@ -1,4 +1,5 @@
 import os
+import json
 import joblib
 import pandas as pd
 from sqlalchemy.orm import Session
@@ -7,9 +8,12 @@ from database.models.postgres_models import PerformanceRecord, TopicPerformance,
 from ml.services.knowledge_graph import knowledge_graph
 
 class MLService:
+    # LabelEncoder sorts alphabetically: Moderate=0, Strong=1, Weak=2
+    LABEL_MAP = {0: "Moderate", 1: "Strong", 2: "Weak", "0": "Moderate", "1": "Strong", "2": "Weak"}
+    
     def __init__(self):
         models_dir = os.path.join(os.path.dirname(__file__), '../models')
-        self.model_path = os.path.join(models_dir, 'random_forest_v2.pkl')
+        self.model_path = os.path.join(models_dir, 'production.pkl')
         self.features_path = os.path.join(models_dir, 'feature_columns.pkl')
         
         self.model = None
@@ -21,7 +25,19 @@ class MLService:
         if os.path.exists(self.model_path) and os.path.exists(self.features_path):
             self.model = joblib.load(self.model_path)
             self.feature_columns = joblib.load(self.features_path)
-            print("Loaded Random Forest v2 and feature columns successfully.")
+            
+            # Read version from history
+            self.active_version = "production"
+            history_path = os.path.join(os.path.dirname(__file__), '../artifacts/model_versions/history.json')
+            if os.path.exists(history_path):
+                try:
+                    with open(history_path, 'r') as f:
+                        history = json.load(f)
+                        if history:
+                            self.active_version = history[-1].get("version", "production")
+                except Exception:
+                    pass
+            print(f"Loaded {self.active_version} from production.pkl successfully.")
         else:
             print("Warning: ML model files not found. Predictions will run in fallback mode.")
             
@@ -91,7 +107,8 @@ class MLService:
             # 2. Extract Prediction & Confidence Score
             try:
                 preds = self.model.predict(df)
-                prediction_class = str(preds[0])
+                raw_pred = preds[0]
+                prediction_class = self.LABEL_MAP.get(raw_pred, self.LABEL_MAP.get(str(raw_pred), str(raw_pred)))
                 
                 if hasattr(self.model, "predict_proba"):
                     probs = self.model.predict_proba(df)
@@ -156,7 +173,7 @@ class MLService:
             topic_id=topic_id,
             prediction=prediction_class,
             confidence=confidence,
-            model_version="random_forest_v2" if self.model else "heuristic_fallback"
+            model_version=self.active_version if self.model else "heuristic_fallback"
         )
         db.add(history)
         
