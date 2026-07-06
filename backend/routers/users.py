@@ -98,43 +98,14 @@ def get_user_stats(user_id: str, db: Session = Depends(get_db), current_user = D
     except ValueError:
         return error_response("Invalid user_id format", "Invalid ID")
         
-    # Aggregate from LearningLog
-    total_videos = db.query(func.count(LearningLog.id)).filter(
-        LearningLog.user_id == uid, 
-        LearningLog.activity_type == 'video'
-    ).scalar() or 0
-    
-    time_spent_seconds = db.query(func.sum(LearningLog.duration_seconds)).filter(
-        LearningLog.user_id == uid
-    ).scalar() or 0
-    time_spent_hours = round(time_spent_seconds / 3600.0, 1)
-    
-    # Aggregate from QuizAttempt
-    total_quizzes = db.query(func.count(QuizAttempt.id)).filter(
-        QuizAttempt.user_id == uid
-    ).scalar() or 0
-    
-    avg_score = db.query(func.avg(QuizAttempt.accuracy)).filter(
-        QuizAttempt.user_id == uid
-    ).scalar() or 0.0
-    avg_score_percent = round(float(avg_score), 1)
-    
-    # Aggregate from TopicPerformance
-    topics_mastered = db.query(func.count(TopicPerformance.id)).filter(
-        TopicPerformance.user_id == uid,
-        TopicPerformance.mastery_level == 'Strong'  # Assuming Strong = Mastered
-    ).scalar() or 0
-    
-    weak_topics = db.query(func.count(TopicPerformance.id)).filter(
-        TopicPerformance.user_id == uid,
-        TopicPerformance.mastery_level == 'Weak'
-    ).scalar() or 0
+    from backend.services.student_stats import student_stats_service
+    shared_stats = student_stats_service.get_student_stats(db, int(uid))
     
     return success_response(data={
-        "total_videos_watched": total_videos,
-        "total_quizzes_completed": total_quizzes,
-        "average_score": avg_score_percent,
-        "time_spent_hours": time_spent_hours,
-        "topics_mastered": topics_mastered,
-        "weak_topics": weak_topics
+        "total_videos_watched": shared_stats["videos_watched"],
+        "total_quizzes_completed": shared_stats["quiz_count"],
+        "average_score": shared_stats["avg_accuracy"],
+        "time_spent_hours": shared_stats["study_hours"],
+        "topics_mastered": shared_stats["topics_mastered"],
+        "weak_topics": shared_stats["weak_topics_count"]
     }, message="Stats loaded successfully")

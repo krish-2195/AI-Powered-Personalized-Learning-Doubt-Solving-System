@@ -49,7 +49,7 @@ export default function AnalyticsPage() {
             <LineChart data={data.trend_data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
               <XAxis dataKey="date" stroke="#ffffff70" />
-              <YAxis stroke="#ffffff70" />
+              <YAxis domain={[0, 100]} stroke="#ffffff70" />
               <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none' }} />
               <Legend />
               <Line type="monotone" dataKey="accuracy" stroke="#0284c7" strokeWidth={2} />
@@ -64,7 +64,7 @@ export default function AnalyticsPage() {
             <BarChart data={data.topic_performance}>
               <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
               <XAxis dataKey="topic" stroke="#ffffff70" />
-              <YAxis stroke="#ffffff70" />
+              <YAxis domain={[0, 100]} stroke="#ffffff70" />
               <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: 'none' }} />
               <Bar dataKey="score" fill="#0284c7" />
             </BarChart>

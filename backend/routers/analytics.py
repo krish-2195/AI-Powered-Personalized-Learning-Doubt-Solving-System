@@ -25,7 +25,7 @@ def get_analytics_summary(user_id: int, db: Session = Depends(get_db), current_u
 
         # 2. Topic Performance (Bar Chart Data)
         all_performance = db.query(TopicPerformance).options(joinedload(TopicPerformance.topic)).filter(TopicPerformance.user_id == user_id).all()
-        topic_performance_data = [{"topic": p.topic.name, "score": round(p.ewma_accuracy * 100)} for p in all_performance if p.topic]
+        topic_performance_data = [{"topic": p.topic.name, "score": round(p.ewma_accuracy)} for p in all_performance if p.topic]
 
         # 3. Performance Trend over the last 5 weeks (Line Chart Data)
         trend_data = []
@@ -42,7 +42,7 @@ def get_analytics_summary(user_id: int, db: Session = Depends(get_db), current_u
             ).all()
             
             if quizzes_this_week:
-                avg_acc = sum(q.accuracy * 100 for q in quizzes_this_week) / len(quizzes_this_week)
+                avg_acc = sum(q.accuracy for q in quizzes_this_week) / len(quizzes_this_week)
                 # Count unique topics
                 topics_count = len(set(q.topic_id for q in quizzes_this_week if q.topic_id))
             else:
