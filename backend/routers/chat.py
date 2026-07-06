@@ -25,6 +25,7 @@ class QuizGenerateRequest(BaseModel):
     topic: str
     difficulty: str = "medium"
     count: int = 5
+    quiz_type: str = "hybrid"
 
 @router.post("/message")
 async def ask_ai_tutor(payload: ChatMessage, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
@@ -74,30 +75,30 @@ async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_
     Checks the PostgreSQL QuestionBank first. 
     If not enough questions exist, uses OpenAI as a fallback dynamic generator.
     """
-    # 1. Check PostgreSQL Database first
-    existing_questions = db.query(QuestionBank).join(Topic).filter(
-        Topic.name.ilike(f"%{payload.topic}%")
-    ).limit(payload.count).all()
-    
-    if len(existing_questions) >= payload.count:
-        # We have enough static questions in the bank
-        quiz_data = []
-        for q in existing_questions:
-            options = [q.option_a, q.option_b, q.option_c, q.option_d]
-            try:
-                answer_index = options.index(q.correct_answer)
-            except ValueError:
-                answer_index = 0
-                
-            quiz_data.append({
-                "question": q.question,
-                "options": options,
-                "answer_index": answer_index,
-                "explanation": q.explanation
-            })
-        return success_response(data={"topic": payload.topic, "source": "postgres", "questions": quiz_data})
+    # 1. Check PostgreSQL Database if not strictly AI
+    if payload.quiz_type in ["standard", "hybrid"]:
+        existing_questions = db.query(QuestionBank).join(Topic).filter(
+            Topic.name.ilike(f"%{payload.topic}%")
+        ).limit(payload.count).all()
         
-    # 2. Fallback: OpenAI Dynamic Generation
+        if payload.quiz_type == "standard" or len(existing_questions) >= payload.count:
+            quiz_data = []
+            for q in existing_questions:
+                options = [q.option_a, q.option_b, q.option_c, q.option_d]
+                try:
+                    answer_index = options.index(q.correct_answer)
+                except ValueError:
+                    answer_index = 0
+                    
+                quiz_data.append({
+                    "question": q.question,
+                    "options": options,
+                    "answer_index": answer_index,
+                    "explanation": q.explanation
+                })
+            return success_response(data={"topic": payload.topic, "source": "postgres", "questions": quiz_data})
+            
+    # 2. Dynamic Generation using LLM
     prompt = (
         f"Generate a {payload.count} question multiple choice quiz on the topic of {payload.topic} at a {payload.difficulty} difficulty. "
         "Output strictly as a JSON array of objects with keys: 'question', 'options' (array of 4 strings), 'answer_index' (0-3), and 'explanation'. "

@@ -175,7 +175,7 @@ export default function ChatPage() {
     }
   }
 
-  const handleGenerateQuiz = async (topicOverride?: string) => {
+  const handleGenerateQuiz = async (topicOverride?: string, quizType: 'standard' | 'ai' | 'hybrid' = 'hybrid') => {
     setError(null)
     setSelectedAnswers({})
     setQuizMLResult(null)
@@ -187,6 +187,7 @@ export default function ChatPage() {
         topic: topic,
         difficulty: 'medium',
         count: 5,
+        quiz_type: quizType
       })
       setQuizQuestions(data.data?.questions || data.questions || [])
       if (topicOverride) {
@@ -400,7 +401,8 @@ export default function ChatPage() {
               <div className="max-w-[850px] mx-auto pointer-events-auto">
                 <div className="flex flex-wrap gap-2.5 mb-4">
                   <button onClick={() => handleSend('Explain recursion simply')} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-primary-400 hover:text-primary-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><BrainCircuit size={14} className="text-primary-500"/> Explain Recursion</button>
-                  <button onClick={() => handleGenerateQuiz()} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-accent-400 hover:text-accent-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><Target size={14} className="text-accent-500"/> Generate Quiz</button>
+                  <button onClick={() => handleGenerateQuiz(undefined, 'standard')} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-green-400 hover:text-green-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><BookOpen size={14} className="text-green-500"/> Standard Quiz (Fast)</button>
+                  <button onClick={() => handleGenerateQuiz(undefined, 'ai')} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-accent-400 hover:text-accent-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><Target size={14} className="text-accent-500"/> AI Quiz (Personalized)</button>
                   <button onClick={() => handleSend('Difference between DFS and BFS')} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-blue-400 hover:text-blue-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><BookOpen size={14} className="text-blue-500"/> DFS vs BFS</button>
                 </div>
                 
@@ -733,7 +735,7 @@ export default function ChatPage() {
                           <div className="mt-2 text-xs text-amber-200/80">
                             <p>Accuracy: {contextData.stats?.averageScore || 0}%</p>
                             {prediction.reasons && prediction.reasons.length > 0 && (
-                                <p className="mt-1 font-semibold text-amber-300/90">Recommendation: Review {prediction.reasons[0].toLowerCase()}</p>
+                                <p className="mt-1 font-semibold text-amber-300/90">Recommendation: {prediction.reasons[0]}</p>
                             )}
                           </div>
                         )}
