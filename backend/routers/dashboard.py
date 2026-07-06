@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session, joinedload
-from sqlalchemy import func, case, literal
 from datetime import datetime
 from starlette.concurrency import run_in_threadpool
 
@@ -11,100 +10,6 @@ from ml.services.recommendation import recommendation_service
 from backend.utils.response_formatter import success_response, error_response
 
 router = APIRouter()
-
-def calculate_exam_readiness(quizzes: list, tp_counts: dict, study_sessions: int, total_topics: int) -> dict:
-    """
-    Optimized exam readiness using pre-fetched data (no additional DB queries).
-    """
-    if total_topics == 0: 
-        total_topics = 1
-
-    quiz_count = len(quizzes)
-    
-    if quiz_count == 0:
-        return {
-            "score": 0.0, 
-            "label": "Not enough data", 
-            "confidence": "Low Confidence", 
-            "reason": "No quizzes taken yet. Complete at least 5 quizzes for a reliable prediction.",
-            "metrics": {"quiz_count": 0, "unique_topics": 0, "study_sessions": 0}
-        }
-        
-    avg_accuracy = sum(q.accuracy for q in quizzes) / quiz_count
-    
-    # 2. Consistency (Standard Deviation)
-    if quiz_count < 2:
-        consistency = 50.0
-    else:
-        variance = sum((q.accuracy - avg_accuracy) ** 2 for q in quizzes) / quiz_count
-        std_dev = variance ** 0.5
-        consistency = max(0.0, 100.0 - (std_dev * 2))
-        
-    # 3. Curriculum Coverage (Unique topics attempted)
-    unique_topics_attempted = len(set(q.topic_id for q in quizzes if q.topic_id))
-    coverage = (unique_topics_attempted / total_topics) * 100
-    
-    # 4. Mastery Ratio — use pre-fetched tp_counts
-    topics_mastered = tp_counts.get("strong", 0)
-    mastery_ratio = (topics_mastered / total_topics) * 100
-    
-    # 5. Weak Topic Ratio — use pre-fetched tp_counts
-    weak_topics_count = tp_counts.get("weak", 0)
-    attempted_topics_count = tp_counts.get("total", 1) or 1
-    
-    weak_ratio = weak_topics_count / attempted_topics_count
-    weak_topic_score = max(0.0, 100.0 - (weak_ratio * 100))
-    
-    # 6. Engagement (Dynamic) — use pre-fetched study_sessions
-    engagement = min(100.0, (study_sessions * 5) + (quiz_count * 5))
-    if engagement == 0:
-        engagement = 75.0 # fallback
-
-    # Calculate final score
-    score = (
-        (0.30 * avg_accuracy) +
-        (0.25 * mastery_ratio) +
-        (0.20 * coverage) +
-        (0.10 * consistency) +
-        (0.10 * engagement) +
-        (0.05 * weak_topic_score)
-    )
-    
-    if score >= 80:
-        label = "High readiness"
-    elif score >= 60:
-        label = "Moderate readiness"
-    else:
-        label = "Needs improvement"
-
-    # Evidence Score & Confidence
-    evidence_score = (
-        (min(quiz_count, 10) / 10) * 40 +
-        (min(unique_topics_attempted, 5) / 5) * 30 +
-        (min(study_sessions, 5) / 5) * 30
-    )
-    
-    if evidence_score < 50:
-        confidence = "Low Confidence"
-        reason = f"Complete more quizzes for a reliable prediction."
-    elif evidence_score < 80:
-        confidence = "Medium Confidence"
-        reason = f"Keep practicing to reach high confidence."
-    else:
-        confidence = "High Confidence"
-        reason = f"Highly reliable prediction."
-
-    return {
-        "score": round(score, 1),
-        "label": label,
-        "confidence": confidence,
-        "reason": reason,
-        "metrics": {
-            "quiz_count": quiz_count,
-            "unique_topics": unique_topics_attempted,
-            "study_sessions": study_sessions
-        }
-    }
 
 def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
     # ── QUERY 5: Today's Focus (weak topics, limit 2) ──
@@ -178,6 +83,11 @@ def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
     from backend.services.student_stats import student_stats_service
     shared_stats = student_stats_service.get_student_stats(db, user_id)
 
+    # Fetch exam_date for dynamic "Exam in X days" badge
+    profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+    exam_date_iso = profile.exam_date.isoformat() if profile and profile.exam_date else None
+    exam_target = profile.exam_target if profile else None
+
     return {
         "profile_streak": shared_stats["profile_streak"],
         "is_new_user": shared_stats["quiz_count"] == 0,
@@ -189,7 +99,9 @@ def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
         "recent_activity": recent_activity,
         "readiness": shared_stats["exam_readiness"],
         "recs": recs,
-        "prerequisite_path": prerequisite_path
+        "prerequisite_path": prerequisite_path,
+        "exam_date": exam_date_iso,
+        "exam_target": exam_target
     }
 
 @router.get("/")

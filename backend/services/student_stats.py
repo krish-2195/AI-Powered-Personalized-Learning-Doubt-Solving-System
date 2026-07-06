@@ -141,16 +141,24 @@ class StudentStatisticsService:
             (min(study_sessions, 5) / 5) * 30
         )
         
-        if evidence_score < 50: confidence = "Low"
-        elif evidence_score < 80: confidence = "Medium"
-        else: confidence = "High"
+        if evidence_score < 50:
+            confidence = "Low"
+            reason = f"Based on {quiz_count} quizzes across {unique_topics_attempted} topics. Complete more quizzes for a reliable prediction."
+        elif evidence_score < 80:
+            confidence = "Medium"
+            reason = f"Based on {quiz_count} quizzes across {unique_topics_attempted} topics. Keep practicing to reach high confidence."
+        else:
+            confidence = "High"
+            reason = f"Highly reliable prediction based on {quiz_count} quizzes across {unique_topics_attempted} topics."
 
         return {
             "score": round(score, 1),
             "label": label,
             "confidence": confidence,
+            "reason": reason,
             "metrics": {
                 "accuracy": round(avg_accuracy, 1),
+                "mastery_ratio": round(mastery_ratio, 1),
                 "coverage": round(coverage, 1),
                 "consistency": round(consistency, 1),
                 "engagement": round(engagement, 1),

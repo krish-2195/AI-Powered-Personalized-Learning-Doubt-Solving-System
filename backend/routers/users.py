@@ -104,8 +104,9 @@ def get_user_stats(user_id: str, db: Session = Depends(get_db), current_user = D
     return success_response(data={
         "total_videos_watched": shared_stats["videos_watched"],
         "total_quizzes_completed": shared_stats["quiz_count"],
-        "average_score": shared_stats["avg_accuracy"],
+        "average_score": round(shared_stats["avg_accuracy"], 1),
         "time_spent_hours": shared_stats["study_hours"],
         "topics_mastered": shared_stats["topics_mastered"],
-        "weak_topics": shared_stats["weak_topics_count"]
+        "weak_topics": shared_stats["weak_topics_count"],
+        "exam_readiness": shared_stats["exam_readiness"]
     }, message="Stats loaded successfully")

@@ -43,13 +43,13 @@ class AITutorService:
 
         # 3. Inject Recent Quiz
         recent_quiz = db.query(QuizAttempt).filter(QuizAttempt.user_id == user_id).order_by(QuizAttempt.timestamp.desc()).first()
-        if recent_quiz:
+        if recent_quiz and recent_quiz.accuracy is not None:
             prompt += f"\n[Recent Quiz]: The student recently scored {recent_quiz.accuracy:.1f}% on their last quiz.\n"
             
         # 4. Inject Recommendations
         recs = recommendation_service.get_recommendations(db, user_id, top_n=2)
         if recs:
-            rec_titles = [r.title for r in recs]
+            rec_titles = [r["content"].title for r in recs]
             prompt += f"\n[Current Recommendations]: {', '.join(rec_titles)}. You may suggest these resources if they struggle.\n"
             
         # 5. Inject Learning Session

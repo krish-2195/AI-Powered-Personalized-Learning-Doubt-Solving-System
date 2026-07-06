@@ -193,15 +193,16 @@ def get_next_steps(user_id: str, db: Session = Depends(get_db), current_user = D
     
     next_steps = []
     for rec in recommendations:
-        topic_name = rec.topic.name if rec.topic else "Unknown"
+        content_obj = rec["content"]
+        topic_name = content_obj.topic.name if content_obj.topic else "Unknown"
         next_steps.append(
             NextStep(
                 topic=topic_name,
-                rationale="Recommended based on your learning profile and weak topics.",
-                confidence=0.85, # Mocked confidence for this endpoint
+                rationale=rec["reason"],
+                confidence=rec["match_score"] / 100.0,
                 prerequisites_met=True,
-                recommended_resources=[rec.title],
-                estimated_time_minutes=rec.duration_minutes or 15,
+                recommended_resources=[content_obj.title],
+                estimated_time_minutes=content_obj.duration_minutes or 15,
                 path=[]
             )
         )

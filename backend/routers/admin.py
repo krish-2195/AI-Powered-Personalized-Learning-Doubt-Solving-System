@@ -33,7 +33,7 @@ def get_admin_stats(db: Session = Depends(get_db)):
         total_topics = db.query(Topic).count()
         total_questions = db.query(QuestionBank).count()
         total_videos = db.query(Content).filter(Content.content_type == 'video').count()
-        total_articles = db.query(Content).filter(Content.content_type == 'article').count()
+        total_study_materials = db.query(Content).filter(Content.content_type == 'study-material').count()
         total_quizzes = db.query(QuizAttempt).count()
         
         # ML Stats from DB
@@ -49,11 +49,13 @@ def get_admin_stats(db: Session = Depends(get_db)):
         
         # ML Stats from history.json
         ml_stats = {}
+        ml_history_data = []
         history_path = os.path.join(os.path.dirname(__file__), '../../ml/artifacts/model_versions/history.json')
         if os.path.exists(history_path):
             with open(history_path, 'r') as f:
                 history = json.load(f)
                 if history:
+                    ml_history_data = history
                     latest = history[-1]
                     ml_stats = {
                         "version": latest.get("version", "unknown"),
@@ -80,7 +82,7 @@ def get_admin_stats(db: Session = Depends(get_db)):
                 "total_topics": total_topics,
                 "total_questions": total_questions,
                 "total_videos": total_videos,
-                "total_articles": total_articles,
+                "total_study_materials": total_study_materials,
                 "total_quizzes": total_quizzes,
             },
             "ml": {
@@ -98,7 +100,8 @@ def get_admin_stats(db: Session = Depends(get_db)):
                 "total_predictions": total_predictions,
                 "avg_confidence": round(avg_confidence * 100, 2),
                 "weak_predictions": weak_predictions,
-                "strong_predictions": strong_predictions
+                "strong_predictions": strong_predictions,
+                "history": ml_history_data
             },
             "recommendations": {
                 "total": total_recommendations,
@@ -113,16 +116,28 @@ def get_admin_stats(db: Session = Depends(get_db)):
     except Exception as e:
         return error_response(str(e), "Failed to fetch stats")
 
+from sqlalchemy.orm import joinedload
+
 @router.get("/users")
-def get_all_users(db: Session = Depends(get_db)):
+def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Fetch all users and their enriched profile info."""
     try:
-        users = db.query(User).all()
+        users = db.query(User).options(joinedload(User.profile)).offset(skip).limit(limit).all()
+        user_ids = [u.id for u in users]
+        
+        quiz_counts = dict(db.query(QuizAttempt.user_id, func.count(QuizAttempt.id)).filter(QuizAttempt.user_id.in_(user_ids)).group_by(QuizAttempt.user_id).all())
+        
+        readiness_records = db.query(ExamReadiness).filter(ExamReadiness.user_id.in_(user_ids)).order_by(ExamReadiness.id.desc()).all()
+        readiness_dict = {}
+        for r in readiness_records:
+            if r.user_id not in readiness_dict:
+                readiness_dict[r.user_id] = r.readiness_level
+                
         user_list = []
         for u in users:
             profile = u.profile
-            readiness = db.query(ExamReadiness).filter(ExamReadiness.user_id == u.id).order_by(ExamReadiness.id.desc()).first()
-            quizzes = db.query(QuizAttempt).filter(QuizAttempt.user_id == u.id).count()
+            quizzes = quiz_counts.get(u.id, 0)
+            readiness = readiness_dict.get(u.id, "N/A")
             
             user_list.append({
                 "user_id": u.id,
@@ -130,7 +145,7 @@ def get_all_users(db: Session = Depends(get_db)):
                 "email": u.email,
                 "course": profile.course if profile else "N/A",
                 "streak_count": profile.streak_count if profile else 0,
-                "readiness": readiness.readiness_level if readiness else "N/A",
+                "readiness": readiness,
                 "total_quizzes": quizzes,
                 "last_active_date": profile.last_active_date.strftime("%Y-%m-%d") if profile and profile.last_active_date else "Never",
                 "status": "Active" if u.is_active else "Disabled"
@@ -198,55 +213,61 @@ def get_videos(db: Session = Depends(get_db)):
                 "title": v.title,
                 "topic": topic_name,
                 "difficulty": v.difficulty,
-                "duration": v.duration_minutes or 0,
-                "created_at": v.created_at.strftime("%Y-%m-%d") if v.created_at else "N/A"
+                "duration": v.duration_minutes or 0
             })
         return success_response(data=data, message="Videos fetched successfully")
     except Exception as e:
         return error_response(str(e), "Failed to fetch videos")
 
-@router.get("/content/articles")
-def get_articles(db: Session = Depends(get_db)):
-    """Fetch all articles for admin content management."""
+@router.get("/content/study-materials")
+def get_study_materials(db: Session = Depends(get_db)):
+    """Fetch all study materials for admin content management."""
     try:
-        articles = db.query(Content).filter(Content.content_type == 'article').all()
+        materials = db.query(Content).filter(Content.content_type == 'study-material').all()
         data = []
-        for a in articles:
+        for a in materials:
             topic_name = a.topic.name if a.topic else "Uncategorized"
             data.append({
                 "id": a.id,
                 "title": a.title,
                 "topic": topic_name,
                 "difficulty": a.difficulty,
-                "duration": a.duration_minutes or 0,
-                "created_at": a.created_at.strftime("%Y-%m-%d") if a.created_at else "N/A"
+                "duration": a.duration_minutes or 0
             })
-        return success_response(data=data, message="Articles fetched successfully")
+        return success_response(data=data, message="Study materials fetched successfully")
     except Exception as e:
-        return error_response(str(e), "Failed to fetch articles")
+        return error_response(str(e), "Failed to fetch study materials")
 
 @router.get("/activity")
 def get_recent_activity(db: Session = Depends(get_db)):
     """Fetch recent activity timeline."""
     try:
         # For demo purposes, we will synthesize a feed from Quizzes and Predictions
-        recent_quizzes = db.query(QuizAttempt).order_by(QuizAttempt.timestamp.desc()).limit(10).all()
+        recent_quizzes = db.query(QuizAttempt).options(
+            joinedload(QuizAttempt.user),
+            joinedload(QuizAttempt.topic)
+        ).order_by(QuizAttempt.timestamp.desc()).limit(10).all()
         feed = []
         for q in recent_quizzes:
             user_name = q.user.full_name if q.user else "Unknown User"
             topic_name = q.topic.name if q.topic else "a Quiz"
             
-            # Did this quiz generate a prediction?
             prediction = db.query(PredictionHistory).filter(PredictionHistory.user_id == q.user_id).order_by(PredictionHistory.timestamp.desc()).first()
-            pred_text = ""
+            pred_val = "N/A"
+            conf_val = "N/A"
             if prediction and prediction.timestamp >= q.timestamp:
-                pred_text = f" -> Model Prediction: {prediction.prediction} ({round(prediction.confidence*100)}%)"
+                pred_val = prediction.prediction
+                conf_val = f"{round(prediction.confidence*100)}%"
 
             feed.append({
                 "id": f"q_{q.id}",
                 "timestamp": q.timestamp.isoformat(),
-                "message": f"{user_name} completed {topic_name}{pred_text}",
-                "type": "quiz"
+                "type": "quiz",
+                "student": user_name,
+                "topic": topic_name,
+                "prediction": pred_val,
+                "confidence": conf_val,
+                "message": f"{user_name} completed {topic_name}"
             })
             
         # Add a mock system event to show model deployment

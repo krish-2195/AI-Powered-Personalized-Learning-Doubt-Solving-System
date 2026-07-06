@@ -16,10 +16,11 @@ def get_personalized_recommendations(user_id: int, top_n: int = 10, db: Session 
     adjusted dynamically by Knowledge Graph dependencies.
     """
     try:
-        recommended_content = recommendation_engine.get_recommendations(db, user_id, top_n)
+        recommended_content = recommendation_service.get_recommendations(db, user_id, top_n)
         
         results = []
-        for c in recommended_content:
+        for rec in recommended_content:
+            c = rec["content"]
             results.append({
                 "resource_id": c.id,
                 "type": c.content_type,
@@ -27,7 +28,9 @@ def get_personalized_recommendations(user_id: int, top_n: int = 10, db: Session 
                 "topic": c.topic.name if c.topic else "General",
                 "difficulty": c.difficulty,
                 "estimated_time_minutes": c.duration_minutes,
-                "url": c.url
+                "url": c.url,
+                "match_score": rec["match_score"],
+                "reason": rec["reason"]
             })
             
         return success_response(data=results, message="Recommendations generated successfully")
