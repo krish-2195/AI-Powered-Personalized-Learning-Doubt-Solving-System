@@ -94,14 +94,14 @@ export default function ProfilePage() {
           </div>
         </div>
 
-        {/* Stats Card */}
+        {/* Stats & Readiness */}
         <div className="lg:col-span-2 space-y-6">
           <div className="card bg-white/10 border-white/10 text-slate-100">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Activity className="text-accent-400" size={20} /> Learning Statistics
             </h2>
             
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
               <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-4">
                 <div className="p-3 bg-primary-500/20 text-primary-300 rounded-lg">
                   <BookOpen size={24} />
@@ -121,7 +121,17 @@ export default function ProfilePage() {
                   <p className="text-2xl font-bold">{stats?.time_spent_hours || 0}</p>
                 </div>
               </div>
-              
+
+              <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-4">
+                <div className="p-3 bg-blue-500/20 text-blue-400 rounded-lg">
+                  <Activity size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400 font-medium">Average Score</p>
+                  <p className="text-2xl font-bold">{stats?.average_score || 0}%</p>
+                </div>
+              </div>
+
               <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-4">
                 <div className="p-3 bg-green-500/20 text-green-400 rounded-lg">
                   <Award size={24} />
@@ -141,7 +151,57 @@ export default function ProfilePage() {
                   <p className="text-2xl font-bold">{stats?.weak_topics || 0}</p>
                 </div>
               </div>
+
+              <div className="p-4 bg-white/5 rounded-xl border border-white/10 flex items-center gap-4">
+                <div className="p-3 bg-purple-500/20 text-purple-400 rounded-lg">
+                  <BookOpen size={24} />
+                </div>
+                <div>
+                  <p className="text-sm text-slate-400 font-medium">Videos Watched</p>
+                  <p className="text-2xl font-bold">{stats?.total_videos_watched || 0}</p>
+                </div>
+              </div>
             </div>
+          </div>
+
+          {/* Exam Readiness */}
+          <div className="card bg-white/10 border-white/10 text-slate-100">
+            <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
+              <Brain className="text-primary-400" size={20} /> Exam Readiness
+            </h2>
+            {stats?.exam_readiness?.label === "Not enough data" ? (
+              <div className="text-center p-6 bg-white/5 rounded-xl border border-white/10">
+                <p className="text-3xl mb-2">🧊</p>
+                <p className="text-amber-300 font-semibold text-sm">Cold Start Detected</p>
+                <p className="text-slate-400 text-sm mt-1">{stats.exam_readiness.reason}</p>
+              </div>
+            ) : (
+              <div className="flex flex-col md:flex-row items-center gap-6">
+                <div className="relative w-28 h-28 shrink-0">
+                  <div
+                    className="w-full h-full rounded-full flex items-center justify-center"
+                    style={{
+                      background: `conic-gradient(${(stats?.exam_readiness?.score < 50 ? '#ef4444' : stats?.exam_readiness?.score < 75 ? '#fbbf24' : '#22c55e')} ${stats?.exam_readiness?.score || 0}%, #1f2937 0)`
+                    }}
+                  >
+                    <div className="w-[78%] h-[78%] rounded-full bg-[#0f172a] flex items-center justify-center border border-white/10">
+                      <span className="text-2xl font-bold">{stats?.exam_readiness?.score || 0}%</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex-1 space-y-2">
+                  <p className="text-lg font-semibold">{stats?.exam_readiness?.label}</p>
+                  <div className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium border ${
+                    stats?.exam_readiness?.confidence === 'Low' ? 'bg-red-500/20 text-red-400 border-red-500/30' :
+                    stats?.exam_readiness?.confidence === 'Medium' ? 'bg-amber-500/20 text-amber-400 border-amber-500/30' :
+                    'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                  }`}>
+                    {stats?.exam_readiness?.confidence === 'Low' ? '🔴' : stats?.exam_readiness?.confidence === 'Medium' ? '🟡' : '🟢'} {stats?.exam_readiness?.confidence} Confidence
+                  </div>
+                  <p className="text-sm text-slate-400">{stats?.exam_readiness?.reason}</p>
+                </div>
+              </div>
+            )}
           </div>
           
           {/* Subjects Grid */}

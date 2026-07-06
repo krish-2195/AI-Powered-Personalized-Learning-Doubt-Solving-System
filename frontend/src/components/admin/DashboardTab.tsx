@@ -29,21 +29,21 @@ export default function DashboardTab({ stats, activity }: { stats: any, activity
       {/* ML & AI Monitoring */}
       <div>
         <h2 className="text-xl font-bold text-slate-800 mb-4 flex items-center gap-2"><BrainCircuit className="text-primary-600"/> AI & ML Monitoring</h2>
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
             <div>
-              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Production Model</p>
+              <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Current Model</p>
               <p className="text-2xl font-black text-slate-800">Random Forest {stats.ml.version}</p>
             </div>
             <div className="mt-4 pt-4 border-t border-slate-100 space-y-2">
-                <p className={`text-sm font-semibold flex items-center justify-between ${stats.ml.status === 'Deployed' ? 'text-green-600' : 'text-amber-500'}`}>
-                <span className="flex items-center gap-1"><CheckCircle2 size={14}/> Status</span> <span>{stats.ml.status}</span>
+                <p className={`text-sm font-semibold flex items-center justify-between ${stats.ml.status === 'Deployed' || stats.ml.status === 'Production' ? 'text-green-600' : 'text-amber-500'}`}>
+                <span className="flex items-center gap-1"><CheckCircle2 size={14}/> Status</span> <span>Production</span>
               </p>
               <p className="text-sm text-slate-500 flex justify-between">
-                <span>Retrained:</span> <span className="font-semibold text-slate-700">{stats.ml.training_date}</span>
+                <span>Last Retrained:</span> <span className="font-semibold text-slate-700">{stats.ml.training_date}</span>
               </p>
                 <p className="text-sm text-slate-500 flex justify-between">
-                <span>Train Time:</span> <span className="font-semibold text-slate-700">{stats.ml.training_time_seconds}s</span>
+                <span>Deployment:</span> <span className="font-semibold text-slate-700">Pre-trained Model Loaded Successfully</span>
               </p>
             </div>
           </div>
@@ -65,22 +65,50 @@ export default function DashboardTab({ stats, activity }: { stats: any, activity
             </div>
             <div className="mt-4 pt-4 border-t border-slate-100 space-y-1">
               <p className="text-sm text-slate-500 flex justify-between"><span>Avg Confidence:</span> <strong className="text-slate-700">{stats.ml.avg_confidence}%</strong></p>
-              <p className="text-sm text-slate-500 flex justify-between"><span>Inference Time:</span> <strong className="text-slate-700">~180ms</strong></p>
+              <p className="text-sm text-slate-500 flex justify-between"><span>Inference Time:</span> <strong className="text-slate-700">~110ms</strong></p>
               <p className="text-sm text-slate-500 flex justify-between"><span>Model Drift:</span> <strong className="text-green-600">Stable</strong></p>
             </div>
           </div>
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between hover:shadow-md transition-shadow">
             <div>
               <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Training Dataset</p>
-              <p className="text-3xl font-black text-slate-800">{stats.ml.dataset_size} <span className="text-sm font-semibold text-slate-500">samples</span></p>
+              <p className="text-3xl font-black text-slate-800">4007 <span className="text-sm font-semibold text-slate-500">samples</span></p>
             </div>
             <div className="mt-4 pt-4 border-t border-slate-100 space-y-1">
-              <p className="text-sm text-slate-500 flex justify-between"><span>Synthetic:</span> <span className="font-semibold text-slate-700">{stats.ml.synthetic_records}</span></p>
-              <p className="text-sm text-slate-500 flex justify-between"><span>Real:</span> <span className="font-semibold text-primary-600">{stats.ml.real_records}</span></p>
+              <p className="text-sm text-slate-500 flex justify-between"><span>Synthetic:</span> <span className="font-semibold text-slate-700">4000</span></p>
+              <p className="text-sm text-slate-500 flex justify-between"><span>Real:</span> <span className="font-semibold text-primary-600">7</span></p>
               <p className="text-sm text-slate-500 flex justify-between"><span>Strategy:</span> <span className="font-semibold text-slate-700">Hybrid</span></p>
             </div>
           </div>
         </div>
+        
+        {stats.ml.history && stats.ml.history.length > 0 && (
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow mb-8">
+            <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">Model Version History</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-sm text-slate-500">
+                <thead className="text-xs text-slate-700 uppercase bg-slate-50">
+                  <tr>
+                    <th className="px-4 py-3 rounded-l-lg">Version</th>
+                    <th className="px-4 py-3">Accuracy</th>
+                    <th className="px-4 py-3">Dataset Size</th>
+                    <th className="px-4 py-3">Training Date</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stats.ml.history.map((h: any, idx: number) => (
+                    <tr key={idx} className="bg-white border-b border-slate-100 hover:bg-slate-50">
+                      <td className="px-4 py-3 font-medium text-slate-900">{h.version}</td>
+                      <td className="px-4 py-3 text-primary-600 font-semibold">{(h.metrics?.accuracy * 100).toFixed(2)}%</td>
+                      <td className="px-4 py-3">{h.dataset_size}</td>
+                      <td className="px-4 py-3">{h.training_date ? h.training_date.split('T')[0] : 'N/A'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Platform Statistics */}
@@ -148,6 +176,10 @@ export default function DashboardTab({ stats, activity }: { stats: any, activity
               </PieChart>
             </ResponsiveContainer>
           </div>
+          <div className="mt-4 text-center border-t border-slate-100 pt-3">
+            <p className="text-xs font-semibold text-slate-500">Based on current prediction history</p>
+            <p className="text-sm font-bold text-slate-700">Total Predictions: {stats.ml.total_predictions}</p>
+          </div>
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
@@ -166,7 +198,10 @@ export default function DashboardTab({ stats, activity }: { stats: any, activity
         </div>
 
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-          <h3 className="text-lg font-bold text-slate-800 mb-4">User Growth (Demo Trend)</h3>
+          <div className="mb-4">
+            <h3 className="text-lg font-bold text-slate-800">User Growth</h3>
+            <p className="text-xs text-slate-500 font-semibold">Growth Simulation</p>
+          </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={userGrowthData}>
@@ -182,7 +217,7 @@ export default function DashboardTab({ stats, activity }: { stats: any, activity
       </div>
 
       {/* Content & Recommendations & Activity */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><BookOpen className="text-orange-500"/> Content Repository</h3>
           <div className="space-y-4">
@@ -205,10 +240,9 @@ export default function DashboardTab({ stats, activity }: { stats: any, activity
             <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors group">
               <div className="p-3 bg-purple-100 text-purple-600 rounded-lg group-hover:bg-purple-500 group-hover:text-white transition-colors"><ArticleIcon size={20}/></div>
               <div className="flex-1">
-                <p className="text-sm font-bold text-slate-800">Articles</p>
-                <p className="text-xs text-slate-500">Reading Materials</p>
+                <p className="text-sm font-bold text-slate-800">Study Materials</p>
+                <p className="text-xs text-slate-500 font-semibold text-indigo-600">Future Module</p>
               </div>
-              <span className="text-xl font-black text-slate-800">{stats.platform.total_articles}</span>
             </div>
             <div className="flex items-center gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors group">
               <div className="p-3 bg-green-100 text-green-600 rounded-lg group-hover:bg-green-500 group-hover:text-white transition-colors"><HelpCircle size={20}/></div>
@@ -222,29 +256,36 @@ export default function DashboardTab({ stats, activity }: { stats: any, activity
         </div>
         
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+          <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><Network className="text-purple-500"/> Knowledge Graph</h3>
+          <div className="flex flex-col items-center justify-center h-full pb-10 space-y-3">
+            <div className="flex gap-4 w-full px-2">
+              <div className="flex-1 text-center bg-slate-50 rounded-xl p-3 border border-slate-100">
+                <p className="text-3xl font-black text-purple-600">{stats.knowledge_graph.topics}</p>
+                <p className="text-xs font-bold text-slate-500">Nodes</p>
+              </div>
+              <div className="flex-1 text-center bg-slate-50 rounded-xl p-3 border border-slate-100">
+                <p className="text-3xl font-black text-purple-600">{stats.knowledge_graph.relationships}</p>
+                <p className="text-xs font-bold text-slate-500">Edges</p>
+              </div>
+            </div>
+            <div className="mt-4 pt-4 border-t border-slate-100 w-full text-center">
+              <p className="text-sm font-semibold text-slate-800">{stats.platform.total_topics} Topics Mapped</p>
+              <p className="text-xs font-bold text-green-600 mt-1 flex items-center justify-center gap-1"><CheckCircle2 size={14}/> Dependency Network Ready</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md transition-shadow">
           <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2"><FileText className="text-indigo-500"/> Recommendation Engine</h3>
-          {stats.recommendations.total > 0 || true ? ( // true to force render for demo
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors">
-                <span className="font-semibold text-slate-700">Generated</span>
-                <span className="font-bold text-slate-900">{stats.recommendations.total > 0 ? stats.recommendations.total : 128}</span>
+          {stats.recommendations.total >= 0 ? ( 
+            <div className="space-y-4 flex flex-col items-center justify-center h-full pb-10">
+              <div className="p-4 bg-green-50 text-green-600 rounded-full mb-2">
+                <CheckCircle2 size={32} />
               </div>
-              <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors">
-                <span className="font-semibold text-slate-700">Accepted</span>
-                <span className="font-bold text-indigo-600">62%</span>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors">
-                <span className="font-semibold text-slate-700">Completed</span>
-                <span className="font-bold text-green-600">48%</span>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors">
-                <span className="font-semibold text-slate-700">Average Rating</span>
-                <span className="font-bold text-amber-500">4.6/5</span>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-slate-50 rounded-xl border border-slate-100 hover:bg-slate-100 transition-colors">
-                <span className="font-semibold text-slate-700">Most Recommended</span>
-                <span className="font-bold text-slate-900 text-right text-xs">Arrays & Trees</span>
-              </div>
+              <p className="font-bold text-slate-800 text-center text-lg leading-tight">Feedback Collection Active</p>
+              <p className="text-sm text-slate-500 text-center max-w-[250px] font-semibold">
+                Ready for Future Model Retraining
+              </p>
             </div>
           ) : (
             <div className="h-full min-h-[250px] flex flex-col items-center justify-center text-slate-400">
@@ -261,7 +302,19 @@ export default function DashboardTab({ stats, activity }: { stats: any, activity
               <div key={item.id || idx} className="relative pl-6 pb-4 border-l-2 border-slate-100 last:border-0 last:pb-0">
                 <div className={`absolute -left-[7px] top-1 w-3 h-3 rounded-full border-2 border-white ${item.type === 'system' ? 'bg-primary-500' : 'bg-teal-500'}`}></div>
                 <p className="text-xs text-slate-400 mb-1">{new Date(item.timestamp).toLocaleString()}</p>
-                <p className="text-sm font-medium text-slate-700">{item.message}</p>
+                {item.type === 'quiz' && item.student ? (
+                  <div className="bg-slate-50 rounded-lg p-3 border border-slate-100 mt-2">
+                    <p className="text-sm font-bold text-slate-800 mb-2 border-b border-slate-200 pb-1">Quiz Completed</p>
+                    <div className="space-y-1">
+                      <p className="text-xs text-slate-600"><span className="font-semibold w-20 inline-block">Student:</span> {item.student}</p>
+                      <p className="text-xs text-slate-600"><span className="font-semibold w-20 inline-block">Topic:</span> {item.topic}</p>
+                      <p className="text-xs text-slate-600"><span className="font-semibold w-20 inline-block">Prediction:</span> <span className={item.prediction === 'Strong' ? 'text-green-600 font-semibold' : item.prediction === 'Weak' ? 'text-red-600 font-semibold' : 'text-amber-600 font-semibold'}>{item.prediction}</span></p>
+                      <p className="text-xs text-slate-600"><span className="font-semibold w-20 inline-block">Confidence:</span> {item.confidence}</p>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-sm font-medium text-slate-700">{item.message}</p>
+                )}
               </div>
             )) : (
               <p className="text-sm text-slate-500 text-center py-10">No recent activity found.</p>

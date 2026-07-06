@@ -3,8 +3,9 @@ import { BookOpen, Search, Plus, Filter, Edit2, Trash2, Video, FileText as Artic
 import api from '../../lib/api'
 
 export default function ContentTab() {
-  const [activeSubTab, setActiveSubTab] = useState<'questions' | 'videos' | 'articles'>('questions')
+  const [activeSubTab, setActiveSubTab] = useState<'questions' | 'videos' | 'study-materials'>('questions')
   const [data, setData] = useState<any[]>([])
+  const [searchTerm, setSearchTerm] = useState('')
   const [loading, setLoading] = useState(false)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [newQuestion, setNewQuestion] = useState({
@@ -68,6 +69,16 @@ export default function ContentTab() {
     setNewQuestion({...newQuestion, options: newOpts})
   }
 
+  const filteredData = (data || []).filter(item => {
+    const term = searchTerm.toLowerCase()
+    return (
+      (item.question && item.question.toLowerCase().includes(term)) ||
+      (item.title && item.title.toLowerCase().includes(term)) ||
+      (item.topic && item.topic.toLowerCase().includes(term)) ||
+      (item.difficulty && item.difficulty.toLowerCase().includes(term))
+    )
+  })
+
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[600px]">
       
@@ -93,10 +104,10 @@ export default function ContentTab() {
             <Video size={18}/> Video Modules
           </button>
           <button 
-            onClick={() => setActiveSubTab('articles')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${activeSubTab === 'articles' ? 'bg-primary-50 text-primary-700' : 'text-slate-600 hover:bg-slate-100'}`}
+            onClick={() => setActiveSubTab('study-materials')}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${activeSubTab === 'study-materials' ? 'bg-primary-50 text-primary-700' : 'text-slate-600 hover:bg-slate-100'}`}
           >
-            <ArticleIcon size={18}/> Articles
+            <ArticleIcon size={18}/> Study Materials
           </button>
         </div>
       </div>
@@ -107,7 +118,13 @@ export default function ContentTab() {
         <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18}/>
-            <input type="text" placeholder={`Search ${activeSubTab}...`} className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" />
+            <input 
+              type="text" 
+              placeholder={`Search by Topic, Difficulty, or Text...`} 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" 
+            />
           </div>
           <div className="flex gap-3">
             <button className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 flex items-center gap-2">
@@ -128,13 +145,27 @@ export default function ContentTab() {
         <div className="flex-1 overflow-auto">
           {loading ? (
             <div className="p-20 flex justify-center"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div></div>
-          ) : data.length === 0 ? (
+          ) : filteredData.length === 0 ? (
             <div className="p-20 text-center flex flex-col items-center justify-center h-full">
               <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-400">
                 <Search size={24} />
               </div>
-              <p className="text-slate-500 font-semibold mb-1">No {activeSubTab} found.</p>
-              <p className="text-xs text-slate-400">Add content or sync database.</p>
+              {activeSubTab === 'videos' ? (
+                <>
+                  <p className="text-slate-500 font-semibold mb-1">No Video Modules Available.</p>
+                  <p className="text-xs text-slate-400">Video repository will be expanded in future versions.</p>
+                </>
+              ) : activeSubTab === 'study-materials' ? (
+                <>
+                  <p className="text-slate-500 font-semibold mb-1">Future Content</p>
+                  <p className="text-xs text-slate-400">Planned Feature - Reserved for Phase 2.</p>
+                </>
+              ) : (
+                <>
+                  <p className="text-slate-500 font-semibold mb-1">No content found.</p>
+                  <p className="text-xs text-slate-400">Add content or sync database.</p>
+                </>
+              )}
             </div>
           ) : (
             <table className="w-full text-left border-collapse min-w-[600px]">
@@ -145,12 +176,11 @@ export default function ContentTab() {
                   <th className="p-4 font-semibold">Topic</th>
                   <th className="p-4 font-semibold">Difficulty</th>
                   {activeSubTab !== 'questions' && <th className="p-4 font-semibold">Duration</th>}
-                  <th className="p-4 font-semibold">Created</th>
                   <th className="p-4 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {data.map(item => (
+                {filteredData.map((item: any) => (
                   <tr key={item.id} className="hover:bg-slate-50 transition-colors group">
                     <td className="p-4 text-xs font-semibold text-slate-400 text-center">#{item.id}</td>
                     <td className="p-4 text-sm font-medium text-slate-800 max-w-xs truncate">
@@ -174,7 +204,6 @@ export default function ContentTab() {
                     {activeSubTab !== 'questions' && (
                       <td className="p-4 text-sm text-slate-600 font-medium">{item.duration} min</td>
                     )}
-                    <td className="p-4 text-xs text-slate-500">{item.created_at}</td>
                     <td className="p-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="flex justify-end gap-1">
                         <button className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"><Edit2 size={16}/></button>

@@ -72,8 +72,13 @@ export default function Dashboard() {
     recentActivity,
     examReadiness,
     recommendations: apiRecommendations,
-    prerequisitePath
+    prerequisitePath,
+    exam_date,
+    exam_target
   } = dashboardData
+
+  // Calculate dynamic "Exam in X Days"
+  const examDaysRemaining = exam_date ? Math.max(0, Math.ceil((new Date(exam_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null
 
   const displayStats = {
     videosWatched: stats?.videosWatched || 0, 
@@ -156,9 +161,11 @@ export default function Dashboard() {
               <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg shadow-inner">
                 <span className="text-orange-400">🔥</span> {streak} Day Streak
               </span>
-              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg shadow-inner">
-                <Target size={16} className="text-accent-300" /> Exam in 28 Days
-              </span>
+              {examDaysRemaining !== null && (
+                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg shadow-inner">
+                  <Target size={16} className="text-accent-300" /> {exam_target ? `${exam_target} in ` : 'Exam in '}{examDaysRemaining} Days
+                </span>
+              )}
               <span className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-500/30 border border-primary-500/50 rounded-lg text-primary-100 shadow-inner">
                 <BookOpen size={16} /> Today's Focus: {todayFocus}
               </span>
@@ -352,7 +359,6 @@ export default function Dashboard() {
               </div>
             </div>
           )}
-          </div>
           
           <button className="btn-primary w-full flex items-center justify-center gap-2 mt-4">
             View Action Plan <ArrowRight size={16} />

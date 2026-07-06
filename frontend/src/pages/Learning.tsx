@@ -127,7 +127,7 @@ export default function Learning() {
                 onClick={(e) => {
                   if (item.url.includes('example.com') || item.url === '#') {
                     e.preventDefault();
-                    alert("This is a simulated placeholder URL seeded for demonstration purposes.");
+                    alert("This is a sample demonstration URL seeded for testing purposes.");
                   }
                 }}
                 className="flex-1 btn-primary py-2 px-4 rounded-lg flex items-center justify-center gap-2 text-sm"
