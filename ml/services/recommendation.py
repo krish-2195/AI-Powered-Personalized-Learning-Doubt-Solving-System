@@ -116,6 +116,24 @@ class HybridRecommendationEngine:
         # Ensure ordered as per scores
         results_sorted = sorted(results, key=lambda x: recommended_ids.index(x.id))
         
-        return results_sorted
+        # Package with rationale
+        final_recs = []
+        for r in results_sorted:
+            score = hybrid_scores.get(r.id, 0.0)
+            # Rationale logic: if the topic is in kg_focus_topics, it's a prerequisite gap
+            if r.topic and r.topic.name in kg_focus_topics:
+                reason = f"Prerequisite for {weak_topic_names[0] if weak_topic_names else 'your weak topics'}"
+            elif r.topic and r.topic.name in weak_topic_names:
+                reason = f"Direct practice for {r.topic.name}"
+            else:
+                reason = "Highly rated content"
+                
+            final_recs.append({
+                "content": r,
+                "match_score": round(min(99, score * 100)), # Convert to percentage
+                "reason": reason
+            })
+            
+        return final_recs
 
 recommendation_service = HybridRecommendationEngine()

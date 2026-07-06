@@ -107,67 +107,26 @@ def calculate_exam_readiness(quizzes: list, tp_counts: dict, study_sessions: int
     }
 
 def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
-    """
-    Optimized: fetches all dashboard data in 5-6 queries instead of ~19.
-    """
-    # ── QUERY 1: User Profile (1 query) ──
-    profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
-    if not profile:
-        raise ValueError("User profile not found")
-    
-    # ── QUERY 2: All QuizAttempt aggregates in ONE query ──
-    # Combines: count, avg(accuracy), sum(time_taken) — was 4 separate queries
-    quiz_stats = db.query(
-        func.count(QuizAttempt.id).label("count"),
-        func.coalesce(func.avg(QuizAttempt.accuracy), 0).label("avg_accuracy"),
-        func.coalesce(func.sum(QuizAttempt.time_taken_seconds), 0).label("total_time")
-    ).filter(QuizAttempt.user_id == user_id).first()
-    
-    quiz_count = quiz_stats.count or 0
-    avg_score = float(quiz_stats.avg_accuracy)
-    quiz_duration = int(quiz_stats.total_time)
-    is_new_user = quiz_count == 0
-    
-    # ── QUERY 3: All TopicPerformance counts in ONE query ──
-    # Combines: strong_count, weak_count, total_count — was 3 separate queries
-    tp_stats = db.query(
-        func.count(TopicPerformance.id).label("total"),
-        func.sum(case((TopicPerformance.mastery_level == "Strong", 1), else_=0)).label("strong"),
-        func.sum(case((TopicPerformance.mastery_level == "Weak", 1), else_=0)).label("weak")
-    ).filter(TopicPerformance.user_id == user_id).first()
-    
-    topics_mastered = int(tp_stats.strong or 0)
-    tp_counts = {
-        "strong": int(tp_stats.strong or 0),
-        "weak": int(tp_stats.weak or 0),
-        "total": int(tp_stats.total or 0)
-    }
-    
-    # ── QUERY 4: All LearningLog stats in ONE query ──
-    # Combines: video_count, total_duration, session_count — was 3 separate queries
-    log_stats = db.query(
-        func.count(LearningLog.id).label("session_count"),
-        func.coalesce(func.sum(LearningLog.duration_seconds), 0).label("total_duration"),
-        func.sum(case(
-            (
-                (LearningLog.activity_type == 'video') & (LearningLog.completed == True),
-                1
-            ),
-            else_=0
-        )).label("videos_watched")
-    ).filter(LearningLog.user_id == user_id).first()
-    
-    videos_watched = int(log_stats.videos_watched or 0)
-    logs_duration = int(log_stats.total_duration or 0)
-    study_sessions = int(log_stats.session_count or 0)
-    study_hours = round((logs_duration + quiz_duration) / 3600, 1)
-
     # ── QUERY 5: Today's Focus (weak topics, limit 2) ──
     weak_topics = db.query(TopicPerformance).options(joinedload(TopicPerformance.topic)).filter(TopicPerformance.user_id == user_id)\
         .order_by(TopicPerformance.ewma_accuracy.asc()).limit(2).all()
         
+    prerequisite_path = []
     if weak_topics:
-        today_focus = " & ".join([wt.topic.name for wt in weak_topics if wt.topic])
+        weak_names = [wt.topic.name for wt in weak_topics if wt.topic]
+        today_focus = " & ".join(weak_names)
+        
+        from ml.services.knowledge_graph import knowledge_graph
+        # Find foundational gaps
+        gaps = knowledge_graph.identify_foundational_gaps(weak_names)
+        if gaps:
+            prerequisite_path = gaps
+        else:
+            # Just use their immediate prereqs
+            for wn in weak_names:
+                prerequisite_path.extend(knowledge_graph.get_prerequisites(wn))
+            # Remove duplicates while preserving order
+            prerequisite_path = list(dict.fromkeys(prerequisite_path))
     else:
         today_focus = "General Review"
 
@@ -197,43 +156,40 @@ def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
         
     recent_activity.sort(key=lambda x: x["timestamp"], reverse=True)
     recent_activity = recent_activity[:5]
-    
-    # ── Exam Readiness (ZERO additional queries — reuses quiz data + tp_counts) ──
-    # Pass pre-fetched quizzes to avoid re-querying
-    quizzes_for_readiness = recent_quizzes  # We already have recent 5, but readiness needs ALL
-    if quiz_count > 5:
-        # Only re-fetch if we need more than the 5 we already have
-        quizzes_for_readiness = db.query(QuizAttempt).filter(QuizAttempt.user_id == user_id).all()
-    
-    readiness = calculate_exam_readiness(quizzes_for_readiness, tp_counts, study_sessions, total_topics)
 
     # ── Recommendations ──
     try:
         recs_objects = recommendation_service.get_recommendations(db, user_id, 3)
         recs = [
             {
-                "resource_id": r.id,
-                "type": r.content_type,
-                "title": r.title,
-                "topic": r.topic.name if r.topic else "General",
-                "time": r.duration_minutes
+                "resource_id": r["content"].id,
+                "type": r["content"].content_type,
+                "title": r["content"].title,
+                "topic": r["content"].topic.name if r["content"].topic else "General",
+                "time": r["content"].duration_minutes,
+                "match_score": r["match_score"],
+                "reason": r["reason"]
             }
             for r in recs_objects
         ]
     except Exception:
         recs = []
 
+    from backend.services.student_stats import student_stats_service
+    shared_stats = student_stats_service.get_student_stats(db, user_id)
+
     return {
-        "profile_streak": profile.streak_count,
-        "is_new_user": is_new_user,
-        "avg_score": avg_score,
-        "topics_mastered": topics_mastered,
-        "videos_watched": videos_watched,
-        "study_hours": study_hours,
+        "profile_streak": shared_stats["profile_streak"],
+        "is_new_user": shared_stats["quiz_count"] == 0,
+        "avg_score": shared_stats["avg_accuracy"],
+        "topics_mastered": shared_stats["topics_mastered"],
+        "videos_watched": shared_stats["videos_watched"],
+        "study_hours": shared_stats["study_hours"],
         "today_focus": today_focus,
         "recent_activity": recent_activity,
-        "readiness": readiness,
-        "recs": recs
+        "readiness": shared_stats["exam_readiness"],
+        "recs": recs,
+        "prerequisite_path": prerequisite_path
     }
 
 @router.get("/")
@@ -268,7 +224,8 @@ async def get_dashboard(user_id: int, db: Session = Depends(get_db), current_use
             },
             "recentActivity": pg_data["recent_activity"],
             "examReadiness": pg_data["readiness"],
-            "recommendations": pg_data["recs"]
+            "recommendations": pg_data["recs"],
+            "prerequisitePath": pg_data.get("prerequisite_path", [])
         }
         
         return success_response(data=dashboard_payload, message="Dashboard loaded successfully")
