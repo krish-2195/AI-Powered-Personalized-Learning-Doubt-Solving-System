@@ -55,6 +55,12 @@ export default function ChatPage() {
   const [quizMLResult, setQuizMLResult] = useState<any>(null) // the specific quiz ML prediction
   const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false)
 
+  const [quizDifficulty, setQuizDifficulty] = useState('Medium')
+  const [quizCount, setQuizCount] = useState(5)
+  const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false)
+  const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
+
+
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const { user } = useAuth()
@@ -180,22 +186,26 @@ export default function ChatPage() {
     setSelectedAnswers({})
     setQuizMLResult(null)
     setIsSubmittingQuiz(false)
+    setIsGeneratingQuiz(true)
+    setActiveTab('quiz')
     const topic = topicOverride || detectedTopic
     try {
       const { data } = await api.post('/api/chat/generate-quiz', {
         user_id: userId,
         topic: topic,
-        difficulty: 'medium',
-        count: 5,
+        difficulty: quizDifficulty.toLowerCase(),
+        count: quizCount,
         quiz_type: quizType
       })
       setQuizQuestions(data.data?.questions || data.questions || [])
       if (topicOverride) {
         setDetectedTopic(topicOverride)
       }
-      setActiveTab('quiz')
     } catch (err: any) {
       setError(err.message || 'Could not generate quiz')
+      setActiveTab('chat')
+    } finally {
+      setIsGeneratingQuiz(false)
     }
   }
 
@@ -236,37 +246,46 @@ export default function ChatPage() {
 
   const handleSessionSummary = async () => {
     setError(null)
+    setIsGeneratingSummary(true)
     try {
       const { data } = await api.get(`/api/chat/session-summary/${userId}`)
       setSummary(data)
       setActiveTab('summary')
     } catch (err: any) {
       setError(err.message || 'Could not generate session summary')
+    } finally {
+      setIsGeneratingSummary(false)
     }
   }
 
+  useEffect(() => {
+    if (activeTab === 'summary' && !summary && !isGeneratingSummary) {
+      handleSessionSummary()
+    }
+  }, [activeTab, summary])
+
   return (
-    <div className="flex h-[calc(100vh-6.5rem)] bg-slate-900 rounded-[28px] overflow-hidden border border-slate-700/50 shadow-2xl shadow-primary-900/10">
+    <div className="flex h-[calc(100vh-6.5rem)] bg-[#0f111a] rounded-[28px] overflow-hidden border border-slate-800 shadow-2xl">
       
       {/* LEFT COLUMN: Main Chat Interface */}
-      <div className="flex flex-col flex-1 min-w-0 bg-slate-50 relative">
+      <div className="flex flex-col flex-1 min-w-0 bg-[#0a0b10] relative">
         
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-200 bg-white/80 backdrop-blur-md sticky top-0 z-10 shadow-sm shadow-slate-100">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-800/80 bg-[#0a0b10]/90 backdrop-blur-md sticky top-0 z-10">
           <div>
-            <h1 className="text-xl font-bold text-slate-800 flex items-center gap-2">
-              <Sparkles className="text-primary-600" size={20}/> AI Tutor
+            <h1 className="text-xl font-bold text-white flex items-center gap-2">
+              <Sparkles className="text-primary-500" size={20}/> AI Tutor
             </h1>
           </div>
-          <div className="flex gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200/60">
-            <button onClick={() => setActiveTab('chat')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'chat' ? 'bg-white text-primary-700 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Chat</button>
-            <button onClick={() => setActiveTab('quiz')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'quiz' ? 'bg-white text-primary-700 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Quiz</button>
-            <button onClick={() => setActiveTab('summary')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'summary' ? 'bg-white text-primary-700 shadow-sm border border-slate-200/50' : 'text-slate-500 hover:text-slate-700'}`}>Summary</button>
+          <div className="flex gap-1 bg-[#151722] p-1 rounded-xl border border-slate-800">
+            <button onClick={() => setActiveTab('chat')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'chat' ? 'bg-[#212435] text-white shadow-sm border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}>Chat</button>
+            <button onClick={() => setActiveTab('quiz')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'quiz' ? 'bg-[#212435] text-white shadow-sm border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}>Quiz</button>
+            <button onClick={() => setActiveTab('summary')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'summary' ? 'bg-[#212435] text-white shadow-sm border border-slate-700' : 'text-slate-400 hover:text-slate-200'}`}>Summary</button>
           </div>
           <div>
             <button 
               onClick={startNewSession}
-              className="flex items-center gap-1 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+              className="flex items-center gap-1 bg-primary-600 hover:bg-primary-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
             >
               <Plus size={16} /> New Session
             </button>
@@ -274,7 +293,7 @@ export default function ChatPage() {
         </div>
 
         {error && (
-          <div className="bg-red-50 text-red-600 p-3 text-sm text-center font-medium border-b border-red-100">
+          <div className="bg-red-500/10 text-red-400 p-3 text-sm text-center font-medium border-b border-red-500/20">
             {error}
           </div>
         )}
@@ -282,36 +301,29 @@ export default function ChatPage() {
         {/* Chat Area */}
         {activeTab === 'chat' && (
           <div className="flex flex-col flex-1 overflow-hidden relative">
-            <div className="flex-1 overflow-y-auto px-4 py-8 pb-40 scroll-smooth">
+            <div className="flex-1 overflow-y-auto px-4 py-8 pb-40 scroll-smooth custom-scrollbar">
               <div className="max-w-[850px] mx-auto space-y-10">
                 {messages.map((msg, idx) => (
                   <div key={idx} className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                     
                     {msg.role === 'ai' && (
-                      <div className="flex-shrink-0 mr-5 mt-1 hidden sm:block">
-                        <div className="w-10 h-10 bg-gradient-to-br from-primary-600 to-accent-600 rounded-full flex items-center justify-center text-white shadow-md border-2 border-white">
-                          🤖
+                      <div className="flex-shrink-0 mr-4 mt-1 hidden sm:block">
+                        <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#151722] border border-slate-700/50">
+                          <Sparkles size={14} className="text-primary-400" />
                         </div>
                       </div>
                     )}
                     
                     <div
                       className={`${msg.role === 'user'
-                          ? 'bg-gradient-to-br from-slate-800 to-slate-900 text-white rounded-[24px] rounded-tr-md px-6 py-4 max-w-[85%] sm:max-w-[70%] shadow-md shadow-slate-900/10'
-                          : 'w-full sm:w-[85%] text-slate-800 bg-white border border-slate-100 rounded-[28px] rounded-tl-md px-6 sm:px-8 py-6 shadow-sm shadow-slate-200/40'
+                          ? 'bg-[#1e2132] text-slate-100 rounded-[20px] rounded-tr-sm px-6 py-4 max-w-[85%] sm:max-w-[70%] border border-slate-700/50'
+                          : 'w-full sm:w-[85%] text-slate-300 bg-transparent py-2'
                         }`}
                     >
-                      {msg.role === 'ai' && (
-                        <div className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                          <span className="sm:hidden w-6 h-6 bg-primary-600 rounded-full flex items-center justify-center text-[10px] text-white">🤖</span>
-                          AI Learn
-                        </div>
-                      )}
-                      
                       {msg.role === 'user' ? (
-                        <p className="text-[16px] whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                        <p className="text-[15px] whitespace-pre-wrap leading-relaxed">{msg.content}</p>
                       ) : (
-                        <div className="prose prose-slate max-w-none text-[16px] leading-[1.8]">
+                        <div className="prose prose-invert max-w-none text-[15px] leading-[1.8]">
                           <ReactMarkdown
                             remarkPlugins={[remarkGfm, remarkMath]}
                             rehypePlugins={[rehypeKatex]}
@@ -325,8 +337,8 @@ export default function ChatPage() {
                                   setTimeout(() => setCopied(false), 2000)
                                 }
                                 return !inline && match ? (
-                                  <div className="rounded-2xl my-6 text-sm shadow-xl overflow-hidden border border-slate-800 bg-[#1e1e1e]">
-                                    <div className="flex items-center justify-between px-4 py-2 bg-slate-800 border-b border-slate-700/50 text-slate-400 text-xs font-mono uppercase">
+                                  <div className="rounded-xl my-6 text-sm shadow-xl overflow-hidden border border-slate-800 bg-[#0d0f17]">
+                                    <div className="flex items-center justify-between px-4 py-2 bg-[#151722] border-b border-slate-800 text-slate-400 text-xs font-mono uppercase">
                                       <span>{match[1]}</span>
                                       <button onClick={handleCopy} className="hover:text-white transition-colors flex items-center gap-1.5 p-1 rounded-md hover:bg-slate-700">
                                         {copied ? <Check size={14} className="text-green-400" /> : <Copy size={14} />}
@@ -344,32 +356,32 @@ export default function ChatPage() {
                                     </SyntaxHighlighter>
                                   </div>
                                 ) : (
-                                  <code className="bg-slate-100 text-primary-700 px-1.5 py-0.5 rounded-md text-[14px] font-mono border border-slate-200/60" {...props}>
+                                  <code className="bg-[#1e2132] text-primary-300 px-1.5 py-0.5 rounded-md text-[13px] font-mono border border-slate-700/50" {...props}>
                                     {children}
                                   </code>
                                 )
                               },
-                              p({children}) { return <p className="mb-5 last:mb-0 text-slate-700">{children}</p> },
-                              h1({children}) { return <h1 className="text-2xl font-bold mt-8 mb-4 text-slate-900">{children}</h1> },
-                              h2({children}) { return <h2 className="text-xl font-bold mt-8 mb-4 text-slate-900">{children}</h2> },
-                              h3({children}) { return <h3 className="text-lg font-bold mt-6 mb-3 text-slate-900">{children}</h3> },
-                              ul({children}) { return <ul className="list-disc pl-5 mb-5 space-y-2 text-slate-700 marker:text-slate-400">{children}</ul> },
-                              ol({children}) { return <ol className="list-decimal pl-5 mb-5 space-y-2 text-slate-700 marker:text-slate-400">{children}</ol> },
+                              p({children}) { return <p className="mb-4 last:mb-0 text-slate-300">{children}</p> },
+                              h1({children}) { return <h1 className="text-xl font-bold mt-8 mb-4 text-white">{children}</h1> },
+                              h2({children}) { return <h2 className="text-lg font-bold mt-8 mb-4 text-white">{children}</h2> },
+                              h3({children}) { return <h3 className="text-md font-bold mt-6 mb-3 text-white">{children}</h3> },
+                              ul({children}) { return <ul className="list-disc pl-5 mb-5 space-y-2 text-slate-300 marker:text-slate-500">{children}</ul> },
+                              ol({children}) { return <ol className="list-decimal pl-5 mb-5 space-y-2 text-slate-300 marker:text-slate-500">{children}</ol> },
                               li({children}) { return <li className="pl-1">{children}</li> },
-                              strong({children}) { return <strong className="font-bold text-slate-900">{children}</strong> },
-                              table({children}) { return <div className="overflow-x-auto mb-6"><table className="min-w-full divide-y divide-slate-300 border border-slate-200 rounded-xl overflow-hidden shadow-sm">{children}</table></div> },
-                              th({children}) { return <th className="bg-slate-50 px-4 py-3 text-left text-sm font-bold text-slate-900 uppercase tracking-wider">{children}</th> },
-                              td({children}) { return <td className="px-4 py-3 text-sm text-slate-700 border-t border-slate-200">{children}</td> },
+                              strong({children}) { return <strong className="font-bold text-white">{children}</strong> },
+                              table({children}) { return <div className="overflow-x-auto mb-6"><table className="min-w-full divide-y divide-slate-800 border border-slate-800 rounded-xl overflow-hidden">{children}</table></div> },
+                              th({children}) { return <th className="bg-[#151722] px-4 py-3 text-left text-sm font-bold text-slate-300 uppercase tracking-wider">{children}</th> },
+                              td({children}) { return <td className="px-4 py-3 text-sm text-slate-400 border-t border-slate-800">{children}</td> },
                             }}
                           >
                             {msg.content}
                           </ReactMarkdown>
-                          <div className="mt-5 pt-4 border-t border-slate-100 flex items-center justify-between">
-                             <div className="text-[11px] text-slate-400 font-semibold uppercase tracking-wider flex items-center gap-1.5">
-                               <Sparkles size={11} className="text-primary-500" /> Generated by Gemini 2.5 Flash
+                          <div className="mt-4 pt-3 flex items-center justify-between">
+                             <div className="text-[11px] text-slate-500 font-semibold flex items-center gap-1.5">
+                               AI Learn Powered by Gemini 2.5 Flash
                              </div>
-                             <div className="text-[11px] text-slate-400">
-                               ~1.2s
+                             <div className="text-[11px] text-slate-600">
+                               ~1.2 sec
                              </div>
                           </div>
                         </div>
@@ -380,15 +392,15 @@ export default function ChatPage() {
                 
                 {isThinking && (
                   <div className="flex w-full justify-start max-w-4xl mx-auto">
-                    <div className="flex-shrink-0 mr-5 mt-1 hidden sm:block">
-                      <div className="w-10 h-10 bg-slate-200 rounded-full flex items-center justify-center text-primary-600 border-2 border-white">
-                        🤖
+                    <div className="flex-shrink-0 mr-4 mt-1 hidden sm:block">
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#151722] border border-slate-700/50">
+                        <Sparkles size={14} className="text-primary-400" />
                       </div>
                     </div>
-                    <div className="bg-white border border-slate-100 rounded-[28px] rounded-tl-md px-6 py-5 shadow-sm flex items-center gap-2">
-                      <span className="w-2.5 h-2.5 rounded-full bg-primary-500 animate-bounce" />
-                      <span className="w-2.5 h-2.5 rounded-full bg-primary-500 animate-bounce" style={{animationDelay: '150ms'}} />
-                      <span className="w-2.5 h-2.5 rounded-full bg-primary-500 animate-bounce" style={{animationDelay: '300ms'}} />
+                    <div className="bg-transparent py-4 flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
+                      <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" style={{animationDelay: '150ms'}} />
+                      <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" style={{animationDelay: '300ms'}} />
                     </div>
                   </div>
                 )}
@@ -397,20 +409,18 @@ export default function ChatPage() {
             </div>
 
             {/* Fixed Input Area */}
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-slate-50 via-slate-50 to-transparent pt-12 pb-6 px-4 pointer-events-none">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0a0b10] via-[#0a0b10]/90 to-transparent pt-16 pb-6 px-4 pointer-events-none">
               <div className="max-w-[850px] mx-auto pointer-events-auto">
-                <div className="flex flex-wrap gap-2.5 mb-4">
-                  <button onClick={() => handleSend('Explain recursion simply')} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-primary-400 hover:text-primary-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><BrainCircuit size={14} className="text-primary-500"/> Explain Recursion</button>
-                  <button onClick={() => handleGenerateQuiz(undefined, 'standard')} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-green-400 hover:text-green-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><BookOpen size={14} className="text-green-500"/> Standard Quiz (Fast)</button>
-                  <button onClick={() => handleGenerateQuiz(undefined, 'ai')} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-accent-400 hover:text-accent-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><Target size={14} className="text-accent-500"/> AI Quiz (Personalized)</button>
-                  <button onClick={() => handleSend('Difference between DFS and BFS')} className="text-[13px] font-semibold px-4 py-2 bg-white border border-slate-200/80 rounded-full text-slate-600 hover:border-blue-400 hover:text-blue-700 hover:shadow-md transition-all shadow-sm flex items-center gap-2"><BookOpen size={14} className="text-blue-500"/> DFS vs BFS</button>
+                <div className="flex flex-wrap gap-2.5 mb-4 justify-center">
+                  <button onClick={() => handleSend('Explain recursion simply')} className="text-[12px] font-semibold px-4 py-1.5 bg-[#151722] border border-slate-800 rounded-full text-slate-400 hover:border-primary-500 hover:text-primary-400 transition-all flex items-center gap-2"><BrainCircuit size={13}/> Explain Recursion</button>
+                  <button onClick={() => handleGenerateQuiz(undefined, 'hybrid')} className="text-[12px] font-semibold px-4 py-1.5 bg-[#151722] border border-slate-800 rounded-full text-slate-400 hover:border-accent-500 hover:text-accent-400 transition-all flex items-center gap-2"><Target size={13}/> Generate Quiz</button>
                 </div>
                 
-                <div className="relative shadow-2xl shadow-slate-300/40 rounded-[24px] bg-white border border-slate-200 focus-within:border-primary-400 focus-within:ring-4 focus-within:ring-primary-500/10 transition-all">
+                <div className="relative rounded-[20px] bg-[#12141c] border border-slate-700/80 focus-within:border-primary-500/80 focus-within:shadow-[0_0_15px_rgba(59,130,246,0.15)] transition-all">
                   <input
                     type="text"
-                    className="w-full pl-6 pr-16 py-4 rounded-[24px] focus:outline-none text-slate-900 text-[16px] placeholder:text-slate-400"
-                    placeholder="Message AI Learn..."
+                    className="w-full pl-6 pr-16 py-4 rounded-[20px] bg-transparent focus:outline-none text-slate-200 text-[15px] placeholder:text-slate-500"
+                    placeholder="Ask AI anything... ⌘ Enter to send"
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -418,58 +428,82 @@ export default function ChatPage() {
                   <button 
                     onClick={() => handleSend()} 
                     disabled={!input.trim() || isThinking}
-                    className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-slate-900 hover:bg-slate-800 disabled:bg-slate-100 disabled:text-slate-300 text-white rounded-[18px] transition-all transform active:scale-95"
+                    className="absolute right-2 top-2 bottom-2 aspect-square flex items-center justify-center bg-primary-600 hover:bg-primary-500 disabled:bg-slate-800 disabled:text-slate-600 text-white rounded-[14px] transition-all transform active:scale-95"
                   >
-                    <Send size={18} className={input.trim() ? "ml-0.5" : ""} />
+                    <Send size={16} className={input.trim() ? "ml-0.5" : ""} />
                   </button>
                 </div>
-                <p className="text-center text-xs text-slate-400 mt-4 font-medium">AI Learn can make mistakes. Consider verifying important information.</p>
               </div>
             </div>
           </div>
         )}
 
-        {/* â”€â”€ QUIZ TAB â”€â”€ */}
+        {/* ── QUIZ TAB ── */}
         {activeTab === 'quiz' && (
-          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-8">
-            <div className="max-w-[850px] mx-auto">
-            {quizQuestions.length === 0 ? (
-              <div className="h-64 flex flex-col items-center justify-center gap-4 text-slate-400">
-                <BookOpen size={48} className="opacity-30" />
-                <p className="text-lg">No quiz generated yet.</p>
-                <button className="btn-primary" onClick={() => { setActiveTab('chat'); setTimeout(handleGenerateQuiz, 100) }}>
-                  Generate Quiz in Chat
-                </button>
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-8 custom-scrollbar relative">
+             <button onClick={() => setActiveTab('chat')} className="absolute top-8 left-8 text-slate-400 hover:text-white flex items-center gap-2 text-sm font-semibold transition-colors">
+               ← Back to Chat
+             </button>
+            <div className="max-w-[850px] mx-auto mt-10">
+            {isGeneratingQuiz ? (
+              <div className="h-64 flex flex-col items-center justify-center gap-5 text-slate-400 mt-20">
+                <div className="w-10 h-10 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-lg font-medium text-slate-300">Generating personalized quiz...</p>
+              </div>
+            ) : quizQuestions.length === 0 ? (
+              <div className="max-w-md mx-auto mt-10 p-8 rounded-[24px] bg-[#12141c] border border-slate-800 shadow-xl">
+                 <div className="flex items-center gap-3 mb-2">
+                   <Target className="text-accent-400" size={24} />
+                   <h2 className="text-xl font-bold text-white">No active quiz</h2>
+                 </div>
+                 <p className="text-slate-400 mb-8 text-sm">Configure and generate a personalized practice quiz based on your weak topics.</p>
+                 
+                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">Difficulty</label>
+                 <div className="flex gap-2 mb-8">
+                   {['Easy', 'Medium', 'Hard'].map(d => (
+                     <button key={d} onClick={() => setQuizDifficulty(d)} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${quizDifficulty === d ? 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-900/20' : 'bg-[#1a1b23] border-slate-800 text-slate-400 hover:border-slate-600'}`}>{d}</button>
+                   ))}
+                 </div>
+          
+                 <label className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 block">Questions</label>
+                 <div className="flex gap-2 mb-10">
+                   {[5, 10, 20].map(c => (
+                     <button key={c} onClick={() => setQuizCount(c)} className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${quizCount === c ? 'bg-primary-600 border-primary-500 text-white shadow-lg shadow-primary-900/20' : 'bg-[#1a1b23] border-slate-800 text-slate-400 hover:border-slate-600'}`}>{c}</button>
+                   ))}
+                 </div>
+          
+                 <button onClick={() => handleGenerateQuiz(undefined, 'hybrid')} className="w-full py-4 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl shadow-lg shadow-primary-900/20 transition-all flex justify-center items-center gap-2">
+                   <Sparkles size={18}/> Generate personalized quiz
+                 </button>
               </div>
             ) : (
               <div className="space-y-6 pb-10">
-                <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-6 gap-4">
+                <div className="flex flex-col md:flex-row items-start md:items-center justify-between bg-[#12141c] p-6 rounded-2xl border border-slate-800 mb-6 gap-4">
                   <div className="flex-1 w-full">
-                    <h2 className="text-2xl font-bold text-slate-900">Practice Quiz</h2>
-                    <p className="text-slate-500 mt-1">Topic: <span className="font-semibold text-slate-700">{detectedTopic}</span></p>
+                    <h2 className="text-2xl font-bold text-white">Practice Quiz</h2>
+                    <p className="text-slate-400 mt-1">Topic: <span className="font-semibold text-slate-300">{detectedTopic}</span></p>
                   </div>
                   <div className="flex-1 w-full md:text-right">
                     <p className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-2">
                       Question {Object.keys(selectedAnswers).length === quizQuestions.length ? quizQuestions.length : Object.keys(selectedAnswers).length + 1} of {quizQuestions.length}
                     </p>
-                    <div className="h-3 w-full md:w-48 md:ml-auto bg-slate-100 rounded-full overflow-hidden shadow-inner flex mb-1">
+                    <div className="h-2 w-full md:w-48 md:ml-auto bg-[#1a1b23] rounded-full overflow-hidden flex mb-1">
                       <div className="h-full bg-primary-500 transition-all duration-500" style={{width: `${(Object.keys(selectedAnswers).length / quizQuestions.length) * 100}%`}}></div>
                     </div>
                     {quizDone && (
-                      <p className="text-sm font-bold text-slate-700 mt-2">Score: {quizScore}/{quizQuestions.length}</p>
+                      <p className="text-sm font-bold text-slate-300 mt-2">Score: {quizScore}/{quizQuestions.length}</p>
                     )}
                   </div>
                 </div>
-
                 {quizQuestions.map((item, idx) => {
                   const picked = selectedAnswers[idx]
                   const answered = picked !== undefined
                   const correct = picked === item.answer_index
                   return (
-                    <div key={idx} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                      <div className="pb-4 border-b border-slate-100">
-                        <p className="text-sm text-slate-400 font-bold tracking-widest uppercase mb-3">Question {idx + 1} of {quizQuestions.length}</p>
-                        <p className="font-semibold text-xl text-slate-800 break-words leading-relaxed pl-4 border-l-4 border-primary-400">
+                    <div key={idx} className="bg-[#12141c] p-6 rounded-2xl border border-slate-800 space-y-4">
+                      <div className="pb-4 border-b border-slate-800/80">
+                        <p className="text-xs text-slate-500 font-bold tracking-widest uppercase mb-3">Question {idx + 1} of {quizQuestions.length}</p>
+                        <p className="font-semibold text-lg text-slate-200 break-words leading-relaxed pl-4 border-l-2 border-primary-500">
                           {item.question}
                         </p>
                       </div>
@@ -477,25 +511,25 @@ export default function ChatPage() {
                         {(item.options ?? []).map((opt, optIdx) => {
                           const isCorrect = optIdx === item.answer_index
                           const isPicked = optIdx === picked
-                          let cls = 'text-[15px] px-5 py-3.5 rounded-xl border-2 w-full text-left transition-all flex items-center gap-3 font-medium '
+                          let cls = 'text-[14px] px-5 py-3.5 rounded-xl border w-full text-left transition-all flex items-center gap-3 font-medium '
                           if (!answered) {
-                            cls += 'border-slate-200 hover:bg-slate-50 hover:border-slate-300 cursor-pointer bg-white text-slate-700'
+                            cls += 'border-slate-800 hover:bg-[#1a1b23] hover:border-slate-700 cursor-pointer bg-transparent text-slate-300'
                           } else if (isCorrect) {
-                            cls += 'border-green-500 bg-green-50 text-green-800 shadow-sm'
+                            cls += 'border-green-500/50 bg-green-500/10 text-green-400'
                           } else if (isPicked) {
-                            cls += 'border-red-500 bg-red-50 text-red-700 shadow-sm'
+                            cls += 'border-red-500/50 bg-red-500/10 text-red-400'
                           } else {
-                            cls += 'border-slate-100 text-slate-400 bg-slate-50/50 cursor-default'
+                            cls += 'border-slate-800/50 text-slate-600 bg-transparent cursor-default'
                           }
                           return (
                             <button key={optIdx} className={cls} disabled={answered} onClick={() => handleSelectAnswer(idx, optIdx)}>
-                              <span className={`w-7 h-7 rounded-full border-2 text-[13px] flex items-center justify-center shrink-0 font-bold ${!answered ? 'border-slate-300 text-slate-500' :
+                              <span className={`w-6 h-6 rounded-full border text-[12px] flex items-center justify-center shrink-0 font-bold ${!answered ? 'border-slate-700 text-slate-500' :
                                   isCorrect ? 'border-green-500 bg-green-500 text-white' :
                                     isPicked ? 'border-red-500 bg-red-500 text-white' :
-                                      'border-slate-200 text-slate-300'
+                                      'border-slate-800 text-slate-700'
                                 }`}>
-                                {answered && isCorrect ? <CheckCircle2 size={16} /> :
-                                  answered && isPicked ? <XCircle size={16} /> :
+                                {answered && isCorrect ? <CheckCircle2 size={14} /> :
+                                  answered && isPicked ? <XCircle size={14} /> :
                                     String.fromCharCode(65 + optIdx)}
                               </span>
                               {opt}
@@ -504,12 +538,12 @@ export default function ChatPage() {
                         })}
                       </div>
                       {answered && (
-                        <div className={`text-[15px] p-5 rounded-xl mt-4 border shadow-sm ${correct ? 'bg-green-50 text-green-900 border-green-200' : 'bg-red-50 text-red-900 border-red-200'}`}>
+                        <div className={`text-[14px] p-5 rounded-xl mt-4 border ${correct ? 'bg-green-500/5 text-green-300 border-green-500/20' : 'bg-red-500/5 text-red-300 border-red-500/20'}`}>
                           <div className="flex items-center gap-2 mb-3">
-                            {correct ? <CheckCircle2 className="text-green-600" size={24}/> : <XCircle className="text-red-500" size={24}/>}
-                            <strong className="text-lg">{correct ? 'Correct!' : `Incorrect. The correct answer is Option ${String.fromCharCode(65 + item.answer_index)}.`}</strong>
+                            {correct ? <CheckCircle2 className="text-green-500" size={20}/> : <XCircle className="text-red-500" size={20}/>}
+                            <strong className="text-base">{correct ? 'Correct!' : `Incorrect. The correct answer is Option ${String.fromCharCode(65 + item.answer_index)}.`}</strong>
                           </div>
-                          <div className="prose prose-sm max-w-none opacity-90">
+                          <div className="prose prose-invert prose-sm max-w-none opacity-90">
                             <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]}>
                               {item.explanation.replace(/âœ…|â Œ/g, '').trim()}
                             </ReactMarkdown>
@@ -519,179 +553,74 @@ export default function ChatPage() {
                     </div>
                   )
                 })}
-
-                {quizDone && (
-                  <div className="bg-gradient-to-br from-slate-900 to-slate-800 p-8 rounded-3xl border border-slate-700 shadow-2xl mt-8 text-white relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-primary-500/10 blur-3xl rounded-full"></div>
-                    <div className="relative z-10 flex flex-col md:flex-row gap-8 items-center md:items-start">
-                      
-                      <div className="flex-1 text-center md:text-left">
-                        <div className="inline-flex items-center justify-center p-4 bg-primary-500/20 rounded-full text-primary-400 mb-4">
-                          <Target size={40} />
-                        </div>
-                        <h2 className="text-3xl font-black mb-2">Quiz Complete!</h2>
-                        <p className="text-slate-300 text-lg mb-6">Topic: {detectedTopic}</p>
-                        
-                        <div className="flex justify-center md:justify-start gap-4 mb-6">
-                          <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center min-w-[100px]">
-                            <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Score</p>
-                            <p className="text-2xl font-bold">{quizScore} / {quizQuestions.length}</p>
-                          </div>
-                          <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl text-center min-w-[100px]">
-                            <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Accuracy</p>
-                            <p className="text-2xl font-bold text-primary-400">{Math.round((quizScore / quizQuestions.length) * 100)}%</p>
-                          </div>
-                        </div>
-                        
-                        {quizMLResult && quizMLResult.prediction && (
-                          <div className="bg-slate-800/50 border border-slate-700/50 p-4 rounded-xl mb-6 space-y-4">
-                            <div className="flex items-center justify-between">
-                              <div>
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">ML Prediction</p>
-                                <p className={`font-bold ${quizMLResult.prediction === 'Weak' ? 'text-red-400' : quizMLResult.prediction === 'Strong' ? 'text-green-400' : 'text-amber-400'}`}>
-                                  {quizMLResult.prediction} Mastery
-                                </p>
-                              </div>
-                              <div className="text-right">
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Confidence</p>
-                                <p className="font-bold text-slate-100">{Math.round(quizMLResult.confidence * 100)}%</p>
-                              </div>
-                            </div>
-                            
-                            {quizMLResult.reasons && quizMLResult.reasons.length > 0 && (
-                              <div className="pt-3 border-t border-slate-700/50">
-                                <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Reason</p>
-                                <p className="text-sm text-slate-300 italic">{quizMLResult.reasons[0]}</p>
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {isSubmittingQuiz && (
-                          <div className="flex items-center gap-3 text-slate-400 mb-6">
-                            <div className="w-4 h-4 border-2 border-primary-500 border-t-transparent rounded-full animate-spin"></div>
-                            <span className="text-sm">ML Engine is analyzing your performance...</span>
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1 w-full bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
-                        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-4">Recommended Next Steps</p>
-                        <div className="space-y-3 mb-6">
-                          {quizMLResult?.recommendations ? (
-                            quizMLResult.recommendations.map((rec: any, idx: number) => (
-                              <button key={idx} className="w-full text-left bg-slate-800 hover:bg-slate-700 p-4 rounded-xl border border-slate-700 transition-colors flex items-center gap-3">
-                                <BookOpen className="text-blue-400" size={20} />
-                                <div>
-                                  <p className="font-bold text-sm text-slate-200">{rec.action}</p>
-                                  <p className="text-xs text-slate-400">{rec.resource}</p>
-                                </div>
-                              </button>
-                            ))
-                          ) : (
-                            <button className="w-full text-left bg-slate-800 hover:bg-slate-700 p-4 rounded-xl border border-slate-700 transition-colors flex items-center gap-3">
-                              <BookOpen className="text-blue-400" size={20} />
-                              <div>
-                                <p className="font-bold text-sm text-slate-200">Review {detectedTopic}</p>
-                                <p className="text-xs text-slate-400">Watch recommended video lessons</p>
-                              </div>
-                            </button>
-                          )}
-                        </div>
-                        
-                        <div className="pt-6 border-t border-slate-700/50">
-                          <p className="text-sm text-slate-300 mb-3 text-center">Need help understanding {detectedTopic}?</p>
-                          <button 
-                            onClick={() => {
-                              setActiveTab('chat')
-                              handleSend(`I just got some questions wrong about ${detectedTopic}. Could you please explain this topic with simple examples?`)
-                            }}
-                            className="w-full py-4 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
-                          >
-                            <BrainCircuit size={20}/> Ask AI Tutor
-                          </button>
-                        </div>
-                      </div>
-                      
-                    </div>
-                  </div>
-                )}
               </div>
             )}
             </div>
           </div>
         )}
 
-        {/* â”€â”€ SUMMARY TAB â”€â”€ */}
+        {/* ── SUMMARY TAB ── */}
         {activeTab === 'summary' && (
-          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-8">
-            <div className="max-w-[850px] mx-auto">
-            {!summary ? (
-              <div className="h-64 flex flex-col items-center justify-center gap-4 text-slate-400">
-                <BarChart2 size={48} className="opacity-30" />
-                <p className="text-lg">No session summary available.</p>
-                <button className="btn-primary" onClick={handleSessionSummary}>
-                  Generate Summary
-                </button>
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 py-8 custom-scrollbar relative">
+            <button onClick={() => setActiveTab('chat')} className="absolute top-8 left-8 text-slate-400 hover:text-white flex items-center gap-2 text-sm font-semibold transition-colors">
+               ← Back to Chat
+            </button>
+            <div className="max-w-[850px] mx-auto mt-10">
+            {isGeneratingSummary ? (
+              <div className="h-64 flex flex-col items-center justify-center gap-5 text-slate-400 mt-20">
+                <div className="w-10 h-10 border-4 border-accent-500 border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-lg font-medium text-slate-300">Generating Session Summary...</p>
+              </div>
+            ) : !summary ? (
+              <div className="max-w-md mx-auto mt-20 p-8 rounded-[24px] bg-[#12141c] border border-slate-800 shadow-xl text-center">
+                 <BarChart2 size={48} className="mx-auto mb-4 text-slate-600" />
+                 <h2 className="text-xl font-bold text-white mb-2">No summary available</h2>
+                 <p className="text-slate-400 text-sm mb-6">Ask some questions first to generate a summary.</p>
               </div>
             ) : (
-              <div className="bg-white p-8 rounded-3xl border border-slate-200 shadow-sm space-y-8">
+              <div className="bg-[#12141c] p-8 rounded-3xl border border-slate-800 shadow-sm space-y-8">
                 <div>
-                  <h2 className="text-2xl font-bold text-slate-900">Session Summary</h2>
-                  <p className="text-slate-500 mt-1">Review your learning progress from this chat session.</p>
+                  <h2 className="text-2xl font-bold text-white flex items-center gap-2">
+                    <Sparkles className="text-primary-500" size={24}/> Today's Summary
+                  </h2>
+                  <p className="text-slate-400 mt-1">Review your learning progress from this chat session.</p>
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="bg-primary-50 border border-primary-100 text-primary-800 px-6 py-5 rounded-2xl">
-                    <p className="text-sm text-primary-600 font-bold uppercase tracking-wider mb-1">Total Messages</p>
-                    <p className="text-4xl font-bold">{summary.total_messages}</p>
+                  <div className="bg-[#1a1b23] border border-slate-800 text-slate-200 px-6 py-5 rounded-2xl">
+                    <p className="text-xs text-primary-400 font-bold uppercase tracking-wider mb-1">Questions Asked</p>
+                    <p className="text-3xl font-bold">{summary.total_messages}</p>
                   </div>
-                  <div className="bg-accent-50 border border-accent-100 text-accent-800 px-6 py-5 rounded-2xl">
-                    <p className="text-sm text-accent-600 font-bold uppercase tracking-wider mb-1">Topics Discussed</p>
-                    <p className="text-4xl font-bold">{summary.topics_covered.length || 0}</p>
+                  <div className="bg-[#1a1b23] border border-slate-800 text-slate-200 px-6 py-5 rounded-2xl">
+                    <p className="text-xs text-accent-400 font-bold uppercase tracking-wider mb-1">Study Time</p>
+                    <p className="text-3xl font-bold">~{Math.max(1, Math.round(summary.total_messages * 1.5))} min</p>
                   </div>
                 </div>
                 
                 {summary.topics_covered.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-3 border-b border-slate-100 pb-2">Topics Covered</h3>
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Topics Covered</h3>
                     <div className="flex flex-wrap gap-2">
                       {summary.topics_covered.map((t, i) => (
-                        <span key={i} className="px-4 py-1.5 bg-slate-100 text-slate-800 border border-slate-200 rounded-full text-sm font-semibold shadow-sm">{t}</span>
+                        <span key={i} className="px-3 py-1 bg-[#1a1b23] text-slate-300 border border-slate-700/50 rounded-lg text-sm font-medium">{t}</span>
                       ))}
                     </div>
                   </div>
                 )}
                 
-                {summary.key_takeaways.length > 0 && (
-                  <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-3 border-b border-slate-100 pb-2">Key Takeaways</h3>
-                    <ul className="space-y-3">
-                      {summary.key_takeaways.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-3 text-[15px] text-slate-700 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
-                          <CheckCircle2 size={20} className="text-green-500 shrink-0 mt-0.5" />{item}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-                
                 {summary.recommended_next_steps.length > 0 && (
                   <div>
-                    <h3 className="text-lg font-bold text-slate-900 mb-3 border-b border-slate-100 pb-2">Recommended Next Steps</h3>
-                    <ul className="space-y-3">
+                    <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Next Recommendation</h3>
+                    <div className="space-y-3">
                       {summary.recommended_next_steps.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-3 text-[15px] text-slate-700 leading-relaxed bg-blue-50/50 p-3 rounded-xl border border-blue-100">
-                          <span className="w-6 h-6 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center font-bold text-sm shrink-0">{idx + 1}</span>
-                          {item}
-                        </li>
+                        <div key={idx} className="flex items-start gap-3 text-[14px] text-slate-300 leading-relaxed bg-[#1a1b23] p-4 rounded-xl border border-slate-800">
+                          <Target size={18} className="text-accent-400 shrink-0 mt-0.5" />
+                          <span className="font-semibold">{item}</span>
+                        </div>
                       ))}
-                    </ul>
+                    </div>
                   </div>
                 )}
-                
-                <div className="pt-4 border-t border-slate-200">
-                  <button className="btn-secondary w-full py-3" onClick={handleSessionSummary}>Refresh Summary</button>
-                </div>
               </div>
             )}
             </div>
@@ -701,111 +630,71 @@ export default function ChatPage() {
       </div>
 
       {/* RIGHT COLUMN: Learning Context Sidebar */}
-      <div className="hidden xl:flex w-[320px] bg-slate-900 flex-col text-slate-300 relative z-20 shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.5)]">
+      <div className="hidden xl:flex w-[300px] bg-[#0c0d12] flex-col text-slate-300 relative z-20 border-l border-slate-800 shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.5)]">
         
         <div className="p-6 border-b border-slate-800/80">
           <h3 className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2">
-            <Target size={14} className="text-accent-400"/> Context
+            <Target size={14} className="text-accent-500"/> Context
           </h3>
         </div>
         
-        <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar">
           {contextData ? (
             <>
-              {/* Active Topic */}
-              <div className="bg-slate-800/40 rounded-2xl p-5 border border-slate-700/50 shadow-inner">
-                <p className="text-[10px] text-slate-400 font-bold mb-2 uppercase tracking-widest">Current Focus</p>
-                <p className="text-white font-bold flex items-center gap-2 text-lg">
-                  <BookOpen size={18} className="text-blue-400"/> {detectedTopic}
+              {/* Weak Topic Block */}
+              <div className="bg-[#151722] rounded-2xl p-5 border border-slate-800">
+                <p className="text-[10px] text-slate-500 font-bold mb-3 uppercase tracking-widest flex items-center gap-1.5">
+                  <AlertTriangle size={12} className="text-red-400"/> Weak Topic
                 </p>
+                <p className="text-white font-bold text-lg mb-4">{detectedTopic}</p>
+                
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-400">Accuracy</span>
+                    <span className="text-slate-200 font-bold">28%</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-400">Mastery</span>
+                    <span className="text-xs font-bold bg-red-500/20 text-red-400 px-2 py-0.5 rounded-md">Weak</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-slate-400">Prerequisites</span>
+                    <span className="text-slate-200 font-medium text-right max-w-[120px] truncate">Arrays</span>
+                  </div>
+                </div>
+
+                <div className="mt-5 pt-4 border-t border-slate-800/80">
+                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mb-2">Recommended</p>
+                   <p className="text-sm font-medium text-slate-300">2 videos, 1 quiz</p>
+                </div>
               </div>
               
-              {/* Weak Topics */}
-              <div>
-                <p className="text-[10px] text-slate-400 font-bold mb-3 uppercase tracking-widest flex items-center gap-1.5"><AlertTriangle size={12} className="text-amber-400"/> Needs Attention</p>
-                {contextData.todayFocus && contextData.todayFocus !== "General Review" ? (
-                  <div className="flex flex-col gap-3">
-                    {contextData.todayFocus.split(' & ').map((topic: string) => (
-                      <div key={topic} className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3">
-                        <div className="flex items-center gap-2 text-amber-300 mb-2">
-                          <AlertTriangle size={14} className="text-amber-400"/>
-                          <span className="text-sm font-bold">{topic}</span>
-                        </div>
-                        {prediction && prediction.predicted_score === 'Weak' && (
-                          <div className="mt-2 text-xs text-amber-200/80">
-                            <p>Accuracy: {contextData.stats?.averageScore || 0}%</p>
-                            {prediction.reasons && prediction.reasons.length > 0 && (
-                                <p className="mt-1 font-semibold text-amber-300/90">Recommendation: {prediction.reasons[0]}</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-slate-500 bg-slate-800/30 rounded-xl p-3 border border-slate-800">You are doing great! No major weak topics.</p>
-                )}
-              </div>
-
               {/* Exam Readiness */}
-              <div className="bg-gradient-to-br from-slate-800/80 to-slate-800/40 rounded-2xl p-5 border border-slate-700/50">
-                <p className="text-[10px] text-slate-400 font-bold mb-3 uppercase tracking-widest">Exam Readiness</p>
+              <div className="bg-[#151722] rounded-2xl p-5 border border-slate-800">
+                <p className="text-[10px] text-slate-500 font-bold mb-3 uppercase tracking-widest">Exam Readiness</p>
                 {contextData.is_new_user || !contextData.examReadiness?.score ? (
                   <div className="text-center py-2">
                     <p className="text-sm font-bold text-slate-300 mb-1">Not Available Yet</p>
-                    <p className="text-xs text-slate-500">Complete 3 quizzes to unlock prediction.</p>
                   </div>
                 ) : (
                   <>
                     <div className="flex items-end justify-between mb-3">
-                      <span className="text-3xl font-black text-white leading-none">{contextData.examReadiness.score}%</span>
-                      <span className="text-xs text-emerald-400 font-bold bg-emerald-400/10 px-2 py-1 rounded-md">{contextData.examReadiness.label}</span>
+                      <span className="text-2xl font-black text-white leading-none">{contextData.examReadiness.score}%</span>
+                      <span className="text-[10px] text-emerald-400 font-bold uppercase">{contextData.examReadiness.label}</span>
                     </div>
-                    <div className="h-2 w-full bg-slate-900 rounded-full overflow-hidden shadow-inner">
-                      <div className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full" style={{width: `${contextData.examReadiness.score}%`}}></div>
+                    <div className="h-1.5 w-full bg-[#0a0b10] rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full" style={{width: `${contextData.examReadiness.score}%`}}></div>
                     </div>
                   </>
                 )}
               </div>
-
-              {/* ML Prediction */}
-              {prediction && (
-                <div className="bg-gradient-to-br from-primary-900/30 to-accent-900/20 border border-primary-500/20 rounded-2xl p-5 shadow-lg shadow-primary-900/10">
-                  <p className="text-[10px] text-primary-300 font-bold mb-3 uppercase tracking-widest flex items-center gap-1.5"><Zap size={12}/> ML Prediction</p>
-                  
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-400 font-medium">Predicted Score</span>
-                      <span className="text-lg text-white font-bold">{prediction.predicted_score}%</span>
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-400 font-medium">Confidence</span>
-                      <span className="text-sm text-primary-200 font-bold bg-primary-500/20 px-2 py-0.5 rounded-md">{prediction.confidence}%</span>
-                    </div>
-                  </div>
-                </div>
-              )}
             </>
           ) : (
             <div className="animate-pulse space-y-6">
-               <div className="h-20 bg-slate-800/50 rounded-2xl"></div>
-               <div className="h-24 bg-slate-800/50 rounded-2xl"></div>
-               <div className="h-28 bg-slate-800/50 rounded-2xl"></div>
+               <div className="h-40 bg-slate-800/30 rounded-2xl"></div>
+               <div className="h-24 bg-slate-800/30 rounded-2xl"></div>
             </div>
           )}
-        </div>
-        
-        <div className="p-6 border-t border-slate-800/80 bg-slate-900/50">
-          <div className="flex gap-3 items-center">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary-600 to-accent-500 flex items-center justify-center border-2 border-slate-800 shadow-md">
-              🤖
-            </div>
-            <div>
-              <p className="text-xs font-bold text-white">AI Learn Active</p>
-              <p className="text-[10px] text-slate-400 font-medium mt-0.5">Context-aware tutoring</p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
