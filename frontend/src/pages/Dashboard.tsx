@@ -117,7 +117,7 @@ export default function Dashboard() {
           
           <button 
             onClick={() => navigate('/learning')}
-            className="btn-primary px-8 py-4 text-lg"
+            className="bg-white text-primary-700 hover:bg-slate-50 px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition-all transform hover:scale-105 shadow-xl"
           >
             Start Learning <ArrowRight size={20} />
           </button>
@@ -128,7 +128,7 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 text-slate-100">
-      <div className="bg-gradient-to-r from-primary-600/20 to-accent-600/20 backdrop-blur-xl rounded-[20px] p-8 border border-slate-700/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative overflow-hidden min-h-[160px] shadow-lg shadow-primary-900/10">
+      <div className="bg-gradient-to-r from-primary-900/40 to-accent-900/30 rounded-[20px] p-6 border border-slate-800/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative overflow-hidden min-h-[130px]">
         
         {/* Left: Greeting and Goal */}
         <div className="flex-1 min-w-0 z-10">
@@ -155,7 +155,7 @@ export default function Dashboard() {
             <span className="text-lg font-bold text-white">{examReadiness?.score || 0}%</span>
           </div>
 
-          <button onClick={() => navigate('/learning')} className="btn-primary ml-2">
+          <button onClick={() => navigate('/learning')} className="ml-2 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-500 hover:to-accent-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center gap-2">
             Continue Learning <ArrowRight size={16} />
           </button>
         </div>
@@ -194,7 +194,7 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 space-y-6">
           {/* Recent Activity */}
-          <div className="card">
+          <div className="card bg-white/10 border-white/10 text-slate-100">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
               <Sparkles size={18} className="text-primary-300" /> Recent Activity
             </h2>
@@ -227,7 +227,7 @@ export default function Dashboard() {
 
           {/* Prerequisite Path (Knowledge Graph) */}
           {prerequisitePath && prerequisitePath.length > 0 && (
-            <div className="card">
+            <div className="card bg-white/10 border-white/10 text-slate-100">
               <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
                 <Brain size={18} className="text-accent-300" /> Knowledge Graph Gaps
               </h2>
@@ -277,7 +277,7 @@ export default function Dashboard() {
         </div>
 
         {/* Exam Readiness */}
-        <div className="card flex flex-col h-full relative group cursor-help">
+        <div className="card bg-white/10 border-white/10 text-slate-100 flex flex-col h-full relative group cursor-help">
           <h2 className="text-xl font-semibold mb-4">Exam Readiness</h2>
           {examReadiness?.label === "Not enough data" ? (
             <div className="text-center space-y-4 flex-1 flex flex-col justify-center items-center">
@@ -346,14 +346,14 @@ export default function Dashboard() {
             </div>
           )}
           
-          <button onClick={() => navigate('/learning')} className="btn-secondary w-full mt-4">
+          <button onClick={() => navigate('/learning')} className="w-full py-2.5 mt-4 border border-slate-700 hover:bg-[#1a1b23] rounded-xl text-sm font-semibold text-slate-300 transition-all flex items-center justify-center gap-2">
             View Action Plan <ArrowRight size={14} />
           </button>
         </div>
       </div>
 
       {/* Recommendations */}
-      <div className="card">
+      <div className="card bg-white/10 border-white/10 text-slate-100">
         <h2 className="text-xl font-semibold mb-4">Recommended for You</h2>
         <div className="grid grid-cols-1 gap-4">
               {recommendations.map((rec: any, idx: number) => (
@@ -375,7 +375,7 @@ export default function Dashboard() {
                         </div>
                       </div>
                     </div>
-                    <button onClick={() => handleStartRecommendation(rec)} className="btn-secondary px-4 py-2 text-sm">
+                    <button onClick={() => handleStartRecommendation(rec)} className="shrink-0 px-4 py-2 border border-slate-700 hover:border-slate-500 rounded-lg text-sm font-semibold text-slate-300 hover:text-white transition-colors bg-transparent">
                       Start
                     </button>
                   </div>

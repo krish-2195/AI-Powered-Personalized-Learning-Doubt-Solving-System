@@ -46,7 +46,7 @@ def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
             "timestamp": q.timestamp.isoformat(),
             "details": {
                 "topic": q.topic.name if q.topic else "Quiz",
-                "score": f"{int(q.accuracy * 100)}%"
+                "score": f"{int(q.accuracy)}%"
             }
         })
         
