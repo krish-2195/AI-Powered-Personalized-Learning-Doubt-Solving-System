@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Learn Platform - Architecture Diagram</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 40px;
+            display: flex;
+            justify-content: center;
+        }
+        .container {
+            width: 1000px;
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+        .header h1 {
+            color: #1e293b;
+            margin: 0 0 10px 0;
+            font-size: 28px;
+        }
+        .header p {
+            color: #64748b;
+            margin: 0;
+            font-size: 16px;
+        }
+        .architecture-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            position: relative;
+        }
+        .layer {
+            background-color: #ffffff;
+            border-radius: 12px;
+            padding: 24px;
+            border: 2px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1);
+        }
+        .layer-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            width: 100%;
+            text-align: center;
+            border-bottom: 2px dashed #f1f5f9;
+            padding-bottom: 10px;
+        }
+        .box {
+            background-color: #ffffff;
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 16px;
+            width: 80%;
+            text-align: center;
+            font-weight: 600;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 60px;
+            position: relative;
+            z-index: 2;
+        }
+        /* Specific Box Colors */
+        .box.frontend { border-color: #3b82f6; color: #1d4ed8; background: #eff6ff; }
+        .box.backend { border-color: #10b981; color: #047857; background: #ecfdf5; }
+        .box.ml { border-color: #f59e0b; color: #b45309; background: #fffbeb; }
+        .box.llm { border-color: #8b5cf6; color: #5b21b6; background: #f5f3ff; }
+        .box.kg { border-color: #ec4899; color: #be185d; background: #fdf2f8; }
+        .box.db-pg { border-color: #334155; color: #0f172a; background: #f8fafc; }
+        .box.db-mg { border-color: #14b8a6; color: #0f766e; background: #f0fdfa; }
+
+        .layer.frontend-layer { grid-column: 1 / 4; flex-direction: row; justify-content: space-around; }
+        .layer.frontend-layer .box { width: 30%; margin-bottom: 0; }
+        
+        .layer.backend-layer { grid-column: 2 / 3; }
+        .layer.backend-layer .box { width: 90%; }
+        
+        .layer.ai-layer { grid-column: 1 / 2; }
+        .layer.db-layer { grid-column: 3 / 4; }
+
+        /* Arrows using absolute SVG */
+        .svg-arrows {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        path {
+            stroke: #94a3b8;
+            stroke-width: 2.5;
+            fill: none;
+            marker-end: url(#arrowhead);
+        }
+        path.bidirectional {
+            marker-start: url(#arrowhead-start);
+        }
+        .label {
+            font-size: 11px;
+            fill: #64748b;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AI Learn Platform</h1>
+            <p>High-Level System Architecture</p>
+        </div>
+
+        <div class="architecture-grid">
+            
+            <svg class="svg-arrows">
+                <defs>
+                    <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                        <polygon points="0 0, 10 3.5, 0 7" fill="#94a3b8" />
+                    </marker>
+                    <marker id="arrowhead-start" markerWidth="10" markerHeight="7" refX="1" refY="3.5" orient="auto">
+                        <polygon points="10 0, 0 3.5, 10 7" fill="#94a3b8" />
+                    </marker>
+                </defs>
+                <!-- Frontend to Backend -->
+                <path d="M 460 140 L 460 200" class="bidirectional" />
+                <text x="470" y="175" class="label">REST / HTTP</text>
+                
+                <!-- Backend to ML -->
+                <path d="M 330 270 L 250 270" class="bidirectional" />
+                <text x="260" y="260" class="label">Inference</text>
+
+                <!-- Backend to LLM -->
+                <path d="M 330 360 L 250 360" class="bidirectional" />
+                <text x="260" y="350" class="label">Contextual Prompt</text>
+
+                <!-- Backend to KG -->
+                <path d="M 460 410 L 460 460" class="bidirectional" />
+                <text x="470" y="440" class="label">Prerequisites</text>
+
+                <!-- Backend to Postgres -->
+                <path d="M 590 270 L 670 270" class="bidirectional" />
+                <text x="600" y="260" class="label">ACID Relational</text>
+
+                <!-- Backend to Mongo -->
+                <path d="M 590 360 L 670 360" class="bidirectional" />
+                <text x="600" y="350" class="label">Logs / Chat</text>
+            </svg>
+
+            <!-- 1. Frontend Layer -->
+            <div class="layer frontend-layer">
+                <div class="layer-title">Client Layer</div>
+                <div class="box frontend">React App (Vite)</div>
+                <div class="box frontend">Student Dashboard</div>
+                <div class="box frontend">Admin Portal</div>
+            </div>
+
+            <!-- 2. AI & ML Layer -->
+            <div class="layer ai-layer" style="margin-top: 20px;">
+                <div class="layer-title">AI & ML Layer</div>
+                <div class="box ml">Random Forest<br><span style="font-size: 12px; font-weight: normal;">(Predictive)</span></div>
+                <div class="box llm">Gemini 2.5 Flash<br><span style="font-size: 12px; font-weight: normal;">(Generative LLM)</span></div>
+            </div>
+
+            <!-- 3. Backend API Layer -->
+            <div class="layer backend-layer" style="margin-top: 20px;">
+                <div class="layer-title">Application Layer</div>
+                <div class="box backend">FastAPI Routers</div>
+                <div class="box backend">AI Tutor Service</div>
+                <div class="box backend" style="border-color: #64748b; color: #475569; background: #f8fafc;">Recommendation Engine</div>
+                <div class="box kg" style="margin-top: 40px;">Knowledge Graph<br><span style="font-size: 12px; font-weight: normal;">(NetworkX)</span></div>
+            </div>
+
+            <!-- 4. Data Layer -->
+            <div class="layer db-layer" style="margin-top: 20px;">
+                <div class="layer-title">Data Layer (Polyglot)</div>
+                <div class="box db-pg">PostgreSQL<br><span style="font-size: 12px; font-weight: normal;">(Users, Quizzes)</span></div>
+                <div class="box db-mg">MongoDB<br><span style="font-size: 12px; font-weight: normal;">(Chat Logs)</span></div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>
