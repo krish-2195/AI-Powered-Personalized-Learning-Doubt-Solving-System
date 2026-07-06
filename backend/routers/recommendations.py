@@ -62,6 +62,17 @@ def record_recommendation_feedback(payload: RecommendationFeedbackPayload, db: S
             time_spent=payload.time_spent
         )
         db.add(feedback)
+        
+        # Also update the tracking table for the Admin Portal
+        if payload.clicked:
+            from database.models.postgres_models import Recommendation
+            rec_log = db.query(Recommendation).filter_by(
+                user_id=payload.user_id, 
+                resource_id=str(payload.content_id)
+            ).first()
+            if rec_log:
+                rec_log.interacted = True
+                rec_log.interacted_at = datetime.utcnow()
         db.commit()
         return success_response(message="Feedback recorded")
     except Exception as e:

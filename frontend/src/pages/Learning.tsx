@@ -74,7 +74,6 @@ export default function Learning() {
       // We will infer type from the original arrays
       const isVideo = videos.some(v => v.id === item.id)
       const isArticle = articles.some(a => a.id === item.id)
-      const isPractice = practice.some(p => p.id === item.id)
       const type = isVideo ? 'video' : isArticle ? 'article' : 'practice'
 
       return (

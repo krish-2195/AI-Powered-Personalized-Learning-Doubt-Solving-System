@@ -56,19 +56,7 @@ def get_learning_path(user_id: int, db: Session = Depends(get_db), current_user 
             else:
                 practice.append(content_data)
                 
-        # If practice is empty (e.g. we only seeded videos), we'll mock some practice quizzes based on existing topics
-        if not practice and len(videos) > 0:
-            topics_set = list(set([v["topic"] for v in videos]))
-            for t in topics_set[:3]:
-                practice.append({
-                    "id": f"mock_q_{t}",
-                    "title": f"Practice Quiz: {t}",
-                    "topic": t,
-                    "difficulty": "Medium",
-                    "duration_minutes": 15,
-                    "url": "#",
-                    "is_recommended": True
-                })
+
 
         return success_response(data={
             "videos": videos,

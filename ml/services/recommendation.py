@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from sqlalchemy.orm import Session, joinedload
-from database.models.postgres_models import Content, TopicPerformance
+from database.models.postgres_models import Content, TopicPerformance, Recommendation
 from ml.services.knowledge_graph import knowledge_graph
 
 class HybridRecommendationEngine:
@@ -128,12 +128,29 @@ class HybridRecommendationEngine:
             else:
                 reason = "Highly rated content"
                 
+            # Log recommendation to DB for admin tracking
+            rec_entry = db.query(Recommendation).filter_by(user_id=user_id, resource_id=str(r.id)).first()
+            if not rec_entry:
+                rec_entry = Recommendation(
+                    user_id=user_id,
+                    recommendation_type=r.content_type,
+                    resource_id=str(r.id),
+                    topic_id=r.topic_id,
+                    reason=reason,
+                    relevance_score=score
+                )
+                db.add(rec_entry)
+            else:
+                rec_entry.relevance_score = score
+                rec_entry.reason = reason
+                
             final_recs.append({
                 "content": r,
                 "match_score": round(min(99, score * 100)), # Convert to percentage
                 "reason": reason
             })
             
+        db.commit()
         return final_recs
 
 recommendation_service = HybridRecommendationEngine()

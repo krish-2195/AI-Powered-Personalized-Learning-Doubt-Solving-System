@@ -66,29 +66,13 @@ export default function Dashboard() {
   const {
     is_new_user,
     streak,
-    accuracyBoostTarget,
     todayFocus,
     stats,
     recentActivity,
     examReadiness,
     recommendations: apiRecommendations,
-    prerequisitePath,
-    exam_date,
-    exam_target
-  } = dashboardData
-
-  // Calculate dynamic "Exam in X Days"
-  const examDaysRemaining = exam_date ? Math.max(0, Math.ceil((new Date(exam_date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))) : null
-
-  const displayStats = {
-    videosWatched: stats?.videosWatched || 0, 
-    quizzesCompleted: recentActivity?.filter((a: any) => a.type === 'quiz').length || 0,
-    averageScore: stats?.averageScore || 0,
-    studyHours: stats?.studyHours || 0, 
-    topicsMastered: stats?.topicsMastered || 0,
-  }
-
-  // Use real recommendations from the API, or fallback to default ones if none exist
+    prerequisitePath
+  } = dashboardData  // Use real recommendations from the API, or fallback to default ones if none exist
   const recommendations = apiRecommendations && apiRecommendations.length > 0 
     ? apiRecommendations 
     : [
@@ -181,11 +165,11 @@ export default function Dashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[{
-          label: 'Videos Watched', value: `${stats?.videosWatched || 0} / 100`, icon: <BookOpen className="text-primary-400" size={20} />
+          label: 'Videos Watched', value: stats?.videosWatched || 0, icon: <BookOpen className="text-primary-400" size={20} />
         }, {
           label: 'Average Score', value: `${stats?.averageScore || 0}%`, icon: <TrendingUp className="text-accent-400" size={20} />
         }, {
-          label: 'Topics Mastered', value: `${stats?.topicsMastered || 0} / 56`, icon: <Target className="text-red-400" size={20} />
+          label: 'Topics Mastered', value: stats?.topicsMastered || 0, icon: <Target className="text-red-400" size={20} />
         }, {
           label: 'Study Time', value: (stats?.studyHours || 0) < 1 ? `${Math.round((stats?.studyHours || 0) * 60)} min` : `${(stats?.studyHours || 0).toFixed(1)} hrs`, icon: <Clock className="text-blue-400" size={20} />
         }].map((stat, idx) => (
@@ -228,7 +212,7 @@ export default function Dashboard() {
                           {isQuiz ? `Completed ${activity.details?.topic || 'General'} Quiz` : `Watched ${activity.details?.topic || 'Video'}`}
                         </p>
                         <p className="text-xs text-slate-500 mt-0.5">
-                          {isQuiz ? `Accuracy ${Math.floor(Math.random()*40 + 60)}% | Prediction Active` : '100% Completed'} • {new Date(activity.timestamp).toLocaleDateString()}
+                          {isQuiz ? `Accuracy ${activity.details?.score || '0%'} | Prediction Active` : '100% Completed'} • {new Date(activity.timestamp).toLocaleDateString()}
                         </p>
                       </div>
                     </div>
@@ -255,7 +239,6 @@ export default function Dashboard() {
                   {prerequisitePath.map((topic: string, idx: number) => {
                     const isCompleted = idx < prerequisitePath.length - 2;
                     const isCurrent = idx === prerequisitePath.length - 2 || (prerequisitePath.length === 1 && idx === 0);
-                    const isNext = idx > prerequisitePath.length - 2;
 
                     return (
                       <div key={idx} className="flex items-start gap-4 relative pb-6 last:pb-0">

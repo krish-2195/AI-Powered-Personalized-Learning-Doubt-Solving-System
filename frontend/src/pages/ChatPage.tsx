@@ -1,6 +1,6 @@
 import { useRef, useEffect, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Send, Sparkles, CheckCircle2, XCircle, BookOpen, BarChart2, Zap, BrainCircuit, Target, AlertTriangle, Copy, Check, Plus } from 'lucide-react'
+import { Send, Sparkles, CheckCircle2, XCircle, BarChart2, BrainCircuit, Target, AlertTriangle, Copy, Check, Plus } from 'lucide-react'
 import api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 import ReactMarkdown from 'react-markdown'
@@ -51,7 +51,7 @@ export default function ChatPage() {
   const [error, setError] = useState<string | null>(null)
   const [detectedTopic, setDetectedTopic] = useState<string>('General Problem Solving')
   const [contextData, setContextData] = useState<any>(null)
-  const [prediction, setPrediction] = useState<any>(null) // the general performance prediction
+  // const [prediction, setPrediction] = useState<any>(null) // the general performance prediction
   const [quizMLResult, setQuizMLResult] = useState<any>(null) // the specific quiz ML prediction
   const [isSubmittingQuiz, setIsSubmittingQuiz] = useState(false)
 
@@ -131,10 +131,6 @@ export default function ChatPage() {
     if (userId) {
       api.get(`/api/dashboard/?user_id=${userId}`)
         .then(res => setContextData(res.data.data))
-        .catch(console.error)
-        
-      api.get(`/api/performance/prediction/?user_id=${userId}`)
-        .then(res => setPrediction(res.data.data))
         .catch(console.error)
     }
   }, [userId])

@@ -80,32 +80,32 @@ export default function ContentTab() {
   })
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+    <div className="bg-[#12141c] rounded-2xl border border-slate-800 shadow-sm overflow-hidden flex flex-col md:flex-row min-h-[600px]">
       
       {/* Sidebar for SubTabs */}
-      <div className="w-full md:w-64 bg-slate-50 border-r border-slate-200 flex flex-col">
-        <div className="p-6 border-b border-slate-200">
-          <h2 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-            <BookOpen size={20} className="text-primary-600"/>
+      <div className="w-full md:w-64 bg-[#1a1b23] border-r border-slate-800 flex flex-col">
+        <div className="p-6 border-b border-slate-800">
+          <h2 className="text-lg font-bold text-white flex items-center gap-2">
+            <BookOpen size={20} className="text-primary-500"/>
             Repository
           </h2>
         </div>
         <div className="p-4 space-y-2 flex-1">
           <button 
             onClick={() => setActiveSubTab('questions')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${activeSubTab === 'questions' ? 'bg-primary-50 text-primary-700' : 'text-slate-600 hover:bg-slate-100'}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${activeSubTab === 'questions' ? 'bg-primary-500/10 text-primary-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}
           >
             <HelpCircle size={18}/> Question Bank
           </button>
           <button 
             onClick={() => setActiveSubTab('videos')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${activeSubTab === 'videos' ? 'bg-primary-50 text-primary-700' : 'text-slate-600 hover:bg-slate-100'}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${activeSubTab === 'videos' ? 'bg-primary-500/10 text-primary-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}
           >
             <Video size={18}/> Video Modules
           </button>
           <button 
             onClick={() => setActiveSubTab('study-materials')}
-            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${activeSubTab === 'study-materials' ? 'bg-primary-50 text-primary-700' : 'text-slate-600 hover:bg-slate-100'}`}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-colors ${activeSubTab === 'study-materials' ? 'bg-primary-500/10 text-primary-400' : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'}`}
           >
             <ArticleIcon size={18}/> Study Materials
           </button>
@@ -115,54 +115,54 @@ export default function ContentTab() {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col">
         {/* Header toolbar */}
-        <div className="p-6 border-b border-slate-200 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="p-6 border-b border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4 bg-[#12141c]">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18}/>
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" size={18}/>
             <input 
               type="text" 
               placeholder={`Search by Topic, Difficulty, or Text...`} 
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none" 
+              className="w-full pl-10 pr-4 py-2 bg-[#1a1b23] border border-slate-800 rounded-lg text-sm focus:ring-2 focus:ring-primary-500 focus:outline-none text-white placeholder-slate-500" 
             />
           </div>
           <div className="flex gap-3">
-            <button className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-50 flex items-center gap-2">
+            <button className="px-4 py-2 bg-[#1a1b23] border border-slate-800 text-slate-300 rounded-lg text-sm font-semibold hover:bg-slate-800 transition-colors flex items-center gap-2">
               <Filter size={16}/> Filter
             </button>
             {activeSubTab === 'questions' && (
               <button 
                 onClick={() => setIsModalOpen(true)}
-                className="px-4 py-2 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-bold shadow-sm flex items-center gap-2"
+                className="px-6 py-2.5 bg-primary-600 hover:bg-primary-500 text-white rounded-lg text-sm font-bold shadow-sm flex items-center gap-2 transition-colors"
               >
-                <Plus size={16}/> Add Question
+                <Plus size={18}/> Add Question
               </button>
             )}
           </div>
         </div>
 
         {/* Data Table */}
-        <div className="flex-1 overflow-auto">
+        <div className="flex-1 overflow-auto bg-[#12141c]">
           {loading ? (
             <div className="p-20 flex justify-center"><div className="w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin"></div></div>
           ) : filteredData.length === 0 ? (
             <div className="p-20 text-center flex flex-col items-center justify-center h-full">
-              <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4 text-slate-400">
+              <div className="w-16 h-16 bg-[#1a1b23] border border-slate-800 rounded-full flex items-center justify-center mb-4 text-slate-500">
                 <Search size={24} />
               </div>
               {activeSubTab === 'videos' ? (
                 <>
-                  <p className="text-slate-500 font-semibold mb-1">No Video Modules Available.</p>
+                  <p className="text-white font-bold mb-1">No Video Modules Available.</p>
                   <p className="text-xs text-slate-400">Video repository will be expanded in future versions.</p>
                 </>
               ) : activeSubTab === 'study-materials' ? (
                 <>
-                  <p className="text-slate-500 font-semibold mb-1">Future Content</p>
+                  <p className="text-white font-bold mb-1">Future Content</p>
                   <p className="text-xs text-slate-400">Planned Feature - Reserved for Phase 2.</p>
                 </>
               ) : (
                 <>
-                  <p className="text-slate-500 font-semibold mb-1">No content found.</p>
+                  <p className="text-white font-bold mb-1">No content found.</p>
                   <p className="text-xs text-slate-400">Add content or sync database.</p>
                 </>
               )}
@@ -170,44 +170,44 @@ export default function ContentTab() {
           ) : (
             <table className="w-full text-left border-collapse min-w-[600px]">
               <thead>
-                <tr className="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
-                  <th className="p-4 font-semibold w-12 text-center">ID</th>
-                  <th className="p-4 font-semibold">{activeSubTab === 'questions' ? 'Question' : 'Title'}</th>
-                  <th className="p-4 font-semibold">Topic</th>
-                  <th className="p-4 font-semibold">Difficulty</th>
-                  {activeSubTab !== 'questions' && <th className="p-4 font-semibold">Duration</th>}
-                  <th className="p-4 font-semibold text-right">Actions</th>
+                <tr className="bg-[#1a1b23] text-slate-400 text-[10px] uppercase font-bold tracking-widest border-b border-slate-800">
+                  <th className="p-4 w-12 text-center">ID</th>
+                  <th className="p-4">{activeSubTab === 'questions' ? 'Question' : 'Title'}</th>
+                  <th className="p-4">Topic</th>
+                  <th className="p-4">Difficulty</th>
+                  {activeSubTab !== 'questions' && <th className="p-4">Duration</th>}
+                  <th className="p-4 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-800/50">
                 {filteredData.map((item: any) => (
-                  <tr key={item.id} className="hover:bg-slate-50 transition-colors group">
-                    <td className="p-4 text-xs font-semibold text-slate-400 text-center">#{item.id}</td>
-                    <td className="p-4 text-sm font-medium text-slate-800 max-w-xs truncate">
+                  <tr key={item.id} className="hover:bg-[#1a1b23] transition-colors group">
+                    <td className="p-4 text-xs font-bold text-slate-500 text-center">#{item.id}</td>
+                    <td className="p-4 text-sm font-bold text-white max-w-xs truncate">
                       {item.question || item.title}
                     </td>
                     <td className="p-4">
-                      <span className="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-md text-xs font-semibold border border-slate-200">
+                      <span className="px-2.5 py-1 bg-slate-800 text-slate-300 rounded-md text-[10px] uppercase tracking-wider font-bold border border-slate-700">
                         {item.topic}
                       </span>
                     </td>
                     <td className="p-4">
-                      <span className={`px-2 py-1 rounded-md text-xs font-bold ${
-                        item.difficulty === 'Easy' ? 'bg-green-100 text-green-700' :
-                        item.difficulty === 'Medium' ? 'bg-amber-100 text-amber-700' :
-                        item.difficulty === 'Hard' ? 'bg-red-100 text-red-700' :
-                        'bg-slate-100 text-slate-700'
+                      <span className={`px-2 py-1 rounded-md text-[10px] uppercase font-bold tracking-wider ${
+                        item.difficulty === 'Easy' ? 'bg-green-500/10 text-green-400' :
+                        item.difficulty === 'Medium' ? 'bg-amber-500/10 text-amber-400' :
+                        item.difficulty === 'Hard' ? 'bg-red-500/10 text-red-400' :
+                        'bg-slate-800 text-slate-400'
                       }`}>
                         {item.difficulty}
                       </span>
                     </td>
                     {activeSubTab !== 'questions' && (
-                      <td className="p-4 text-sm text-slate-600 font-medium">{item.duration} min</td>
+                      <td className="p-4 text-sm text-slate-400 font-bold">{item.duration} min</td>
                     )}
                     <td className="p-4 text-right opacity-0 group-hover:opacity-100 transition-opacity">
                       <div className="flex justify-end gap-1">
-                        <button className="p-1.5 text-slate-400 hover:text-primary-600 hover:bg-primary-50 rounded transition-colors"><Edit2 size={16}/></button>
-                        <button className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded transition-colors"><Trash2 size={16}/></button>
+                        <button className="p-1.5 text-slate-400 hover:text-primary-400 hover:bg-primary-500/20 rounded transition-colors"><Edit2 size={16}/></button>
+                        <button className="p-1.5 text-slate-400 hover:text-red-400 hover:bg-red-500/20 rounded transition-colors"><Trash2 size={16}/></button>
                       </div>
                     </td>
                   </tr>
@@ -219,19 +219,20 @@ export default function ContentTab() {
       </div>
 
       {/* Add Question Modal */}
+      {/* Add Question Modal */}
       {isModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-200 flex flex-col max-h-[90vh]">
-            <div className="p-6 border-b border-slate-100 flex justify-between items-center">
-              <h2 className="text-xl font-bold text-slate-800 flex items-center gap-2"><HelpCircle className="text-primary-600"/> Add New Question</h2>
-              <button onClick={() => setIsModalOpen(false)} className="text-slate-400 hover:text-slate-600 transition-colors">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#12141c]/80 backdrop-blur-sm">
+          <div className="bg-[#1a1b23] rounded-3xl w-full max-w-2xl shadow-2xl border border-slate-800 flex flex-col max-h-[90vh]">
+            <div className="p-6 border-b border-slate-800 flex justify-between items-center">
+              <h2 className="text-xl font-bold text-white flex items-center gap-2"><HelpCircle className="text-primary-500"/> Add New Question</h2>
+              <button onClick={() => setIsModalOpen(false)} className="text-slate-500 hover:text-slate-300 transition-colors">
                 <X size={24}/>
               </button>
             </div>
             
-            <div className="p-6 overflow-y-auto flex-1">
+            <div className="p-6 overflow-y-auto flex-1 custom-scrollbar">
               {message && (
-                <div className={`p-4 mb-6 rounded-xl text-sm font-bold flex items-center gap-2 ${message.includes('success') ? 'bg-green-50 text-green-700 border border-green-200' : 'bg-red-50 text-red-700 border border-red-200'}`}>
+                <div className={`p-4 mb-6 rounded-xl text-sm font-bold flex items-center gap-2 ${message.includes('success') ? 'bg-green-500/10 text-green-400 border border-green-500/20' : 'bg-red-500/10 text-red-400 border border-red-500/20'}`}>
                   {message.includes('success') && <Check size={18}/>}
                   {message}
                 </div>
@@ -239,33 +240,33 @@ export default function ContentTab() {
 
               <form id="add-question-form" onSubmit={handleAddQuestion} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Question Text</label>
+                  <label className="block text-sm font-bold text-slate-300 mb-2">Question Text</label>
                   <textarea 
                     required 
                     value={newQuestion.question_text}
                     onChange={e => setNewQuestion({...newQuestion, question_text: e.target.value})}
-                    className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none min-h-[100px]"
+                    className="w-full p-3 bg-[#12141c] border border-slate-800 text-white rounded-xl focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none min-h-[100px] placeholder-slate-600"
                     placeholder="Enter the main question..."
                   />
                 </div>
                 
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Topic</label>
+                    <label className="block text-sm font-bold text-slate-300 mb-2">Topic</label>
                     <input 
                       type="text" 
                       required 
                       value={newQuestion.topic}
                       onChange={e => setNewQuestion({...newQuestion, topic: e.target.value})}
-                      className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                      className="w-full p-3 bg-[#12141c] border border-slate-800 text-white rounded-xl focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none placeholder-slate-600"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-slate-700 mb-2">Difficulty</label>
+                    <label className="block text-sm font-bold text-slate-300 mb-2">Difficulty</label>
                     <select 
                       value={newQuestion.difficulty}
                       onChange={e => setNewQuestion({...newQuestion, difficulty: e.target.value})}
-                      className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                      className="w-full p-3 bg-[#12141c] border border-slate-800 text-white rounded-xl focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none"
                     >
                       <option value="Easy">Easy</option>
                       <option value="Medium">Medium</option>
@@ -275,16 +276,16 @@ export default function ContentTab() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-3">Options (Select the correct one)</label>
+                  <label className="block text-sm font-bold text-slate-300 mb-3">Options (Select the correct one)</label>
                   <div className="space-y-3">
                     {[0, 1, 2, 3].map(i => (
-                      <div key={i} className={`flex items-center gap-3 p-2 border rounded-xl transition-colors ${newQuestion.correct_answer_index === i ? 'border-primary-500 bg-primary-50' : 'border-slate-200'}`}>
+                      <div key={i} className={`flex items-center gap-3 p-2 border rounded-xl transition-colors ${newQuestion.correct_answer_index === i ? 'border-primary-500 bg-primary-500/10' : 'border-slate-800 bg-[#12141c]'}`}>
                         <input 
                           type="radio" 
                           name="correct_option"
                           checked={newQuestion.correct_answer_index === i}
                           onChange={() => setNewQuestion({...newQuestion, correct_answer_index: i})}
-                          className="w-5 h-5 text-primary-600 ml-2"
+                          className="w-5 h-5 text-primary-500 ml-2"
                         />
                         <input 
                           type="text" 
@@ -292,7 +293,7 @@ export default function ContentTab() {
                           value={newQuestion.options[i]}
                           onChange={e => handleOptionChange(i, e.target.value)}
                           placeholder={`Option ${String.fromCharCode(65 + i)}`}
-                          className="flex-1 bg-transparent p-2 focus:outline-none"
+                          className="flex-1 bg-transparent p-2 focus:outline-none text-white placeholder-slate-600"
                         />
                       </div>
                     ))}
@@ -300,22 +301,22 @@ export default function ContentTab() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-semibold text-slate-700 mb-2">Explanation (Optional)</label>
+                  <label className="block text-sm font-bold text-slate-300 mb-2">Explanation (Optional)</label>
                   <textarea 
                     value={newQuestion.explanation}
                     onChange={e => setNewQuestion({...newQuestion, explanation: e.target.value})}
-                    className="w-full p-3 border border-slate-300 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                    className="w-full p-3 bg-[#12141c] border border-slate-800 text-white rounded-xl focus:border-primary-500 focus:ring-1 focus:ring-primary-500 focus:outline-none placeholder-slate-600"
                     placeholder="Explain why the correct answer is right..."
                   />
                 </div>
               </form>
             </div>
             
-            <div className="p-6 border-t border-slate-100 flex justify-end gap-3 bg-slate-50 rounded-b-3xl">
+            <div className="p-6 border-t border-slate-800 flex justify-end gap-3 bg-[#12141c] rounded-b-3xl">
               <button 
                 type="button" 
                 onClick={() => setIsModalOpen(false)}
-                className="px-6 py-2.5 bg-white border border-slate-300 text-slate-700 font-bold rounded-xl hover:bg-slate-50 transition-all"
+                className="px-6 py-2.5 bg-transparent border border-slate-700 text-slate-300 font-bold rounded-xl hover:bg-slate-800 transition-all"
               >
                 Cancel
               </button>

@@ -75,6 +75,28 @@ def get_admin_stats(db: Session = Depends(get_db)):
         kg_topics = knowledge_graph.graph.number_of_nodes()
         kg_relationships = knowledge_graph.graph.number_of_edges()
         
+        # Chart Data: Quiz Attempts (last 7 days)
+        today_date = datetime.utcnow().date()
+        quiz_history = []
+        for i in range(6, -1, -1):
+            target_date = today_date - timedelta(days=i)
+            # This is simple count in python. For a large DB this should be a GROUP BY query.
+            # But here we just query DB for this specific day to be safe without cross-db date functions.
+            count = db.query(QuizAttempt).filter(
+                QuizAttempt.timestamp >= datetime.combine(target_date, datetime.min.time()),
+                QuizAttempt.timestamp <= datetime.combine(target_date, datetime.max.time())
+            ).count()
+            quiz_history.append({"name": target_date.strftime("%a"), "attempts": count})
+            
+        # Chart Data: User Growth (last 6 months)
+        user_growth = []
+        all_users = db.query(User.created_at).all()
+        for i in range(5, -1, -1):
+            target_date = today_date - timedelta(days=30*i)
+            # Count users created before or on this month
+            count = sum(1 for u in all_users if u.created_at and u.created_at.date() <= target_date)
+            user_growth.append({"name": target_date.strftime("%b"), "users": count})
+            
         return success_response(data={
             "platform": {
                 "total_users": total_users,
@@ -110,6 +132,10 @@ def get_admin_stats(db: Session = Depends(get_db)):
             "knowledge_graph": {
                 "topics": kg_topics,
                 "relationships": kg_relationships
+            },
+            "charts": {
+                "quiz_attempts": quiz_history,
+                "user_growth": user_growth
             },
             "system_health": "healthy"
         }, message="Admin stats fetched successfully")

@@ -1,0 +1,3 @@
+# Abstract
+
+The AI Learn Platform is an adaptive, AI-powered learning and doubt-solving system...
