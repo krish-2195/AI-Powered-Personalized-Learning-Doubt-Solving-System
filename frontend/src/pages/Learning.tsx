@@ -80,8 +80,8 @@ export default function Learning() {
       return (
         <div key={`${item.id}-${idx}`} className="card relative group bg-white/5 border-white/10 hover:bg-white/10 transition-all flex flex-col h-full">
           {item.is_recommended && (
-            <div className="absolute -top-3 -right-3 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1">
-              <Brain className="w-3 h-3" /> Recommended
+            <div className="absolute -top-3 -right-3 bg-indigo-500/20 text-indigo-400 border border-indigo-500/30 px-3 py-1 rounded-full text-[10px] uppercase font-bold flex items-center gap-1">
+              <Brain className="w-3 h-3" /> AI Recommended
             </div>
           )}
           

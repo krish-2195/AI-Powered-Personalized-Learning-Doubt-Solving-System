@@ -148,8 +148,9 @@ class PerformanceRecord(Base):
     weakness_score = Column(Float, nullable=True)
     last_updated = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationship
+    # Relationships
     user = relationship("User", back_populates="performance_records")
+    topic = relationship("Topic")
 
 class WeakTopic(Base):
     __tablename__ = "weak_topics"

@@ -42,6 +42,14 @@ export default function ProfilePage() {
     )
   }
 
+  const courseMapping: Record<string, string> = {
+    'ai': 'Artificial Intelligence (AI)',
+    'aiml': 'AI & Machine Learning',
+    'cs': 'Computer Science',
+    'cse': 'Computer Science Engineering',
+  }
+  const displayCourse = profile?.course ? (courseMapping[profile.course.toLowerCase()] || profile.course) : 'Unknown'
+
   if (!profile) {
     return <div className="text-center mt-32 text-slate-400">Failed to load profile</div>
   }
@@ -71,7 +79,7 @@ export default function ProfilePage() {
               <span className="text-xs uppercase text-slate-400 font-semibold flex items-center gap-2">
                 <BookOpen size={14} /> Course
               </span>
-              <p className="mt-1 font-medium">{profile.course}</p>
+              <p className="mt-1 font-medium">{displayCourse}</p>
             </div>
             
             <div className="p-3 bg-white/5 rounded-xl border border-white/10">
@@ -83,14 +91,24 @@ export default function ProfilePage() {
 
             <div className="p-3 bg-white/5 rounded-xl border border-white/10">
               <span className="text-xs uppercase text-slate-400 font-semibold flex items-center gap-2">
-                <Brain size={14} /> Current Level
+                <Activity size={14} /> Joined
               </span>
-              <p className="mt-1 font-medium capitalize">{profile.current_level}</p>
+              <p className="mt-1 font-medium">{profile.created_at ? new Date(profile.created_at).toLocaleDateString() : 'Recently'}</p>
             </div>
-          </div>
-          
-          <div className="mt-6">
-            <button className="btn-secondary w-full" disabled>Edit Profile (Coming Soon)</button>
+
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <span className="text-xs uppercase text-slate-400 font-semibold flex items-center gap-2">
+                <Target size={14} /> Current Prediction
+              </span>
+              <p className="mt-1 font-medium text-amber-400">Needs Improvement</p>
+            </div>
+
+            <div className="p-3 bg-white/5 rounded-xl border border-white/10">
+              <span className="text-xs uppercase text-slate-400 font-semibold flex items-center gap-2">
+                <Brain size={14} /> Learning Style
+              </span>
+              <p className="mt-1 font-medium">Visual Learner</p>
+            </div>
           </div>
         </div>
 

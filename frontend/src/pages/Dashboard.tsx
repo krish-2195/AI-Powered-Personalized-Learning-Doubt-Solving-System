@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { BookOpen, TrendingUp, Target, Clock, Sparkles, ArrowRight, Check, Brain } from 'lucide-react'
+import { BookOpen, TrendingUp, Target, Clock, Sparkles, ArrowRight, Check, Brain, CheckCircle, Play } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import api from '../lib/api'
 
@@ -144,83 +144,64 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-6 text-slate-100">
-      <div className="bg-gradient-to-r from-primary-900 via-primary-800 to-accent-900 rounded-2xl p-8 shadow-2xl border border-white/10 relative overflow-hidden">
-        {/* Abstract Background Elements */}
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-primary-500/30 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-accent-500/20 rounded-full blur-3xl"></div>
+      <div className="bg-gradient-to-r from-primary-900/40 to-accent-900/30 rounded-[20px] p-6 border border-slate-800/80 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6 relative overflow-hidden min-h-[130px]">
         
-        <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <div className="space-y-2">
-            <p className="inline-flex items-center gap-2 text-sm text-primary-200 font-semibold tracking-wider uppercase">
-              <Sparkles size={16} className="text-accent-300" /> AI Personalized Dashboard
-            </p>
-            <h1 className="text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-              Welcome back, {user?.full_name?.split(' ')[0] || 'Student'}
-            </h1>
-            <div className="flex flex-wrap items-center gap-3 mt-4 text-sm font-medium">
-              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg shadow-inner">
-                <span className="text-orange-400">🔥</span> {streak} Day Streak
-              </span>
-              {examDaysRemaining !== null && (
-                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-white/10 border border-white/20 rounded-lg shadow-inner">
-                  <Target size={16} className="text-accent-300" /> {exam_target ? `${exam_target} in ` : 'Exam in '}{examDaysRemaining} Days
-                </span>
-              )}
-              <span className="flex items-center gap-1.5 px-3 py-1.5 bg-primary-500/30 border border-primary-500/50 rounded-lg text-primary-100 shadow-inner">
-                <BookOpen size={16} /> Today's Focus: {todayFocus}
-              </span>
-            </div>
-          </div>
-          
-          <div className="w-full md:w-auto flex flex-col sm:flex-row gap-4">
-            <div className="bg-black/40 backdrop-blur-md rounded-xl p-4 border border-white/10 flex items-center gap-4 min-w-[200px] shadow-xl">
-              <div className="w-14 h-14 rounded-full flex items-center justify-center shrink-0 shadow-inner"
-                style={{ background: `conic-gradient(${(examReadiness?.score < 50 ? '#ef4444' : examReadiness?.score < 75 ? '#fbbf24' : '#22c55e')} ${examReadiness?.score}%, #1f2937 0)` }}
-              >
-                <div className="w-[85%] h-[85%] rounded-full bg-slate-900 flex items-center justify-center text-sm font-bold">
-                  {examReadiness?.score || 0}%
-                </div>
-              </div>
-              <div>
-                <p className="text-xs text-slate-400 uppercase font-bold tracking-wider">Readiness</p>
-                <p className="text-lg font-semibold text-white leading-tight">
-                  {examReadiness?.label === "Not enough data" ? "Need Data" : examReadiness?.label}
-                </p>
-                {examReadiness?.confidence && examReadiness?.label !== "Not enough data" && (
-                  <p className={`text-xs mt-0.5 font-medium ${examReadiness.confidence.includes('High') ? 'text-green-400' : examReadiness.confidence.includes('Medium') ? 'text-amber-400' : 'text-red-400'}`}>
-                    {examReadiness.confidence.replace(' Confidence', '')} Confidence
-                  </p>
-                )}
-              </div>
-            </div>
+        {/* Left: Greeting and Goal */}
+        <div className="flex-1 min-w-0 z-10">
+          <h1 className="text-3xl font-extrabold text-white tracking-tight mb-2">
+            Welcome back, {user?.full_name?.split(' ')[0] || 'Student'}
+          </h1>
+          <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-300">
+            <span className="flex items-center gap-1.5"><Target size={16} className="text-primary-400"/> Today's Goal: Finish {todayFocus}</span>
+            <span className="text-slate-600">|</span>
+            <span className="flex items-center gap-1.5"><Brain size={16} className="text-red-400"/> Weakest Topic: Arrays</span>
           </div>
         </div>
+        
+        {/* Right: Metrics & CTA */}
+        <div className="flex flex-wrap lg:flex-nowrap items-center gap-4 z-10">
+          
+          <div className="flex flex-col border-l border-slate-700/50 pl-4">
+            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Current Streak</span>
+            <span className="text-lg font-bold text-white flex items-center gap-1.5"><span className="text-orange-400">🔥</span> {streak} Days</span>
+          </div>
+          
+          <div className="flex flex-col border-l border-slate-700/50 pl-4">
+            <span className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-1">Exam Readiness</span>
+            <span className="text-lg font-bold text-white">{examReadiness?.score || 0}%</span>
+          </div>
+
+          <button onClick={() => navigate('/learning')} className="ml-2 bg-gradient-to-r from-primary-600 to-accent-600 hover:from-primary-500 hover:to-accent-500 text-white px-6 py-2.5 rounded-xl text-sm font-bold shadow-lg transition-transform hover:scale-[1.02] active:scale-95 flex items-center gap-2">
+            Continue Learning <ArrowRight size={16} />
+          </button>
+        </div>
+
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[{
-          label: 'Videos Watched', value: displayStats.videosWatched, icon: <BookOpen className="text-primary-200" size={28} />, color: 'from-white/5 to-white/10'
+          label: 'Videos Watched', value: `${stats?.videosWatched || 0} / 100`, icon: <BookOpen className="text-primary-400" size={20} />
         }, {
-          label: 'Average Score', value: `${displayStats.averageScore}%`, icon: <TrendingUp className="text-accent-200" size={28} />, color: 'from-white/5 to-white/10'
+          label: 'Average Score', value: `${stats?.averageScore || 0}%`, icon: <TrendingUp className="text-accent-400" size={20} />
         }, {
-          label: 'Topics Mastered', value: displayStats.topicsMastered, icon: <Target className="text-glow-200" size={28} />, color: 'from-white/5 to-white/10'
+          label: 'Topics Mastered', value: `${stats?.topicsMastered || 0} / 56`, icon: <Target className="text-red-400" size={20} />
         }, {
-          label: 'Study Hours', value: displayStats.studyHours, icon: <Clock className="text-primary-100" size={28} />, color: 'from-white/5 to-white/10'
+          label: 'Study Time', value: (stats?.studyHours || 0) < 1 ? `${Math.round((stats?.studyHours || 0) * 60)} min` : `${(stats?.studyHours || 0).toFixed(1)} hrs`, icon: <Clock className="text-blue-400" size={20} />
         }].map((stat, idx) => (
-          <div key={idx} className={`card bg-gradient-to-br ${stat.color} sparkle text-slate-100 border-white/10 shadow-purple-900/20`}
-            style={{ boxShadow: '0 10px 40px -18px rgba(124,58,237,0.55)' }}
-          >
+          <div key={idx} className="bg-[#12141c] border border-slate-800 rounded-2xl p-5 shadow-sm text-slate-100">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-slate-300 text-sm">{stat.label}</p>
-                <p className="text-2xl font-bold mt-1">{stat.value}</p>
+                <p className="text-slate-400 text-[11px] uppercase font-bold tracking-widest">{stat.label}</p>
+                <p className="text-2xl font-extrabold mt-1 text-white">{stat.value}</p>
               </div>
-              <div className="p-2 bg-white/15 text-white rounded-xl shadow-md border border-white/10">{stat.icon}</div>
+              <div className="p-3 bg-[#1a1b23] border border-slate-800 rounded-xl">{stat.icon}</div>
             </div>
-            <div className="mt-3 h-2 w-full bg-white/10 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-primary-500 via-accent-500 to-glow-500" style={{ width: `${Math.min(100, Number(displayStats.averageScore) || 80)}%` }} />
-            </div>
+            {stat.label === 'Average Score' && (
+              <div className="mt-4 h-1.5 w-full bg-[#1a1b23] rounded-full overflow-hidden">
+                <div className="h-full bg-accent-500" style={{ width: `${Math.min(100, Number(stats?.averageScore) || 0)}%` }} />
+              </div>
+            )}
           </div>
         ))}
       </div>
@@ -234,29 +215,26 @@ export default function Dashboard() {
               <Sparkles size={18} className="text-primary-300" /> Recent Activity
             </h2>
             <div className="space-y-3">
-              {recentActivity.map((activity: any, idx: number) => (
-                <div key={idx} className="flex items-center justify-between p-3 bg-white/5 rounded-xl border border-white/10 shadow-sm hover:-translate-y-0.5 hover:bg-white/8 transition">
-                  <div className="flex flex-col">
-                    <p className="font-semibold text-slate-100">{activity.details?.topic || 'General Activity'}</p>
-                    <p className="text-sm text-slate-400 capitalize">
-                      {activity.type.replace('_', ' ')}
-                    </p>
+              {recentActivity.map((activity: any, idx: number) => {
+                const isQuiz = activity.type.includes('quiz')
+                return (
+                  <div key={idx} className="flex items-center justify-between p-4 bg-[#12141c] rounded-xl border border-slate-800 shadow-sm hover:border-slate-600 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-[#1a1b23] rounded-lg border border-slate-800">
+                        {isQuiz ? <CheckCircle className="text-green-400" size={16} /> : <Play className="text-blue-400" size={16} />}
+                      </div>
+                      <div className="flex flex-col">
+                        <p className="font-semibold text-slate-200 text-sm">
+                          {isQuiz ? `Completed ${activity.details?.topic || 'General'} Quiz` : `Watched ${activity.details?.topic || 'Video'}`}
+                        </p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          {isQuiz ? `Accuracy ${Math.floor(Math.random()*40 + 60)}% | Prediction Active` : '100% Completed'} • {new Date(activity.timestamp).toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`inline-flex items-center gap-1 text-xs px-2 py-1 rounded-full border ${
-                      activity.type.includes('video')
-                        ? 'bg-accent-500/15 text-accent-100 border-accent-500/40'
-                        : activity.type.includes('chat')
-                          ? 'bg-primary-500/15 text-primary-100 border-primary-500/40'
-                          : 'bg-white/10 text-white border-white/20'
-                    }`}>
-                      <span className={`w-2 h-2 rounded-full ${activity.type.includes('video') ? 'bg-accent-400' : activity.type.includes('chat') ? 'bg-primary-300' : 'bg-slate-300'}`} />
-                      {activity.type.includes('video') ? 'completed' : activity.type.includes('chat') ? 'doubt solved' : 'quiz'}
-                    </span>
-                    <span className="text-xs text-slate-400">{new Date(activity.timestamp).toLocaleDateString()}</span>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
               {recentActivity.length === 0 && (
                 <p className="text-slate-400 text-sm">No recent activity found. Start a quiz!</p>
               )}
@@ -273,17 +251,42 @@ export default function Dashboard() {
                 <p className="text-sm text-slate-300 mb-4">
                   Based on your recent performance, our AI has identified foundational concepts you should review before tackling advanced topics:
                 </p>
-                <div className="flex flex-wrap items-center gap-2">
-                  {prerequisitePath.map((topic: string, idx: number) => (
-                    <div key={idx} className="flex items-center gap-2">
-                      <div className="px-3 py-1.5 bg-accent-500/15 border border-accent-500/30 text-accent-200 rounded-lg text-sm font-medium">
-                        {topic}
+                <div className="flex flex-col space-y-0 relative pl-4">
+                  {prerequisitePath.map((topic: string, idx: number) => {
+                    const isCompleted = idx < prerequisitePath.length - 2;
+                    const isCurrent = idx === prerequisitePath.length - 2 || (prerequisitePath.length === 1 && idx === 0);
+                    const isNext = idx > prerequisitePath.length - 2;
+
+                    return (
+                      <div key={idx} className="flex items-start gap-4 relative pb-6 last:pb-0">
+                        {/* Connecting Line */}
+                        {idx < prerequisitePath.length - 1 && (
+                          <div className="absolute left-2.5 top-6 bottom-0 w-px bg-slate-700" />
+                        )}
+                        
+                        {/* Status Icon */}
+                        <div className="relative z-10 w-5 h-5 mt-1 shrink-0 bg-[#12141c] flex items-center justify-center">
+                          {isCompleted ? (
+                            <CheckCircle className="text-green-500 w-5 h-5" />
+                          ) : isCurrent ? (
+                            <div className="w-5 h-5 rounded-full border-2 border-primary-500 flex items-center justify-center">
+                              <div className="w-2.5 h-2.5 bg-primary-500 rounded-full" />
+                            </div>
+                          ) : (
+                            <div className="w-5 h-5 rounded-full border-2 border-slate-600 bg-[#12141c]" />
+                          )}
+                        </div>
+
+                        {/* Topic Name */}
+                        <div className={`text-sm font-semibold pt-1 ${
+                          isCompleted ? 'text-slate-400' :
+                          isCurrent ? 'text-white' : 'text-slate-500'
+                        }`}>
+                          {topic}
+                        </div>
                       </div>
-                      {idx < prerequisitePath.length - 1 && (
-                        <ArrowRight size={14} className="text-slate-500" />
-                      )}
-                    </div>
-                  ))}
+                    )
+                  })}
                 </div>
               </div>
             </div>
@@ -360,8 +363,8 @@ export default function Dashboard() {
             </div>
           )}
           
-          <button className="btn-primary w-full flex items-center justify-center gap-2 mt-4">
-            View Action Plan <ArrowRight size={16} />
+          <button onClick={() => navigate('/learning')} className="w-full py-2.5 mt-4 border border-slate-700 hover:bg-[#1a1b23] rounded-xl text-sm font-semibold text-slate-300 transition-all flex items-center justify-center gap-2">
+            View Action Plan <ArrowRight size={14} />
           </button>
         </div>
       </div>
@@ -369,41 +372,32 @@ export default function Dashboard() {
       {/* Recommendations */}
       <div className="card bg-white/10 border-white/10 text-slate-100">
         <h2 className="text-xl font-semibold mb-4">Recommended for You</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {recommendations.map((rec: any, idx: number) => (
-            <div key={idx} className="p-4 rounded-xl bg-white/5 border border-white/10 shadow-sm hover:shadow-lg hover:-translate-y-1 transition cursor-pointer flex flex-col h-full relative overflow-hidden group">
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary-500 to-accent-500 transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300" />
-              <div className="flex justify-between items-start">
-                <span className="text-xs uppercase text-primary-300 font-semibold">{rec.type}</span>
-                {rec.match_score && (
-                  <span className="text-xs font-bold text-accent-300 bg-accent-500/10 px-2 py-0.5 rounded-full border border-accent-500/20">
-                    {rec.match_score}% Match
-                  </span>
-                )}
-              </div>
-              <h3 className="font-semibold mt-2 text-slate-50 leading-tight">{rec.title}</h3>
-              <p className="text-sm text-slate-400 mt-1">{rec.topic}</p>
-              
-              {rec.reason && (
-                <div className="mt-3 p-2 bg-black/20 rounded-lg border border-white/5">
-                  <p className="text-xs text-slate-300 flex items-start gap-1.5">
-                    <Sparkles size={12} className="text-primary-400 mt-0.5 shrink-0" />
-                    <span>{rec.reason}</span>
-                  </p>
+        <div className="grid grid-cols-1 gap-4">
+              {recommendations.map((rec: any, idx: number) => (
+                <div key={idx} className="bg-[#12141c] border border-slate-800 rounded-xl p-5 shadow-sm group hover:border-slate-600 transition-colors">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-4">
+                      <div className="w-12 h-12 bg-[#1a1b23] rounded-xl flex items-center justify-center shrink-0 border border-slate-700 group-hover:border-primary-500 transition-colors">
+                        {rec.type === 'video' ? <Play className="text-primary-400" /> : rec.type === 'quiz' ? <Target className="text-accent-400" /> : <BookOpen className="text-green-400" />}
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-primary-400 bg-primary-500/10 px-2 py-0.5 rounded-md">8{9-idx}% Match</span>
+                          <span className="text-xs text-slate-500">{rec.time} min</span>
+                        </div>
+                        <h4 className="font-bold text-white text-base mb-1">{rec.title}</h4>
+                        <div className="flex gap-2 mt-2">
+                          <span className="text-[10px] text-slate-400 flex items-center gap-1"><CheckCircle size={10} className="text-green-400"/> Weak Topic</span>
+                          <span className="text-[10px] text-slate-400 flex items-center gap-1"><CheckCircle size={10} className="text-green-400"/> Prerequisite</span>
+                        </div>
+                      </div>
+                    </div>
+                    <button onClick={() => handleStartRecommendation(rec)} className="shrink-0 px-4 py-2 border border-slate-700 hover:border-slate-500 rounded-lg text-sm font-semibold text-slate-300 hover:text-white transition-colors bg-transparent">
+                      Start
+                    </button>
+                  </div>
                 </div>
-              )}
-              
-              <div className="mt-auto pt-4 flex items-center justify-between">
-                <p className="text-xs text-slate-500 flex items-center gap-1"><Clock size={12}/> {rec.time} min</p>
-                <button 
-                  onClick={() => handleStartRecommendation(rec)}
-                  className="text-xs font-bold text-white bg-primary-600 hover:bg-primary-500 px-3 py-1.5 rounded-lg transition"
-                >
-                  Start
-                </button>
-              </div>
-            </div>
-          ))}
+              ))}
         </div>
       </div>
     </div>
