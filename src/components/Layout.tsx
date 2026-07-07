@@ -2,6 +2,8 @@ import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { Home, BookOpen, MessageSquare, User, BarChart3, LogOut, Sparkles, Flame, Zap } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import PageTransition from './PageTransition'
+import StreakWidget from './StreakWidget'
+import StreakCelebration from './StreakCelebration'
 
 export default function Layout() {
   const location = useLocation()
@@ -22,6 +24,7 @@ export default function Layout() {
 
   return (
     <div className="relative h-screen overflow-hidden text-slate-50">
+      <StreakCelebration />
       <div className="absolute inset-0 bg-grid opacity-70" aria-hidden />
       <div className="pointer-events-none absolute -left-24 top-8 h-72 w-72 rounded-full bg-primary-500/25 blur-3xl floating" aria-hidden />
       <div className="pointer-events-none absolute -right-16 bottom-10 h-72 w-72 rounded-full bg-accent-500/20 blur-3xl floating" aria-hidden />
@@ -39,11 +42,7 @@ export default function Layout() {
             </div>
           </div>
 
-          <div className="pill w-full justify-center">
-            <Flame size={16} className="text-glow-400" />
-            <span className="font-semibold">{user?.streak_count || 0} day streak</span>
-            <span className="text-glow-400">🔥</span>
-          </div>
+          <StreakWidget />
 
           <nav className="mt-1 flex flex-col gap-1.5">
             <p className="px-2 pb-1 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">Menu</p>
