@@ -1,0 +1,18 @@
+user_id,topic_id,topic,subject,quiz_accuracy,avg_time_per_question,total_attempts,question_difficulty,videos_watched,articles_read,chatbot_questions,study_duration,daily_streak,ewma_accuracy,prerequisite_mastery,previous_attempt_accuracy,label
+U3,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50.0,0.0,2
+U4,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50.0,0.0,2
+U5,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50.0,0.0,2
+U6,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50.0,0.0,2
+U7,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50.0,0.0,2
+U8,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50.0,0.0,2
+U9,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50.0,0.0,2
+U10,1,Arrays,Data Structures & Algorithms,0.4,30.0,3,Medium,1,0,0,5.0,1,0.4000000000000001,50.0,0.4,2
+U11,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,1,40.0,50.0,0.0,2
+U15,1,Arrays,Data Structures & Algorithms,0.0,30.0,1,Medium,0,0,0,0.0,1,0.0,50.0,0.0,Beginner
+U18,1,Arrays,Data Structures & Algorithms,1.0,30.0,1,Medium,0,0,0,0.0,1,1.0,50.0,0.0,Beginner
+U19,9,Recursion,Data Structures & Algorithms,100.0,30.0,1,Medium,0,0,0,0.0,1,100.0,50.0,0.0,Beginner
+U19,7,Sorting,Data Structures & Algorithms,80.0,30.0,1,Medium,0,0,0,0.0,1,80.0,50.0,0.0,Beginner
+U10,1,Arrays,Data Structures & Algorithms,10.2,108.5,2,Medium,1,0,0,5.0,1,0.4000000000000001,50.0,0.4,2
+U10,1,Arrays,Data Structures & Algorithms,0.4,30.0,2,Medium,1,0,0,5.0,1,0.4000000000000001,50.0,0.4,2
+U10,2,Linked Lists,Data Structures & Algorithms,80.0,210.0,1,Medium,0,0,0,0.0,1,80.0,50.0,0.0,Moderate
+U10,7,Sorting,Data Structures & Algorithms,0.0,45.0,1,Medium,0,0,0,0.0,1,0.0,50.0,0.0,Weak

@@ -1,0 +1,98 @@
+{
+    "model_version": "Random Forest v8",
+    "dataset_size": 4002,
+    "overall_metrics": {
+        "accuracy": 0.9940029985007496,
+        "weighted_f1": 0.994010347429429
+    },
+    "classification_report": {
+        "Moderate": {
+            "precision": 0.9845559845559846,
+            "recall": 0.9922178988326849,
+            "f1": 0.9883720930232558,
+            "support": 1028
+        },
+        "Strong": {
+            "precision": 0.9962264150943396,
+            "recall": 0.9924812030075187,
+            "f1": 0.9943502824858758,
+            "support": 798
+        },
+        "Weak": {
+            "precision": 0.9976969138645785,
+            "recall": 0.9954044117647058,
+            "f1": 0.9965493443754313,
+            "support": 2176
+        }
+    },
+    "confusion_matrix": {
+        "labels": [
+            "Moderate",
+            "Strong",
+            "Weak"
+        ],
+        "matrix": [
+            [
+                1020,
+                3,
+                5
+            ],
+            [
+                6,
+                792,
+                0
+            ],
+            [
+                10,
+                0,
+                2166
+            ]
+        ]
+    },
+    "feature_importance": [
+        {
+            "feature": "quiz_accuracy",
+            "importance": 0.3625254003938421
+        },
+        {
+            "feature": "ewma_accuracy",
+            "importance": 0.22760526171027667
+        },
+        {
+            "feature": "prerequisite_mastery",
+            "importance": 0.17080229940084163
+        },
+        {
+            "feature": "avg_time_per_question",
+            "importance": 0.09482701431098067
+        },
+        {
+            "feature": "previous_attempt_accuracy",
+            "importance": 0.07073103221487977
+        },
+        {
+            "feature": "total_attempts",
+            "importance": 0.02683191548145335
+        },
+        {
+            "feature": "study_duration",
+            "importance": 0.01426086998108283
+        },
+        {
+            "feature": "chatbot_questions",
+            "importance": 0.011048091990175353
+        },
+        {
+            "feature": "daily_streak",
+            "importance": 0.009248958909992168
+        },
+        {
+            "feature": "videos_watched",
+            "importance": 0.006125604876243069
+        },
+        {
+            "feature": "articles_read",
+            "importance": 0.005993550730232364
+        }
+    ]
+}

@@ -1,0 +1,128 @@
+parent_topic,child_topic
+Programming Basics,Functions
+Programming Basics,Arrays
+Programming Basics,Complexity Analysis
+Functions,Recursion
+Complexity Analysis,Arrays
+Complexity Analysis,Sorting
+Arrays,Searching
+Arrays,Sorting
+Arrays,Two Pointer Technique
+Arrays,Sliding Window
+Searching,Binary Search
+Sorting,Merge Sort
+Sorting,Quick Sort
+Recursion,Trees
+Recursion,Backtracking
+Recursion,Dynamic Programming Basics
+Trees,Binary Search Trees
+Trees,Tree Traversals
+Trees,Heap
+Binary Search Trees,AVL Trees
+Binary Search Trees,Segment Trees
+Tree Traversals,BFS
+Tree Traversals,DFS
+Heap,Priority Queue
+Linked Lists,Stacks
+Linked Lists,Queues
+Linked Lists,Hash Tables
+Stacks,Expression Evaluation
+Stacks,Monotonic Stack
+Queues,BFS
+BFS,Shortest Path Algorithms
+DFS,Topological Sort
+DFS,Cycle Detection
+Graphs,BFS
+Graphs,DFS
+Graphs,Shortest Path Algorithms
+Graphs,Minimum Spanning Tree
+Graphs,Topological Sort
+Shortest Path Algorithms,Dijkstra Algorithm
+Shortest Path Algorithms,Bellman Ford Algorithm
+Dynamic Programming Basics,Knapsack Problem
+Dynamic Programming Basics,Longest Common Subsequence
+DBMS Basics,ER Model
+DBMS Basics,Relational Model
+ER Model,Relational Model
+Relational Model,Functional Dependencies
+Functional Dependencies,Normalization
+Normalization,First Normal Form
+First Normal Form,Second Normal Form
+Second Normal Form,Third Normal Form
+Third Normal Form,BCNF
+Normalization,SQL
+SQL,Basic Queries
+Basic Queries,Joins
+Basic Queries,Aggregation Functions
+Joins,Subqueries
+Joins,Views
+Subqueries,Window Functions
+Aggregation Functions,Group By and Having
+SQL,Transactions
+Transactions,ACID Properties
+ACID Properties,Concurrency Control
+Concurrency Control,Locks and Locking Protocols
+Concurrency Control,Deadlock in DBMS
+Locks and Locking Protocols,Isolation Levels
+Transactions,Indexing
+Indexing,B Tree and B+ Tree
+Indexing,Hashing
+Operating System Basics,Processes
+Operating System Basics,Memory Basics
+Processes,Threads
+Processes,CPU Scheduling
+Processes,Inter-Process Communication
+Threads,Thread Synchronization
+Thread Synchronization,Mutex and Semaphores
+Mutex and Semaphores,Producer Consumer Problem
+CPU Scheduling,FCFS and SJF
+FCFS and SJF,Round Robin Scheduling
+Round Robin Scheduling,Priority Scheduling
+CPU Scheduling,Deadlocks
+Deadlocks,Deadlock Detection
+Deadlocks,Deadlock Prevention
+Deadlock Prevention,Bankers Algorithm
+Memory Basics,Memory Management
+Memory Management,Paging
+Memory Management,Segmentation
+Paging,Virtual Memory
+Virtual Memory,Page Replacement Algorithms
+Computer Networks Basics,OSI Model
+OSI Model,Physical Layer
+OSI Model,Data Link Layer
+OSI Model,Network Layer
+Physical Layer,Data Link Layer
+Data Link Layer,Network Layer
+Network Layer,TCP/IP
+TCP/IP,IP Addressing
+IP Addressing,Subnetting
+TCP/IP,TCP and UDP
+TCP and UDP,Routing
+Routing,Static Routing
+Routing,Dynamic Routing
+Dynamic Routing,RIP
+Dynamic Routing,OSPF
+OSPF,BGP
+Routing,DNS
+DNS,HTTP
+HTTP,HTTPS and TLS
+HTTP,HTTP Methods and Status Codes
+Programming Basics,Classes
+Classes,Objects
+Classes,Access Modifiers
+Objects,Constructors and Destructors
+Objects,Encapsulation
+Access Modifiers,Encapsulation
+Encapsulation,Inheritance
+Inheritance,Single Inheritance
+Inheritance,Multiple Inheritance
+Single Inheritance,Method Overriding
+Multiple Inheritance,Diamond Problem
+Method Overriding,Polymorphism
+Polymorphism,Compile Time Polymorphism
+Polymorphism,Runtime Polymorphism
+Runtime Polymorphism,Abstraction
+Abstraction,Abstract Classes
+Abstraction,Interfaces
+Abstract Classes,Design Patterns
+Interfaces,Design Patterns

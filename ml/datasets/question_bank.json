@@ -1,0 +1,5541 @@
+[
+  {
+    "question_id": 101,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Arrays",
+    "topic_id": 1,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is the time complexity of accessing an element by index in an array?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n\u00b2)"
+    ],
+    "correct_answer": "O(1)",
+    "explanation": "Arrays store elements in contiguous memory locations, so any element can be accessed directly using its index in constant time O(1).",
+    "tags": [
+      "array",
+      "indexing",
+      "traversal",
+      "in-place",
+      "sliding-window"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Arrays."
+  },
+  {
+    "question_id": 102,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Arrays",
+    "topic_id": 1,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which of the following is a disadvantage of arrays?",
+    "options": [
+      "Fast access by index",
+      "Fixed size",
+      "Simple to use",
+      "Supports random access"
+    ],
+    "correct_answer": "Fixed size",
+    "explanation": "Arrays have a fixed size that must be specified at the time of declaration, making them inflexible when the number of elements is unknown.",
+    "tags": [
+      "array",
+      "indexing",
+      "traversal",
+      "in-place",
+      "sliding-window"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Arrays."
+  },
+  {
+    "question_id": 103,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Arrays",
+    "topic_id": 1,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the time complexity of inserting an element at the beginning of an array of size n?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n\u00b2)"
+    ],
+    "correct_answer": "O(n)",
+    "explanation": "Inserting at the beginning requires shifting all n existing elements one position to the right, resulting in O(n) time complexity.",
+    "tags": [
+      "array",
+      "indexing",
+      "traversal",
+      "in-place",
+      "sliding-window"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Arrays to solve problems."
+  },
+  {
+    "question_id": 104,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Arrays",
+    "topic_id": 1,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "In a 2D array arr[m][n], what is the address of element arr[i][j] using row-major order?",
+    "options": [
+      "Base + (i * n + j) * size",
+      "Base + (j * m + i) * size",
+      "Base + (i + j) * size",
+      "Base + (i * m + j) * size"
+    ],
+    "correct_answer": "Base + (i * n + j) * size",
+    "explanation": "In row-major order, rows are stored sequentially. Each row has n elements, so element [i][j] is at offset i*n + j from the base address.",
+    "tags": [
+      "array",
+      "indexing",
+      "traversal",
+      "in-place",
+      "sliding-window"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Arrays to solve problems."
+  },
+  {
+    "question_id": 105,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Arrays",
+    "topic_id": 1,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the best time complexity achievable for finding the majority element (appears more than n/2 times) in an unsorted array?",
+    "options": [
+      "O(n\u00b2)",
+      "O(n log n)",
+      "O(n)",
+      "O(log n)"
+    ],
+    "correct_answer": "O(n)",
+    "explanation": "Boyer-Moore Voting Algorithm finds the majority element in O(n) time and O(1) space by maintaining a candidate and a count.",
+    "tags": [
+      "array",
+      "indexing",
+      "traversal",
+      "in-place",
+      "sliding-window"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Arrays."
+  },
+  {
+    "question_id": 106,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Linked Lists",
+    "topic_id": 2,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "Which of the following is true about a singly linked list?",
+    "options": [
+      "Each node has two pointers",
+      "Each node stores only data, no pointer",
+      "Each node has a pointer to the next node only",
+      "Each node has a pointer to both next and previous nodes"
+    ],
+    "correct_answer": "Each node has a pointer to the next node only",
+    "explanation": "In a singly linked list, each node contains data and a single pointer that points to the next node in the list.",
+    "tags": [
+      "linked-list",
+      "pointers",
+      "traversal",
+      "cycle-detection",
+      "reversal"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Linked Lists."
+  },
+  {
+    "question_id": 107,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Linked Lists",
+    "topic_id": 2,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the time complexity of searching for an element in an unsorted singly linked list?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correct_answer": "O(n)",
+    "explanation": "In the worst case, every node must be traversed to find the target element, giving O(n) time complexity.",
+    "tags": [
+      "linked-list",
+      "pointers",
+      "traversal",
+      "cycle-detection",
+      "reversal"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Linked Lists."
+  },
+  {
+    "question_id": 108,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Linked Lists",
+    "topic_id": 2,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "Which data structure is most suitable to implement a LIFO (Last In First Out) structure using linked lists?",
+    "options": [
+      "Queue",
+      "Stack",
+      "Deque",
+      "Priority Queue"
+    ],
+    "correct_answer": "Stack",
+    "explanation": "A stack follows LIFO order. Using a linked list, push and pop both operate on the head in O(1) time.",
+    "tags": [
+      "linked-list",
+      "pointers",
+      "traversal",
+      "cycle-detection",
+      "reversal"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Linked Lists to solve problems."
+  },
+  {
+    "question_id": 109,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Linked Lists",
+    "topic_id": 2,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "How can you detect a cycle in a linked list efficiently?",
+    "options": [
+      "Use a hash set to track visited nodes",
+      "Floyd's cycle detection (slow and fast pointers)",
+      "Reverse the list and compare",
+      "Both A and B"
+    ],
+    "correct_answer": "Both A and B",
+    "explanation": "Both hashing (O(n) space) and Floyd's two-pointer algorithm (O(1) space) detect cycles effectively. Floyd's is preferred for space efficiency.",
+    "tags": [
+      "linked-list",
+      "pointers",
+      "traversal",
+      "cycle-detection",
+      "reversal"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Linked Lists to solve problems."
+  },
+  {
+    "question_id": 110,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Linked Lists",
+    "topic_id": 2,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the time complexity of reversing a doubly linked list?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n\u00b2)"
+    ],
+    "correct_answer": "O(n)",
+    "explanation": "Reversing requires traversing all n nodes and swapping their next and prev pointers, giving O(n) time complexity.",
+    "tags": [
+      "linked-list",
+      "pointers",
+      "traversal",
+      "cycle-detection",
+      "reversal"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Linked Lists."
+  },
+  {
+    "question_id": 111,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Stacks",
+    "topic_id": 3,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "Which principle does a stack follow?",
+    "options": [
+      "FIFO",
+      "LIFO",
+      "LILO",
+      "FILO"
+    ],
+    "correct_answer": "LIFO",
+    "explanation": "A stack follows Last In First Out (LIFO) \u2013 the last element pushed is the first one to be popped.",
+    "tags": [
+      "stack",
+      "LIFO",
+      "push",
+      "pop",
+      "expression-evaluation"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Stacks."
+  },
+  {
+    "question_id": 112,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Stacks",
+    "topic_id": 3,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What operation removes and returns the top element of a stack?",
+    "options": [
+      "Push",
+      "Peek",
+      "Pop",
+      "Insert"
+    ],
+    "correct_answer": "Pop",
+    "explanation": "The pop operation removes the top element from the stack and returns it. Push adds an element, and peek only views the top without removing it.",
+    "tags": [
+      "stack",
+      "LIFO",
+      "push",
+      "pop",
+      "expression-evaluation"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Stacks."
+  },
+  {
+    "question_id": 113,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Stacks",
+    "topic_id": 3,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "Which of the following applications uses a stack?",
+    "options": [
+      "CPU scheduling",
+      "Breadth-First Search",
+      "Balanced parentheses checking",
+      "Shortest path algorithms"
+    ],
+    "correct_answer": "Balanced parentheses checking",
+    "explanation": "A stack is used to check balanced parentheses by pushing opening brackets and popping when a closing bracket is found, verifying the match.",
+    "tags": [
+      "stack",
+      "LIFO",
+      "push",
+      "pop",
+      "expression-evaluation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Stacks to solve problems."
+  },
+  {
+    "question_id": 114,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Stacks",
+    "topic_id": 3,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What happens when you try to pop from an empty stack?",
+    "options": [
+      "Returns null",
+      "Returns -1",
+      "Stack underflow",
+      "Stack overflow"
+    ],
+    "correct_answer": "Stack underflow",
+    "explanation": "Attempting to pop from an empty stack causes a stack underflow condition, which is an error state.",
+    "tags": [
+      "stack",
+      "LIFO",
+      "push",
+      "pop",
+      "expression-evaluation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Stacks to solve problems."
+  },
+  {
+    "question_id": 115,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Stacks",
+    "topic_id": 3,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "Using two stacks, how can you implement a queue with O(1) amortized time for enqueue and dequeue?",
+    "options": [
+      "Push to stack1 for enqueue; for dequeue, move all from stack1 to stack2 only when stack2 is empty",
+      "Always move elements between stacks on every operation",
+      "Use stack1 for enqueue and stack2 for dequeue always",
+      "It is not possible to achieve O(1) amortized"
+    ],
+    "correct_answer": "Push to stack1 for enqueue; for dequeue, move all from stack1 to stack2 only when stack2 is empty",
+    "explanation": "Elements are moved from stack1 to stack2 only when stack2 is empty. Each element is moved at most once, giving O(1) amortized cost per operation.",
+    "tags": [
+      "stack",
+      "LIFO",
+      "push",
+      "pop",
+      "expression-evaluation"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Stacks."
+  },
+  {
+    "question_id": 116,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Queues",
+    "topic_id": 4,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "Which principle does a queue follow?",
+    "options": [
+      "LIFO",
+      "FIFO",
+      "Random Access",
+      "FILO"
+    ],
+    "correct_answer": "FIFO",
+    "explanation": "A queue follows First In First Out (FIFO) \u2013 the first element enqueued is the first one to be dequeued.",
+    "tags": [
+      "queue",
+      "FIFO",
+      "enqueue",
+      "dequeue",
+      "BFS"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Queues."
+  },
+  {
+    "question_id": 117,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Queues",
+    "topic_id": 4,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "In a circular queue of size n, how many elements can be stored?",
+    "options": [
+      "n",
+      "n-1",
+      "n+1",
+      "n/2"
+    ],
+    "correct_answer": "n-1",
+    "explanation": "A circular queue of size n can hold n-1 elements to distinguish between full and empty states using the front and rear pointers.",
+    "tags": [
+      "queue",
+      "FIFO",
+      "enqueue",
+      "dequeue",
+      "BFS"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Queues."
+  },
+  {
+    "question_id": 118,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Queues",
+    "topic_id": 4,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "Which data structure is used in Breadth-First Search (BFS)?",
+    "options": [
+      "Stack",
+      "Queue",
+      "Heap",
+      "Tree"
+    ],
+    "correct_answer": "Queue",
+    "explanation": "BFS uses a queue to explore nodes level by level. Nodes are enqueued when discovered and dequeued when visited.",
+    "tags": [
+      "queue",
+      "FIFO",
+      "enqueue",
+      "dequeue",
+      "BFS"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Queues to solve problems."
+  },
+  {
+    "question_id": 119,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Queues",
+    "topic_id": 4,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a deque?",
+    "options": [
+      "A queue that allows insertion and deletion from both ends",
+      "A queue with priority",
+      "A circular queue",
+      "A queue implemented using a stack"
+    ],
+    "correct_answer": "A queue that allows insertion and deletion from both ends",
+    "explanation": "A deque (double-ended queue) supports insertions and deletions from both the front and the rear, making it more flexible than a standard queue.",
+    "tags": [
+      "queue",
+      "FIFO",
+      "enqueue",
+      "dequeue",
+      "BFS"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Queues to solve problems."
+  },
+  {
+    "question_id": 120,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Queues",
+    "topic_id": 4,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the time complexity of finding the maximum in a sliding window of size k over an array of n elements using a deque?",
+    "options": [
+      "O(nk)",
+      "O(n log n)",
+      "O(n)",
+      "O(k log n)"
+    ],
+    "correct_answer": "O(n)",
+    "explanation": "Using a monotonic deque, each element is added and removed at most once, resulting in O(n) total time for all windows.",
+    "tags": [
+      "queue",
+      "FIFO",
+      "enqueue",
+      "dequeue",
+      "BFS"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Queues."
+  },
+  {
+    "question_id": 121,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Trees",
+    "topic_id": 5,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is the maximum number of nodes at level l of a binary tree?",
+    "options": [
+      "l",
+      "2^l",
+      "2l",
+      "l\u00b2"
+    ],
+    "correct_answer": "2^l",
+    "explanation": "At level 0 (root) there is 1 node, at level 1 there are 2 nodes, and at level l there can be at most 2^l nodes.",
+    "tags": [
+      "tree",
+      "binary-tree",
+      "BST",
+      "traversal",
+      "height",
+      "balancing"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Trees."
+  },
+  {
+    "question_id": 122,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Trees",
+    "topic_id": 5,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which traversal of a Binary Search Tree gives elements in sorted order?",
+    "options": [
+      "Preorder",
+      "Postorder",
+      "Inorder",
+      "Level order"
+    ],
+    "correct_answer": "Inorder",
+    "explanation": "Inorder traversal (Left \u2192 Root \u2192 Right) of a BST visits nodes in ascending sorted order.",
+    "tags": [
+      "tree",
+      "binary-tree",
+      "BST",
+      "traversal",
+      "height",
+      "balancing"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Trees."
+  },
+  {
+    "question_id": 123,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Trees",
+    "topic_id": 5,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the height of a complete binary tree with n nodes?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(n log n)",
+      "O(\u221an)"
+    ],
+    "correct_answer": "O(log n)",
+    "explanation": "A complete binary tree is filled level by level. With n nodes, the height is \u230alog\u2082(n)\u230b, which is O(log n).",
+    "tags": [
+      "tree",
+      "binary-tree",
+      "BST",
+      "traversal",
+      "height",
+      "balancing"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Trees to solve problems."
+  },
+  {
+    "question_id": 124,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Trees",
+    "topic_id": 5,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What property must every node in an AVL tree satisfy?",
+    "options": [
+      "Left subtree height equals right subtree height",
+      "The balance factor (|left height - right height|) \u2264 1",
+      "All leaves are at the same level",
+      "Each node has exactly two children"
+    ],
+    "correct_answer": "The balance factor (|left height - right height|) \u2264 1",
+    "explanation": "An AVL tree is a self-balancing BST where for every node, the heights of the left and right subtrees differ by at most 1.",
+    "tags": [
+      "tree",
+      "binary-tree",
+      "BST",
+      "traversal",
+      "height",
+      "balancing"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Trees to solve problems."
+  },
+  {
+    "question_id": 125,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Trees",
+    "topic_id": 5,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "In a Red-Black Tree, what is the maximum number of nodes at height h?",
+    "options": [
+      "2^h - 1",
+      "2^(h+1) - 1",
+      "h\u00b2",
+      "2h"
+    ],
+    "correct_answer": "2^(h+1) - 1",
+    "explanation": "A Red-Black Tree of height h can have at most 2^(h+1) - 1 nodes, as it maintains near-balance properties with its coloring rules.",
+    "tags": [
+      "tree",
+      "binary-tree",
+      "BST",
+      "traversal",
+      "height",
+      "balancing"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Trees."
+  },
+  {
+    "question_id": 126,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is a graph with no edges called?",
+    "options": [
+      "Null graph",
+      "Complete graph",
+      "Dense graph",
+      "Sparse graph"
+    ],
+    "correct_answer": "Null graph",
+    "explanation": "A null graph (also called an empty graph) has vertices but no edges connecting them.",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Graphs."
+  },
+  {
+    "question_id": 127,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which algorithm is used to find the shortest path in an unweighted graph?",
+    "options": [
+      "Dijkstra's",
+      "Bellman-Ford",
+      "BFS",
+      "DFS"
+    ],
+    "correct_answer": "BFS",
+    "explanation": "BFS explores nodes level by level, so the first time it reaches a node it has found the shortest (fewest edges) path in an unweighted graph.",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Graphs."
+  },
+  {
+    "question_id": 128,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the time complexity of Dijkstra's algorithm using a min-heap (priority queue)?",
+    "options": [
+      "O(V\u00b2)",
+      "O(E log V)",
+      "O(VE)",
+      "O(V log E)"
+    ],
+    "correct_answer": "O(E log V)",
+    "explanation": "With a binary min-heap, each edge relaxation takes O(log V), and there are E edges, giving O(E log V) total time.",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Graphs to solve problems."
+  },
+  {
+    "question_id": 129,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "Which algorithm detects negative weight cycles in a graph?",
+    "options": [
+      "Dijkstra's",
+      "Prim's",
+      "Bellman-Ford",
+      "Kruskal's"
+    ],
+    "correct_answer": "Bellman-Ford",
+    "explanation": "Bellman-Ford runs V-1 relaxations. If a further relaxation is still possible on the V-th pass, a negative cycle exists.",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Graphs to solve problems."
+  },
+  {
+    "question_id": 130,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the time complexity of Floyd-Warshall algorithm?",
+    "options": [
+      "O(V\u00b2)",
+      "O(V\u00b2 log V)",
+      "O(V\u00b3)",
+      "O(VE)"
+    ],
+    "correct_answer": "O(V\u00b3)",
+    "explanation": "Floyd-Warshall uses three nested loops over V vertices each, resulting in O(V\u00b3) time to find all-pairs shortest paths.",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Graphs."
+  },
+  {
+    "question_id": 131,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Sorting",
+    "topic_id": 7,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "Which sorting algorithm has the best average-case time complexity?",
+    "options": [
+      "Bubble Sort",
+      "Insertion Sort",
+      "Merge Sort",
+      "Selection Sort"
+    ],
+    "correct_answer": "Merge Sort",
+    "explanation": "Merge Sort has O(n log n) average and worst-case time complexity, which is optimal for comparison-based sorting.",
+    "tags": [
+      "sorting",
+      "comparison-sort",
+      "divide-and-conquer",
+      "in-place",
+      "stability"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Sorting."
+  },
+  {
+    "question_id": 132,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Sorting",
+    "topic_id": 7,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which sorting algorithm is best for nearly sorted arrays?",
+    "options": [
+      "Quick Sort",
+      "Insertion Sort",
+      "Heap Sort",
+      "Shell Sort"
+    ],
+    "correct_answer": "Insertion Sort",
+    "explanation": "Insertion Sort has O(n) best-case time complexity when the array is already sorted or nearly sorted, making it very efficient in that scenario.",
+    "tags": [
+      "sorting",
+      "comparison-sort",
+      "divide-and-conquer",
+      "in-place",
+      "stability"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Sorting."
+  },
+  {
+    "question_id": 133,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Sorting",
+    "topic_id": 7,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the worst-case time complexity of Quick Sort?",
+    "options": [
+      "O(n log n)",
+      "O(n\u00b2)",
+      "O(n)",
+      "O(log n)"
+    ],
+    "correct_answer": "O(n\u00b2)",
+    "explanation": "Quick Sort degrades to O(n\u00b2) in the worst case when the pivot is always the smallest or largest element, leading to unbalanced partitions.",
+    "tags": [
+      "sorting",
+      "comparison-sort",
+      "divide-and-conquer",
+      "in-place",
+      "stability"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Sorting to solve problems."
+  },
+  {
+    "question_id": 134,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Sorting",
+    "topic_id": 7,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "Which sorting algorithm is NOT an in-place sorting algorithm?",
+    "options": [
+      "Quick Sort",
+      "Heap Sort",
+      "Merge Sort",
+      "Insertion Sort"
+    ],
+    "correct_answer": "Merge Sort",
+    "explanation": "Merge Sort requires O(n) extra space for the temporary arrays used during merging, making it not in-place.",
+    "tags": [
+      "sorting",
+      "comparison-sort",
+      "divide-and-conquer",
+      "in-place",
+      "stability"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Sorting to solve problems."
+  },
+  {
+    "question_id": 135,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Sorting",
+    "topic_id": 7,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the lower bound for comparison-based sorting algorithms?",
+    "options": [
+      "O(n)",
+      "O(n log n)",
+      "O(n\u00b2)",
+      "O(log n)"
+    ],
+    "correct_answer": "O(n log n)",
+    "explanation": "Any comparison-based sorting algorithm requires \u03a9(n log n) comparisons in the worst case, proven using the decision tree model.",
+    "tags": [
+      "sorting",
+      "comparison-sort",
+      "divide-and-conquer",
+      "in-place",
+      "stability"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Sorting."
+  },
+  {
+    "question_id": 136,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Searching",
+    "topic_id": 8,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is the prerequisite for Binary Search?",
+    "options": [
+      "Array must be unsorted",
+      "Array must be sorted",
+      "Array must have no duplicates",
+      "Array size must be a power of 2"
+    ],
+    "correct_answer": "Array must be sorted",
+    "explanation": "Binary Search requires the array to be sorted because it works by eliminating half of the remaining elements at each step.",
+    "tags": [
+      "searching",
+      "binary-search",
+      "linear-search",
+      "sorted-array"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Searching."
+  },
+  {
+    "question_id": 137,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Searching",
+    "topic_id": 8,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the time complexity of Linear Search in the worst case?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n\u00b2)"
+    ],
+    "correct_answer": "O(n)",
+    "explanation": "Linear Search checks each element one by one. In the worst case, the element is at the last position, requiring n comparisons.",
+    "tags": [
+      "searching",
+      "binary-search",
+      "linear-search",
+      "sorted-array"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Searching."
+  },
+  {
+    "question_id": 138,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Searching",
+    "topic_id": 8,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the time complexity of Binary Search?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(n log n)",
+      "O(1)"
+    ],
+    "correct_answer": "O(log n)",
+    "explanation": "Binary Search halves the search space at every step. With n elements, it takes at most \u2308log\u2082 n\u2309 steps, giving O(log n) complexity.",
+    "tags": [
+      "searching",
+      "binary-search",
+      "linear-search",
+      "sorted-array"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Searching to solve problems."
+  },
+  {
+    "question_id": 139,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Searching",
+    "topic_id": 8,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "Which search algorithm works best on uniformly distributed sorted data?",
+    "options": [
+      "Linear Search",
+      "Binary Search",
+      "Interpolation Search",
+      "Jump Search"
+    ],
+    "correct_answer": "Interpolation Search",
+    "explanation": "Interpolation Search estimates the position of the target based on data distribution. For uniform data, it achieves O(log log n) average time.",
+    "tags": [
+      "searching",
+      "binary-search",
+      "linear-search",
+      "sorted-array"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Searching to solve problems."
+  },
+  {
+    "question_id": 140,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Searching",
+    "topic_id": 8,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the time complexity of Ternary Search?",
+    "options": [
+      "O(log\u2082 n)",
+      "O(log\u2083 n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correct_answer": "O(log\u2083 n)",
+    "explanation": "Ternary Search divides the search space into three parts at each step, giving O(log\u2083 n) complexity. However, it is generally slower than Binary Search due to more comparisons.",
+    "tags": [
+      "searching",
+      "binary-search",
+      "linear-search",
+      "sorted-array"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Searching."
+  },
+  {
+    "question_id": 141,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Recursion",
+    "topic_id": 9,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is recursion?",
+    "options": [
+      "A loop that runs forever",
+      "A function that calls itself",
+      "A function that calls another function",
+      "A method to avoid loops"
+    ],
+    "correct_answer": "A function that calls itself",
+    "explanation": "Recursion is a programming technique where a function calls itself to solve smaller instances of the same problem until a base case is reached.",
+    "tags": [
+      "recursion",
+      "base-case",
+      "call-stack",
+      "memoization",
+      "backtracking"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Recursion."
+  },
+  {
+    "question_id": 142,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Recursion",
+    "topic_id": 9,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the base case in recursion?",
+    "options": [
+      "The condition under which the function calls itself",
+      "The condition under which the recursion stops",
+      "The first call to the function",
+      "The deepest level of recursion"
+    ],
+    "correct_answer": "The condition under which the recursion stops",
+    "explanation": "The base case is the condition that terminates the recursion, preventing infinite recursive calls and allowing the call stack to unwind.",
+    "tags": [
+      "recursion",
+      "base-case",
+      "call-stack",
+      "memoization",
+      "backtracking"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Recursion."
+  },
+  {
+    "question_id": 143,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Recursion",
+    "topic_id": 9,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the time complexity of computing Fibonacci(n) using naive recursion?",
+    "options": [
+      "O(n)",
+      "O(n\u00b2)",
+      "O(2^n)",
+      "O(n log n)"
+    ],
+    "correct_answer": "O(2^n)",
+    "explanation": "Naive recursive Fibonacci recomputes the same subproblems exponentially. The recurrence T(n) = T(n-1) + T(n-2) + O(1) resolves to O(2^n).",
+    "tags": [
+      "recursion",
+      "base-case",
+      "call-stack",
+      "memoization",
+      "backtracking"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Recursion to solve problems."
+  },
+  {
+    "question_id": 144,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Recursion",
+    "topic_id": 9,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is tail recursion?",
+    "options": [
+      "Recursion with multiple base cases",
+      "Recursion where the recursive call is the last operation in the function",
+      "Recursion that never terminates",
+      "Recursion that returns a value"
+    ],
+    "correct_answer": "Recursion where the recursive call is the last operation in the function",
+    "explanation": "In tail recursion, the recursive call is the final action. Compilers can optimize this into iteration, avoiding stack overflow.",
+    "tags": [
+      "recursion",
+      "base-case",
+      "call-stack",
+      "memoization",
+      "backtracking"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Recursion to solve problems."
+  },
+  {
+    "question_id": 145,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Recursion",
+    "topic_id": 9,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the space complexity of a recursive function with n recursive calls and no additional data structures?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n\u00b2)"
+    ],
+    "correct_answer": "O(n)",
+    "explanation": "Each recursive call adds a stack frame. With n recursive calls in the deepest chain, the call stack can hold up to n frames, giving O(n) space complexity.",
+    "tags": [
+      "recursion",
+      "base-case",
+      "call-stack",
+      "memoization",
+      "backtracking"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Recursion."
+  },
+  {
+    "question_id": 146,
+    "subject": "Database Management Systems",
+    "topic": "ER Model",
+    "topic_id": 10,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What does ER stand for in ER Model?",
+    "options": [
+      "Entity Relation",
+      "Entity Relationship",
+      "Element Resource",
+      "Entity Resource"
+    ],
+    "correct_answer": "Entity Relationship",
+    "explanation": "ER stands for Entity-Relationship. The ER Model is a conceptual data model that describes entities and the relationships between them.",
+    "tags": [
+      "ER-diagram",
+      "entity",
+      "relationship",
+      "attribute",
+      "cardinality"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of ER Model."
+  },
+  {
+    "question_id": 147,
+    "subject": "Database Management Systems",
+    "topic": "ER Model",
+    "topic_id": 10,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which shape represents an entity in an ER diagram?",
+    "options": [
+      "Ellipse",
+      "Diamond",
+      "Rectangle",
+      "Triangle"
+    ],
+    "correct_answer": "Rectangle",
+    "explanation": "In an ER diagram, entities are represented by rectangles, attributes by ellipses, and relationships by diamonds.",
+    "tags": [
+      "ER-diagram",
+      "entity",
+      "relationship",
+      "attribute",
+      "cardinality"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of ER Model."
+  },
+  {
+    "question_id": 148,
+    "subject": "Database Management Systems",
+    "topic": "ER Model",
+    "topic_id": 10,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a weak entity?",
+    "options": [
+      "An entity with no attributes",
+      "An entity that cannot be uniquely identified by its own attributes alone",
+      "An entity with only one attribute",
+      "An entity with no relationships"
+    ],
+    "correct_answer": "An entity that cannot be uniquely identified by its own attributes alone",
+    "explanation": "A weak entity depends on a strong (owner) entity for its existence and identification. It is shown as a double rectangle in ER diagrams.",
+    "tags": [
+      "ER-diagram",
+      "entity",
+      "relationship",
+      "attribute",
+      "cardinality"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of ER Model to solve problems."
+  },
+  {
+    "question_id": 149,
+    "subject": "Database Management Systems",
+    "topic": "ER Model",
+    "topic_id": 10,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a composite attribute?",
+    "options": [
+      "An attribute that can be NULL",
+      "An attribute that can be divided into sub-parts",
+      "An attribute with multiple values",
+      "An attribute that uniquely identifies an entity"
+    ],
+    "correct_answer": "An attribute that can be divided into sub-parts",
+    "explanation": "A composite attribute can be split into smaller attributes. For example, 'Full Name' can be divided into 'First Name' and 'Last Name'.",
+    "tags": [
+      "ER-diagram",
+      "entity",
+      "relationship",
+      "attribute",
+      "cardinality"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of ER Model to solve problems."
+  },
+  {
+    "question_id": 150,
+    "subject": "Database Management Systems",
+    "topic": "ER Model",
+    "topic_id": 10,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is a ternary relationship in an ER model?",
+    "options": [
+      "A relationship between three different entity sets",
+      "A relationship with three attributes",
+      "A relationship that appears three times",
+      "A recursive relationship"
+    ],
+    "correct_answer": "A relationship between three different entity sets",
+    "explanation": "A ternary relationship involves exactly three entity sets simultaneously. For example, a 'Prescription' relates Doctor, Patient, and Drug.",
+    "tags": [
+      "ER-diagram",
+      "entity",
+      "relationship",
+      "attribute",
+      "cardinality"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in ER Model."
+  },
+  {
+    "question_id": 151,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "Which SQL command is used to retrieve data from a database?",
+    "options": [
+      "INSERT",
+      "UPDATE",
+      "SELECT",
+      "DELETE"
+    ],
+    "correct_answer": "SELECT",
+    "explanation": "The SELECT statement is used to query and retrieve data from one or more tables in a relational database.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of SQL."
+  },
+  {
+    "question_id": 152,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which clause is used to filter rows in a SQL query?",
+    "options": [
+      "ORDER BY",
+      "GROUP BY",
+      "WHERE",
+      "HAVING"
+    ],
+    "correct_answer": "WHERE",
+    "explanation": "The WHERE clause filters rows based on a condition before any grouping, whereas HAVING filters after grouping.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of SQL."
+  },
+  {
+    "question_id": 153,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the difference between DELETE and TRUNCATE?",
+    "options": [
+      "DELETE removes all rows; TRUNCATE removes specific rows",
+      "DELETE is DDL; TRUNCATE is DML",
+      "DELETE can be rolled back; TRUNCATE cannot (in most databases)",
+      "There is no difference"
+    ],
+    "correct_answer": "DELETE can be rolled back; TRUNCATE cannot (in most databases)",
+    "explanation": "DELETE is a DML command and can be rolled back within a transaction. TRUNCATE is a DDL command that removes all rows quickly and is generally not rollback-able.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of SQL to solve problems."
+  },
+  {
+    "question_id": 154,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "Which type of JOIN returns all rows from both tables, with NULLs where there is no match?",
+    "options": [
+      "INNER JOIN",
+      "LEFT JOIN",
+      "RIGHT JOIN",
+      "FULL OUTER JOIN"
+    ],
+    "correct_answer": "FULL OUTER JOIN",
+    "explanation": "FULL OUTER JOIN returns all rows from both tables. Rows with no matching counterpart in the other table have NULL values for the missing side.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of SQL to solve problems."
+  },
+  {
+    "question_id": 155,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What does the SQL COALESCE function do?",
+    "options": [
+      "Combines two strings",
+      "Returns the first non-NULL value in a list of expressions",
+      "Rounds a number to the nearest integer",
+      "Converts data types"
+    ],
+    "correct_answer": "Returns the first non-NULL value in a list of expressions",
+    "explanation": "COALESCE(expr1, expr2, ...) evaluates its arguments in order and returns the first one that is not NULL, useful for handling NULL values.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in SQL."
+  },
+  {
+    "question_id": 156,
+    "subject": "Database Management Systems",
+    "topic": "Normalization",
+    "topic_id": 12,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is the main goal of database normalization?",
+    "options": [
+      "To increase data redundancy",
+      "To reduce data redundancy and improve data integrity",
+      "To speed up queries",
+      "To add more tables"
+    ],
+    "correct_answer": "To reduce data redundancy and improve data integrity",
+    "explanation": "Normalization organizes data to minimize redundancy and avoid anomalies (insert, update, delete), improving overall data integrity.",
+    "tags": [
+      "normalization",
+      "1NF",
+      "2NF",
+      "3NF",
+      "BCNF",
+      "functional-dependency"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Normalization."
+  },
+  {
+    "question_id": 157,
+    "subject": "Database Management Systems",
+    "topic": "Normalization",
+    "topic_id": 12,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "A table is in 1NF if:",
+    "options": [
+      "It has no partial dependencies",
+      "All attributes are functionally dependent on the primary key",
+      "Each column contains atomic (indivisible) values and each row is unique",
+      "It has no transitive dependencies"
+    ],
+    "correct_answer": "Each column contains atomic (indivisible) values and each row is unique",
+    "explanation": "First Normal Form (1NF) requires that all attributes hold atomic values, there are no repeating groups, and each row is uniquely identifiable.",
+    "tags": [
+      "normalization",
+      "1NF",
+      "2NF",
+      "3NF",
+      "BCNF",
+      "functional-dependency"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Normalization."
+  },
+  {
+    "question_id": 158,
+    "subject": "Database Management Systems",
+    "topic": "Normalization",
+    "topic_id": 12,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "A table violates 2NF if:",
+    "options": [
+      "It has a transitive dependency",
+      "It has a partial dependency of a non-key attribute on part of a composite primary key",
+      "It has multi-valued attributes",
+      "It has no primary key"
+    ],
+    "correct_answer": "It has a partial dependency of a non-key attribute on part of a composite primary key",
+    "explanation": "Second Normal Form (2NF) requires 1NF plus the elimination of partial dependencies. A non-key attribute must depend on the whole primary key, not just part of it.",
+    "tags": [
+      "normalization",
+      "1NF",
+      "2NF",
+      "3NF",
+      "BCNF",
+      "functional-dependency"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Normalization to solve problems."
+  },
+  {
+    "question_id": 159,
+    "subject": "Database Management Systems",
+    "topic": "Normalization",
+    "topic_id": 12,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "Which normal form eliminates transitive dependencies?",
+    "options": [
+      "1NF",
+      "2NF",
+      "3NF",
+      "BCNF"
+    ],
+    "correct_answer": "3NF",
+    "explanation": "Third Normal Form (3NF) requires 2NF plus the removal of transitive dependencies, where a non-key attribute depends on another non-key attribute.",
+    "tags": [
+      "normalization",
+      "1NF",
+      "2NF",
+      "3NF",
+      "BCNF",
+      "functional-dependency"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Normalization to solve problems."
+  },
+  {
+    "question_id": 160,
+    "subject": "Database Management Systems",
+    "topic": "Normalization",
+    "topic_id": 12,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "How does BCNF differ from 3NF?",
+    "options": [
+      "BCNF allows transitive dependencies; 3NF does not",
+      "In BCNF, every determinant must be a candidate key; 3NF allows non-candidate-key determinants for non-key attributes",
+      "BCNF is weaker than 3NF",
+      "There is no difference"
+    ],
+    "correct_answer": "In BCNF, every determinant must be a candidate key; 3NF allows non-candidate-key determinants for non-key attributes",
+    "explanation": "BCNF is stricter than 3NF. It requires that for every functional dependency X\u2192Y, X must be a superkey, removing anomalies that 3NF may allow.",
+    "tags": [
+      "normalization",
+      "1NF",
+      "2NF",
+      "3NF",
+      "BCNF",
+      "functional-dependency"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Normalization."
+  },
+  {
+    "question_id": 161,
+    "subject": "Database Management Systems",
+    "topic": "Transactions",
+    "topic_id": 13,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What does ACID stand for in database transactions?",
+    "options": [
+      "Atomicity, Consistency, Isolation, Durability",
+      "Accuracy, Consistency, Integrity, Durability",
+      "Atomicity, Concurrency, Isolation, Dependency",
+      "Availability, Consistency, Isolation, Durability"
+    ],
+    "correct_answer": "Atomicity, Consistency, Isolation, Durability",
+    "explanation": "ACID properties ensure reliable database transactions: Atomicity (all or nothing), Consistency (valid state), Isolation (concurrent transactions), Durability (committed data persists).",
+    "tags": [
+      "ACID",
+      "transaction",
+      "concurrency",
+      "isolation",
+      "locking"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Transactions."
+  },
+  {
+    "question_id": 162,
+    "subject": "Database Management Systems",
+    "topic": "Transactions",
+    "topic_id": 13,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What does Atomicity in ACID ensure?",
+    "options": [
+      "Transactions are isolated from each other",
+      "Committed data is never lost",
+      "A transaction is either fully completed or not executed at all",
+      "The database remains in a consistent state"
+    ],
+    "correct_answer": "A transaction is either fully completed or not executed at all",
+    "explanation": "Atomicity ensures that a transaction is treated as a single unit \u2014 either all its operations succeed, or none of them are applied.",
+    "tags": [
+      "ACID",
+      "transaction",
+      "concurrency",
+      "isolation",
+      "locking"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Transactions."
+  },
+  {
+    "question_id": 163,
+    "subject": "Database Management Systems",
+    "topic": "Transactions",
+    "topic_id": 13,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "Which concurrency problem occurs when a transaction reads data that another uncommitted transaction has modified?",
+    "options": [
+      "Phantom read",
+      "Non-repeatable read",
+      "Dirty read",
+      "Lost update"
+    ],
+    "correct_answer": "Dirty read",
+    "explanation": "A dirty read occurs when a transaction reads uncommitted changes from another transaction. If the other transaction rolls back, the read data is invalid.",
+    "tags": [
+      "ACID",
+      "transaction",
+      "concurrency",
+      "isolation",
+      "locking"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Transactions to solve problems."
+  },
+  {
+    "question_id": 164,
+    "subject": "Database Management Systems",
+    "topic": "Transactions",
+    "topic_id": 13,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "Which isolation level prevents dirty reads but allows non-repeatable reads?",
+    "options": [
+      "Read Uncommitted",
+      "Read Committed",
+      "Repeatable Read",
+      "Serializable"
+    ],
+    "correct_answer": "Read Committed",
+    "explanation": "Read Committed only allows reading committed data, preventing dirty reads. However, a row can be modified between two reads in the same transaction, causing non-repeatable reads.",
+    "tags": [
+      "ACID",
+      "transaction",
+      "concurrency",
+      "isolation",
+      "locking"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Transactions to solve problems."
+  },
+  {
+    "question_id": 165,
+    "subject": "Database Management Systems",
+    "topic": "Transactions",
+    "topic_id": 13,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is a phantom read?",
+    "options": [
+      "Reading uncommitted data from another transaction",
+      "Reading the same row and getting different values",
+      "A transaction seeing rows that were inserted by another committed transaction during its execution",
+      "A transaction that never completes"
+    ],
+    "correct_answer": "A transaction seeing rows that were inserted by another committed transaction during its execution",
+    "explanation": "A phantom read occurs when a query within a transaction returns a different set of rows on re-execution because another transaction inserted or deleted rows in between.",
+    "tags": [
+      "ACID",
+      "transaction",
+      "concurrency",
+      "isolation",
+      "locking"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Transactions."
+  },
+  {
+    "question_id": 166,
+    "subject": "Operating Systems",
+    "topic": "Processes",
+    "topic_id": 15,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is a process?",
+    "options": [
+      "A program stored on disk",
+      "A program in execution",
+      "A block of memory",
+      "An input/output operation"
+    ],
+    "correct_answer": "A program in execution",
+    "explanation": "A process is an instance of a program in execution. It includes the program code, current activity, stack, heap, and allocated resources.",
+    "tags": [
+      "process",
+      "PCB",
+      "process-states",
+      "fork",
+      "IPC"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Processes."
+  },
+  {
+    "question_id": 167,
+    "subject": "Operating Systems",
+    "topic": "Processes",
+    "topic_id": 15,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which of the following is NOT a valid process state?",
+    "options": [
+      "Running",
+      "Waiting",
+      "Ready",
+      "Compiling"
+    ],
+    "correct_answer": "Compiling",
+    "explanation": "The standard process states are New, Ready, Running, Waiting (Blocked), and Terminated. Compiling is a pre-execution step, not a process state.",
+    "tags": [
+      "process",
+      "PCB",
+      "process-states",
+      "fork",
+      "IPC"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Processes."
+  },
+  {
+    "question_id": 168,
+    "subject": "Operating Systems",
+    "topic": "Processes",
+    "topic_id": 15,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a PCB (Process Control Block)?",
+    "options": [
+      "A section of code in a process",
+      "A data structure maintained by the OS to store all information about a process",
+      "A block of memory allocated to a process",
+      "A scheduling algorithm"
+    ],
+    "correct_answer": "A data structure maintained by the OS to store all information about a process",
+    "explanation": "The PCB stores all information about a process: PID, state, program counter, CPU registers, memory management info, I/O status, and accounting information.",
+    "tags": [
+      "process",
+      "PCB",
+      "process-states",
+      "fork",
+      "IPC"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Processes to solve problems."
+  },
+  {
+    "question_id": 169,
+    "subject": "Operating Systems",
+    "topic": "Processes",
+    "topic_id": 15,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is the difference between a program and a process?",
+    "options": [
+      "A program is active; a process is passive",
+      "A process is active (running); a program is a passive set of instructions on disk",
+      "They are the same thing",
+      "A program has more resources than a process"
+    ],
+    "correct_answer": "A process is active (running); a program is a passive set of instructions on disk",
+    "explanation": "A program is a static entity (file on disk). A process is a dynamic entity \u2014 a program loaded into memory and being executed, with its own resources and state.",
+    "tags": [
+      "process",
+      "PCB",
+      "process-states",
+      "fork",
+      "IPC"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Processes to solve problems."
+  },
+  {
+    "question_id": 170,
+    "subject": "Operating Systems",
+    "topic": "Processes",
+    "topic_id": 15,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is a zombie process?",
+    "options": [
+      "A process consuming 100% CPU",
+      "A process that has completed execution but still has an entry in the process table",
+      "A process that is waiting for I/O",
+      "A process that cannot be killed"
+    ],
+    "correct_answer": "A process that has completed execution but still has an entry in the process table",
+    "explanation": "A zombie process has finished execution but its exit status has not been read by the parent process. Its PCB remains until the parent calls wait().",
+    "tags": [
+      "process",
+      "PCB",
+      "process-states",
+      "fork",
+      "IPC"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Processes."
+  },
+  {
+    "question_id": 171,
+    "subject": "Operating Systems",
+    "topic": "Threads",
+    "topic_id": 16,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "Which of the following is shared among threads of the same process?",
+    "options": [
+      "Stack",
+      "Registers",
+      "Program Counter",
+      "Heap memory"
+    ],
+    "correct_answer": "Heap memory",
+    "explanation": "Threads within a process share the code segment, data segment, heap, and open files. Each thread has its own stack, registers, and program counter.",
+    "tags": [
+      "thread",
+      "multithreading",
+      "synchronization",
+      "race-condition",
+      "mutex"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Threads."
+  },
+  {
+    "question_id": 172,
+    "subject": "Operating Systems",
+    "topic": "Threads",
+    "topic_id": 16,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the main advantage of multithreading?",
+    "options": [
+      "Increased memory usage",
+      "Better CPU utilization through parallelism",
+      "Simpler code",
+      "No need for synchronization"
+    ],
+    "correct_answer": "Better CPU utilization through parallelism",
+    "explanation": "Multithreading allows multiple tasks to run concurrently within a process, improving CPU utilization and responsiveness especially on multi-core systems.",
+    "tags": [
+      "thread",
+      "multithreading",
+      "synchronization",
+      "race-condition",
+      "mutex"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Threads."
+  },
+  {
+    "question_id": 173,
+    "subject": "Operating Systems",
+    "topic": "Threads",
+    "topic_id": 16,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a race condition?",
+    "options": [
+      "Two threads competing for CPU time",
+      "A situation where the program output depends on the non-deterministic scheduling order of threads",
+      "A deadlock between two threads",
+      "A thread running faster than others"
+    ],
+    "correct_answer": "A situation where the program output depends on the non-deterministic scheduling order of threads",
+    "explanation": "A race condition occurs when multiple threads access shared data without proper synchronization, and the outcome depends on the timing of their execution.",
+    "tags": [
+      "thread",
+      "multithreading",
+      "synchronization",
+      "race-condition",
+      "mutex"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Threads to solve problems."
+  },
+  {
+    "question_id": 174,
+    "subject": "Operating Systems",
+    "topic": "Threads",
+    "topic_id": 16,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a mutex?",
+    "options": [
+      "A type of process",
+      "A mutual exclusion lock used to prevent concurrent access to shared resources",
+      "A scheduling algorithm",
+      "A thread communication mechanism"
+    ],
+    "correct_answer": "A mutual exclusion lock used to prevent concurrent access to shared resources",
+    "explanation": "A mutex (mutual exclusion) ensures that only one thread can access a critical section at a time, preventing race conditions on shared data.",
+    "tags": [
+      "thread",
+      "multithreading",
+      "synchronization",
+      "race-condition",
+      "mutex"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Threads to solve problems."
+  },
+  {
+    "question_id": 175,
+    "subject": "Operating Systems",
+    "topic": "Threads",
+    "topic_id": 16,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the difference between user-level threads and kernel-level threads?",
+    "options": [
+      "User-level threads are faster to create and manage; kernel-level threads can run in true parallelism on multi-core CPUs",
+      "Kernel-level threads are always faster",
+      "User-level threads block the entire process on a blocking system call; kernel-level threads do not",
+      "Both A and C"
+    ],
+    "correct_answer": "Both A and C",
+    "explanation": "User-level threads are managed by user-space libraries (faster context switch), but a blocking call blocks all threads. Kernel-level threads are scheduled by the OS and can exploit multi-core parallelism.",
+    "tags": [
+      "thread",
+      "multithreading",
+      "synchronization",
+      "race-condition",
+      "mutex"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Threads."
+  },
+  {
+    "question_id": 176,
+    "subject": "Operating Systems",
+    "topic": "Scheduling",
+    "topic_id": 17,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What does CPU scheduling determine?",
+    "options": [
+      "Which process gets memory",
+      "Which process gets CPU time and when",
+      "Which process gets I/O access",
+      "How processes communicate"
+    ],
+    "correct_answer": "Which process gets CPU time and when",
+    "explanation": "CPU scheduling decides the order in which ready processes are given CPU time, maximizing efficiency and meeting performance goals.",
+    "tags": [
+      "scheduling",
+      "CPU",
+      "FCFS",
+      "SJF",
+      "round-robin",
+      "priority"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Scheduling."
+  },
+  {
+    "question_id": 177,
+    "subject": "Operating Systems",
+    "topic": "Scheduling",
+    "topic_id": 17,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which scheduling algorithm gives the CPU to the process with the smallest burst time?",
+    "options": [
+      "FCFS",
+      "Round Robin",
+      "SJF",
+      "Priority Scheduling"
+    ],
+    "correct_answer": "SJF",
+    "explanation": "Shortest Job First (SJF) selects the process with the smallest CPU burst time, minimizing average waiting time.",
+    "tags": [
+      "scheduling",
+      "CPU",
+      "FCFS",
+      "SJF",
+      "round-robin",
+      "priority"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Scheduling."
+  },
+  {
+    "question_id": 178,
+    "subject": "Operating Systems",
+    "topic": "Scheduling",
+    "topic_id": 17,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the main problem with FCFS scheduling?",
+    "options": [
+      "It is too complex",
+      "It causes starvation for short processes (convoy effect)",
+      "It requires knowledge of burst times",
+      "It is not fair"
+    ],
+    "correct_answer": "It causes starvation for short processes (convoy effect)",
+    "explanation": "In FCFS, short processes may wait a long time behind long processes. This convoy effect reduces CPU utilization and increases average waiting time.",
+    "tags": [
+      "scheduling",
+      "CPU",
+      "FCFS",
+      "SJF",
+      "round-robin",
+      "priority"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Scheduling to solve problems."
+  },
+  {
+    "question_id": 179,
+    "subject": "Operating Systems",
+    "topic": "Scheduling",
+    "topic_id": 17,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is the time quantum in Round Robin scheduling?",
+    "options": [
+      "The total CPU time",
+      "The maximum time a process can hold the CPU before being preempted",
+      "The time a process waits in the ready queue",
+      "The burst time of a process"
+    ],
+    "correct_answer": "The maximum time a process can hold the CPU before being preempted",
+    "explanation": "Round Robin assigns a fixed time slice (quantum) to each process. If a process doesn't finish within its quantum, it is preempted and moved to the end of the ready queue.",
+    "tags": [
+      "scheduling",
+      "CPU",
+      "FCFS",
+      "SJF",
+      "round-robin",
+      "priority"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Scheduling to solve problems."
+  },
+  {
+    "question_id": 180,
+    "subject": "Operating Systems",
+    "topic": "Scheduling",
+    "topic_id": 17,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "Which scheduling algorithm can cause starvation?",
+    "options": [
+      "Round Robin",
+      "FCFS",
+      "Priority Scheduling",
+      "Multilevel Queue"
+    ],
+    "correct_answer": "Priority Scheduling",
+    "explanation": "In Priority Scheduling, low-priority processes may wait indefinitely if high-priority processes keep arriving. Aging (gradually increasing priority of waiting processes) is a solution.",
+    "tags": [
+      "scheduling",
+      "CPU",
+      "FCFS",
+      "SJF",
+      "round-robin",
+      "priority"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Scheduling."
+  },
+  {
+    "question_id": 181,
+    "subject": "Operating Systems",
+    "topic": "Deadlocks",
+    "topic_id": 18,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "Which of the following is NOT one of the four necessary conditions for a deadlock?",
+    "options": [
+      "Mutual Exclusion",
+      "Hold and Wait",
+      "Preemption",
+      "Circular Wait"
+    ],
+    "correct_answer": "Preemption",
+    "explanation": "The four necessary conditions for deadlock are: Mutual Exclusion, Hold and Wait, No Preemption, and Circular Wait. Preemption prevents deadlock, not causes it.",
+    "tags": [
+      "deadlock",
+      "mutual-exclusion",
+      "circular-wait",
+      "Banker's-algorithm"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Deadlocks."
+  },
+  {
+    "question_id": 182,
+    "subject": "Operating Systems",
+    "topic": "Deadlocks",
+    "topic_id": 18,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is a deadlock?",
+    "options": [
+      "A process that consumes all CPU",
+      "A situation where two or more processes are each waiting for resources held by the others, causing indefinite blocking",
+      "A scheduling conflict",
+      "A memory overflow"
+    ],
+    "correct_answer": "A situation where two or more processes are each waiting for resources held by the others, causing indefinite blocking",
+    "explanation": "A deadlock is a state where a group of processes are blocked, each waiting for a resource held by another process in the group, with none able to proceed.",
+    "tags": [
+      "deadlock",
+      "mutual-exclusion",
+      "circular-wait",
+      "Banker's-algorithm"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Deadlocks."
+  },
+  {
+    "question_id": 183,
+    "subject": "Operating Systems",
+    "topic": "Deadlocks",
+    "topic_id": 18,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "Which algorithm is used for deadlock avoidance?",
+    "options": [
+      "Dining Philosophers",
+      "Banker's Algorithm",
+      "Peterson's Algorithm",
+      "Round Robin"
+    ],
+    "correct_answer": "Banker's Algorithm",
+    "explanation": "Banker's Algorithm checks if granting a resource request will keep the system in a safe state. If not, the request is denied to avoid deadlock.",
+    "tags": [
+      "deadlock",
+      "mutual-exclusion",
+      "circular-wait",
+      "Banker's-algorithm"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Deadlocks to solve problems."
+  },
+  {
+    "question_id": 184,
+    "subject": "Operating Systems",
+    "topic": "Deadlocks",
+    "topic_id": 18,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a safe state in the context of deadlock avoidance?",
+    "options": [
+      "A state with no processes running",
+      "A state where there is a safe sequence in which all processes can complete without deadlock",
+      "A state where all resources are free",
+      "A state where deadlock has been detected"
+    ],
+    "correct_answer": "A state where there is a safe sequence in which all processes can complete without deadlock",
+    "explanation": "A system is in a safe state if there exists at least one sequence of process executions where each process can acquire needed resources, finish, and release them for others.",
+    "tags": [
+      "deadlock",
+      "mutual-exclusion",
+      "circular-wait",
+      "Banker's-algorithm"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Deadlocks to solve problems."
+  },
+  {
+    "question_id": 185,
+    "subject": "Operating Systems",
+    "topic": "Deadlocks",
+    "topic_id": 18,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the difference between deadlock prevention and deadlock avoidance?",
+    "options": [
+      "Prevention eliminates at least one necessary condition for deadlock; avoidance dynamically checks if granting a request keeps the system safe",
+      "They are the same technique",
+      "Avoidance eliminates one necessary condition; prevention uses runtime checks",
+      "Prevention detects deadlock after it occurs"
+    ],
+    "correct_answer": "Prevention eliminates at least one necessary condition for deadlock; avoidance dynamically checks if granting a request keeps the system safe",
+    "explanation": "Deadlock prevention removes one of the four necessary conditions (e.g., require all resources upfront). Deadlock avoidance uses algorithms like Banker's to ensure the system never enters an unsafe state.",
+    "tags": [
+      "deadlock",
+      "mutual-exclusion",
+      "circular-wait",
+      "Banker's-algorithm"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Deadlocks."
+  },
+  {
+    "question_id": 186,
+    "subject": "Computer Networks",
+    "topic": "OSI Model",
+    "topic_id": 20,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "How many layers does the OSI model have?",
+    "options": [
+      "4",
+      "5",
+      "6",
+      "7"
+    ],
+    "correct_answer": "7",
+    "explanation": "The OSI (Open Systems Interconnection) model has 7 layers: Physical, Data Link, Network, Transport, Session, Presentation, and Application.",
+    "tags": [
+      "OSI",
+      "layers",
+      "protocol",
+      "networking",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of OSI Model."
+  },
+  {
+    "question_id": 187,
+    "subject": "Computer Networks",
+    "topic": "OSI Model",
+    "topic_id": 20,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which OSI layer is responsible for routing packets between networks?",
+    "options": [
+      "Data Link",
+      "Transport",
+      "Network",
+      "Session"
+    ],
+    "correct_answer": "Network",
+    "explanation": "The Network layer (Layer 3) handles logical addressing (IP) and routing, determining the path packets take across networks.",
+    "tags": [
+      "OSI",
+      "layers",
+      "protocol",
+      "networking",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of OSI Model."
+  },
+  {
+    "question_id": 188,
+    "subject": "Computer Networks",
+    "topic": "OSI Model",
+    "topic_id": 20,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "Which layer is responsible for end-to-end error recovery and flow control?",
+    "options": [
+      "Network",
+      "Transport",
+      "Session",
+      "Data Link"
+    ],
+    "correct_answer": "Transport",
+    "explanation": "The Transport layer (Layer 4) provides reliable end-to-end communication, including segmentation, flow control, and error recovery (e.g., TCP).",
+    "tags": [
+      "OSI",
+      "layers",
+      "protocol",
+      "networking",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of OSI Model to solve problems."
+  },
+  {
+    "question_id": 189,
+    "subject": "Computer Networks",
+    "topic": "OSI Model",
+    "topic_id": 20,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What does the Data Link layer add to frames?",
+    "options": [
+      "IP addresses",
+      "Port numbers",
+      "MAC addresses",
+      "Domain names"
+    ],
+    "correct_answer": "MAC addresses",
+    "explanation": "The Data Link layer (Layer 2) adds MAC (Media Access Control) addresses to frames for communication between adjacent nodes on a local network.",
+    "tags": [
+      "OSI",
+      "layers",
+      "protocol",
+      "networking",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of OSI Model to solve problems."
+  },
+  {
+    "question_id": 190,
+    "subject": "Computer Networks",
+    "topic": "OSI Model",
+    "topic_id": 20,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "Which layer handles data encryption and decryption in the OSI model?",
+    "options": [
+      "Application",
+      "Session",
+      "Presentation",
+      "Transport"
+    ],
+    "correct_answer": "Presentation",
+    "explanation": "The Presentation layer (Layer 6) handles data translation, encryption/decryption, and compression, ensuring data is in a usable format for the application layer.",
+    "tags": [
+      "OSI",
+      "layers",
+      "protocol",
+      "networking",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in OSI Model."
+  },
+  {
+    "question_id": 191,
+    "subject": "Computer Networks",
+    "topic": "TCP/IP",
+    "topic_id": 21,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What does TCP stand for?",
+    "options": [
+      "Transfer Control Protocol",
+      "Transmission Control Protocol",
+      "Transmission Communication Protocol",
+      "Transfer Communication Protocol"
+    ],
+    "correct_answer": "Transmission Control Protocol",
+    "explanation": "TCP stands for Transmission Control Protocol. It provides reliable, ordered, and error-checked delivery of data between applications.",
+    "tags": [
+      "TCP",
+      "UDP",
+      "IP",
+      "handshake",
+      "flow-control",
+      "congestion-control"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of TCP/IP."
+  },
+  {
+    "question_id": 192,
+    "subject": "Computer Networks",
+    "topic": "TCP/IP",
+    "topic_id": 21,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which protocol is connection-oriented?",
+    "options": [
+      "UDP",
+      "TCP",
+      "IP",
+      "ICMP"
+    ],
+    "correct_answer": "TCP",
+    "explanation": "TCP establishes a connection via a three-way handshake before data transfer, making it connection-oriented. UDP is connectionless.",
+    "tags": [
+      "TCP",
+      "UDP",
+      "IP",
+      "handshake",
+      "flow-control",
+      "congestion-control"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of TCP/IP."
+  },
+  {
+    "question_id": 193,
+    "subject": "Computer Networks",
+    "topic": "TCP/IP",
+    "topic_id": 21,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the TCP three-way handshake sequence?",
+    "options": [
+      "SYN \u2192 ACK \u2192 SYN-ACK",
+      "SYN \u2192 SYN-ACK \u2192 ACK",
+      "ACK \u2192 SYN \u2192 SYN-ACK",
+      "SYN-ACK \u2192 SYN \u2192 ACK"
+    ],
+    "correct_answer": "SYN \u2192 SYN-ACK \u2192 ACK",
+    "explanation": "The TCP three-way handshake: (1) Client sends SYN, (2) Server responds with SYN-ACK, (3) Client sends ACK. This establishes the connection.",
+    "tags": [
+      "TCP",
+      "UDP",
+      "IP",
+      "handshake",
+      "flow-control",
+      "congestion-control"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of TCP/IP to solve problems."
+  },
+  {
+    "question_id": 194,
+    "subject": "Computer Networks",
+    "topic": "TCP/IP",
+    "topic_id": 21,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "Which layer of the TCP/IP model corresponds to the OSI Network layer?",
+    "options": [
+      "Application",
+      "Transport",
+      "Internet",
+      "Network Access"
+    ],
+    "correct_answer": "Internet",
+    "explanation": "The Internet layer of the TCP/IP model corresponds to the Network layer of OSI. It handles IP addressing and routing.",
+    "tags": [
+      "TCP",
+      "UDP",
+      "IP",
+      "handshake",
+      "flow-control",
+      "congestion-control"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of TCP/IP to solve problems."
+  },
+  {
+    "question_id": 195,
+    "subject": "Computer Networks",
+    "topic": "TCP/IP",
+    "topic_id": 21,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the purpose of the TCP sliding window mechanism?",
+    "options": [
+      "To establish connections",
+      "To control the rate of data transmission for flow control",
+      "To route packets",
+      "To encrypt data"
+    ],
+    "correct_answer": "To control the rate of data transmission for flow control",
+    "explanation": "TCP's sliding window allows the sender to transmit multiple packets before needing an acknowledgment, dynamically adjusting based on receiver buffer capacity for flow control.",
+    "tags": [
+      "TCP",
+      "UDP",
+      "IP",
+      "handshake",
+      "flow-control",
+      "congestion-control"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in TCP/IP."
+  },
+  {
+    "question_id": 196,
+    "subject": "Computer Networks",
+    "topic": "DNS",
+    "topic_id": 22,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What does DNS stand for?",
+    "options": [
+      "Data Name System",
+      "Domain Name System",
+      "Dynamic Name Server",
+      "Digital Network System"
+    ],
+    "correct_answer": "Domain Name System",
+    "explanation": "DNS stands for Domain Name System. It translates human-readable domain names (like www.google.com) into IP addresses that computers use.",
+    "tags": [
+      "DNS",
+      "domain",
+      "resolution",
+      "records",
+      "name-server"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of DNS."
+  },
+  {
+    "question_id": 197,
+    "subject": "Computer Networks",
+    "topic": "DNS",
+    "topic_id": 22,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What port does DNS typically use?",
+    "options": [
+      "21",
+      "53",
+      "80",
+      "443"
+    ],
+    "correct_answer": "53",
+    "explanation": "DNS uses port 53 for both UDP (for standard queries) and TCP (for zone transfers and large responses).",
+    "tags": [
+      "DNS",
+      "domain",
+      "resolution",
+      "records",
+      "name-server"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of DNS."
+  },
+  {
+    "question_id": 198,
+    "subject": "Computer Networks",
+    "topic": "DNS",
+    "topic_id": 22,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What type of DNS record maps a domain name to an IPv4 address?",
+    "options": [
+      "CNAME",
+      "MX",
+      "A",
+      "AAAA"
+    ],
+    "correct_answer": "A",
+    "explanation": "An 'A' record (Address record) maps a hostname to its IPv4 address. 'AAAA' is for IPv6, 'CNAME' is an alias, and 'MX' is for mail servers.",
+    "tags": [
+      "DNS",
+      "domain",
+      "resolution",
+      "records",
+      "name-server"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of DNS to solve problems."
+  },
+  {
+    "question_id": 199,
+    "subject": "Computer Networks",
+    "topic": "DNS",
+    "topic_id": 22,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a recursive DNS query?",
+    "options": [
+      "A query where the client contacts multiple DNS servers",
+      "A query where the DNS server takes full responsibility for resolving and returning the final answer",
+      "A query that only checks the local cache",
+      "A query that returns partial results"
+    ],
+    "correct_answer": "A query where the DNS server takes full responsibility for resolving and returning the final answer",
+    "explanation": "In a recursive query, the DNS resolver contacts other servers on behalf of the client and returns the complete answer. In an iterative query, the server returns referrals.",
+    "tags": [
+      "DNS",
+      "domain",
+      "resolution",
+      "records",
+      "name-server"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of DNS to solve problems."
+  },
+  {
+    "question_id": 200,
+    "subject": "Computer Networks",
+    "topic": "DNS",
+    "topic_id": 22,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is DNS cache poisoning?",
+    "options": [
+      "Clearing the DNS cache",
+      "A cyber attack that corrupts the DNS cache with fraudulent records to redirect users",
+      "DNS server overloading",
+      "Deleting DNS records"
+    ],
+    "correct_answer": "A cyber attack that corrupts the DNS cache with fraudulent records to redirect users",
+    "explanation": "DNS cache poisoning (DNS spoofing) injects malicious DNS records into a resolver's cache, causing users to be redirected to fraudulent IP addresses.",
+    "tags": [
+      "DNS",
+      "domain",
+      "resolution",
+      "records",
+      "name-server"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in DNS."
+  },
+  {
+    "question_id": 201,
+    "subject": "Computer Networks",
+    "topic": "Routing",
+    "topic_id": 23,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is the purpose of routing in computer networks?",
+    "options": [
+      "To assign IP addresses",
+      "To determine the best path for data packets from source to destination",
+      "To encrypt network traffic",
+      "To manage DNS records"
+    ],
+    "correct_answer": "To determine the best path for data packets from source to destination",
+    "explanation": "Routing is the process of selecting paths in a network along which to forward packets, using routing tables and algorithms to find optimal paths.",
+    "tags": [
+      "routing",
+      "routing-table",
+      "OSPF",
+      "BGP",
+      "RIP",
+      "subnet"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Routing."
+  },
+  {
+    "question_id": 202,
+    "subject": "Computer Networks",
+    "topic": "Routing",
+    "topic_id": 23,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which routing protocol uses link-state information to build a complete topology map?",
+    "options": [
+      "RIP",
+      "OSPF",
+      "EIGRP",
+      "BGP"
+    ],
+    "correct_answer": "OSPF",
+    "explanation": "OSPF (Open Shortest Path First) is a link-state routing protocol. Each router builds a complete map of the network topology using Link State Advertisements (LSAs).",
+    "tags": [
+      "routing",
+      "routing-table",
+      "OSPF",
+      "BGP",
+      "RIP",
+      "subnet"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Routing."
+  },
+  {
+    "question_id": 203,
+    "subject": "Computer Networks",
+    "topic": "Routing",
+    "topic_id": 23,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What metric does RIP (Routing Information Protocol) use?",
+    "options": [
+      "Bandwidth",
+      "Delay",
+      "Hop count",
+      "Cost"
+    ],
+    "correct_answer": "Hop count",
+    "explanation": "RIP uses hop count as its sole routing metric. The maximum hop count is 15; a hop count of 16 means the destination is unreachable.",
+    "tags": [
+      "routing",
+      "routing-table",
+      "OSPF",
+      "BGP",
+      "RIP",
+      "subnet"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Routing to solve problems."
+  },
+  {
+    "question_id": 204,
+    "subject": "Computer Networks",
+    "topic": "Routing",
+    "topic_id": 23,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is the difference between static and dynamic routing?",
+    "options": [
+      "Static routing uses algorithms; dynamic routing uses manual configuration",
+      "Static routes are manually configured and don't change; dynamic routing adapts automatically to network changes",
+      "Dynamic routing is less scalable than static routing",
+      "There is no difference"
+    ],
+    "correct_answer": "Static routes are manually configured and don't change; dynamic routing adapts automatically to network changes",
+    "explanation": "Static routes are manually entered and remain fixed. Dynamic routing protocols (OSPF, RIP, BGP) automatically exchange information and adapt routing tables to topology changes.",
+    "tags": [
+      "routing",
+      "routing-table",
+      "OSPF",
+      "BGP",
+      "RIP",
+      "subnet"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Routing to solve problems."
+  },
+  {
+    "question_id": 205,
+    "subject": "Computer Networks",
+    "topic": "Routing",
+    "topic_id": 23,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "Which routing protocol is used between different autonomous systems on the internet?",
+    "options": [
+      "OSPF",
+      "RIP",
+      "BGP",
+      "EIGRP"
+    ],
+    "correct_answer": "BGP",
+    "explanation": "BGP (Border Gateway Protocol) is the inter-domain routing protocol used to exchange routing information between different Autonomous Systems (AS) on the internet.",
+    "tags": [
+      "routing",
+      "routing-table",
+      "OSPF",
+      "BGP",
+      "RIP",
+      "subnet"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Routing."
+  },
+  {
+    "question_id": 206,
+    "subject": "Object Oriented Programming",
+    "topic": "Classes",
+    "topic_id": 24,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is a class in OOP?",
+    "options": [
+      "An instance of an object",
+      "A blueprint or template that defines the properties and behaviors of objects",
+      "A function in a program",
+      "A data type"
+    ],
+    "correct_answer": "A blueprint or template that defines the properties and behaviors of objects",
+    "explanation": "A class is a user-defined blueprint that defines attributes (fields) and methods (functions) shared by all objects created from it.",
+    "tags": [
+      "class",
+      "OOP",
+      "constructor",
+      "static",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Classes."
+  },
+  {
+    "question_id": 207,
+    "subject": "Object Oriented Programming",
+    "topic": "Objects",
+    "topic_id": 25,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is an object in OOP?",
+    "options": [
+      "A class definition",
+      "An instance of a class",
+      "A function",
+      "A data type"
+    ],
+    "correct_answer": "An instance of a class",
+    "explanation": "An object is a concrete instance of a class. It has its own state (attribute values) and behavior (methods defined by the class).",
+    "tags": [
+      "object",
+      "instance",
+      "encapsulation",
+      "getter",
+      "setter"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Objects."
+  },
+  {
+    "question_id": 208,
+    "subject": "Object Oriented Programming",
+    "topic": "Classes",
+    "topic_id": 24,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a constructor?",
+    "options": [
+      "A method that destroys objects",
+      "A special method called automatically when an object is created to initialize it",
+      "A method that returns a value",
+      "A static method of a class"
+    ],
+    "correct_answer": "A special method called automatically when an object is created to initialize it",
+    "explanation": "A constructor is a special method with the same name as the class. It is invoked automatically when an object is instantiated to set initial values for attributes.",
+    "tags": [
+      "class",
+      "OOP",
+      "constructor",
+      "static",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Classes to solve problems."
+  },
+  {
+    "question_id": 209,
+    "subject": "Object Oriented Programming",
+    "topic": "Objects",
+    "topic_id": 25,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is encapsulation in OOP?",
+    "options": [
+      "Inheriting properties from a parent class",
+      "Bundling data and methods together and restricting direct access to internal details",
+      "Defining multiple methods with the same name",
+      "Creating multiple objects from one class"
+    ],
+    "correct_answer": "Bundling data and methods together and restricting direct access to internal details",
+    "explanation": "Encapsulation hides the internal state of an object and only exposes necessary interfaces, improving modularity and protecting data from unintended modification.",
+    "tags": [
+      "object",
+      "instance",
+      "encapsulation",
+      "getter",
+      "setter"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Objects to solve problems."
+  },
+  {
+    "question_id": 210,
+    "subject": "Object Oriented Programming",
+    "topic": "Classes",
+    "topic_id": 24,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the difference between a class variable and an instance variable?",
+    "options": [
+      "Class variables are shared across all instances; instance variables are unique to each object",
+      "Instance variables are shared; class variables are unique per object",
+      "There is no difference",
+      "Class variables cannot be modified"
+    ],
+    "correct_answer": "Class variables are shared across all instances; instance variables are unique to each object",
+    "explanation": "A class variable (static field) has one copy shared by all objects. An instance variable is created separately for each object, holding individual state.",
+    "tags": [
+      "class",
+      "OOP",
+      "constructor",
+      "static",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Classes."
+  },
+  {
+    "question_id": 211,
+    "subject": "Object Oriented Programming",
+    "topic": "Inheritance",
+    "topic_id": 26,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is inheritance in OOP?",
+    "options": [
+      "Creating multiple objects",
+      "A mechanism where a child class acquires properties and behaviors of a parent class",
+      "Hiding internal details",
+      "Defining methods with the same name"
+    ],
+    "correct_answer": "A mechanism where a child class acquires properties and behaviors of a parent class",
+    "explanation": "Inheritance allows a subclass to reuse and extend the attributes and methods of a superclass, promoting code reuse and hierarchical classification.",
+    "tags": [
+      "inheritance",
+      "subclass",
+      "superclass",
+      "extends",
+      "method-overriding"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Inheritance."
+  },
+  {
+    "question_id": 212,
+    "subject": "Object Oriented Programming",
+    "topic": "Inheritance",
+    "topic_id": 26,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which keyword is used for inheritance in Java?",
+    "options": [
+      "implements",
+      "inherits",
+      "extends",
+      "super"
+    ],
+    "correct_answer": "extends",
+    "explanation": "In Java, the 'extends' keyword establishes an inheritance relationship. 'implements' is for interfaces, and 'super' refers to the parent class.",
+    "tags": [
+      "inheritance",
+      "subclass",
+      "superclass",
+      "extends",
+      "method-overriding"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Inheritance."
+  },
+  {
+    "question_id": 213,
+    "subject": "Object Oriented Programming",
+    "topic": "Inheritance",
+    "topic_id": 26,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is method overriding?",
+    "options": [
+      "Defining two methods with the same name in the same class",
+      "A subclass providing a specific implementation of a method already defined in its parent class",
+      "Calling a method from a parent class",
+      "Hiding a parent class method"
+    ],
+    "correct_answer": "A subclass providing a specific implementation of a method already defined in its parent class",
+    "explanation": "Method overriding allows a subclass to redefine a method inherited from the parent class to provide specific behavior. It is resolved at runtime (runtime polymorphism).",
+    "tags": [
+      "inheritance",
+      "subclass",
+      "superclass",
+      "extends",
+      "method-overriding"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Inheritance to solve problems."
+  },
+  {
+    "question_id": 214,
+    "subject": "Object Oriented Programming",
+    "topic": "Inheritance",
+    "topic_id": 26,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is multiple inheritance?",
+    "options": [
+      "One class inheriting from multiple parent classes",
+      "Multiple classes inheriting from one parent",
+      "Creating multiple objects",
+      "A class inheriting from itself"
+    ],
+    "correct_answer": "One class inheriting from multiple parent classes",
+    "explanation": "Multiple inheritance allows a class to inherit from more than one base class. Java doesn't support it with classes to avoid the diamond problem, but supports it via interfaces.",
+    "tags": [
+      "inheritance",
+      "subclass",
+      "superclass",
+      "extends",
+      "method-overriding"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Inheritance to solve problems."
+  },
+  {
+    "question_id": 215,
+    "subject": "Object Oriented Programming",
+    "topic": "Inheritance",
+    "topic_id": 26,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the diamond problem in multiple inheritance?",
+    "options": [
+      "A performance issue with deep inheritance hierarchies",
+      "Ambiguity when a class inherits the same method from two parent classes that both inherit from a common grandparent",
+      "A memory leak caused by circular references",
+      "An issue with method overloading"
+    ],
+    "correct_answer": "Ambiguity when a class inherits the same method from two parent classes that both inherit from a common grandparent",
+    "explanation": "The diamond problem occurs in multiple inheritance when class D inherits from B and C, both of which inherit from A. If A has a method overridden in B and C, D faces ambiguity about which version to use.",
+    "tags": [
+      "inheritance",
+      "subclass",
+      "superclass",
+      "extends",
+      "method-overriding"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Inheritance."
+  },
+  {
+    "question_id": 216,
+    "subject": "Object Oriented Programming",
+    "topic": "Polymorphism",
+    "topic_id": 27,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What does polymorphism mean in OOP?",
+    "options": [
+      "One class, many objects",
+      "One name, many forms \u2014 the ability of an object to take multiple forms",
+      "Multiple inheritance",
+      "Hiding data from external access"
+    ],
+    "correct_answer": "One name, many forms \u2014 the ability of an object to take multiple forms",
+    "explanation": "Polymorphism allows the same interface or method name to behave differently based on the object type, improving flexibility and extensibility.",
+    "tags": [
+      "polymorphism",
+      "overloading",
+      "overriding",
+      "dynamic-dispatch",
+      "interface"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Polymorphism."
+  },
+  {
+    "question_id": 217,
+    "subject": "Object Oriented Programming",
+    "topic": "Polymorphism",
+    "topic_id": 27,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which type of polymorphism is achieved through method overloading?",
+    "options": [
+      "Runtime polymorphism",
+      "Compile-time polymorphism",
+      "Dynamic polymorphism",
+      "Late binding"
+    ],
+    "correct_answer": "Compile-time polymorphism",
+    "explanation": "Method overloading (same method name, different parameters) is resolved at compile time, making it compile-time (static) polymorphism.",
+    "tags": [
+      "polymorphism",
+      "overloading",
+      "overriding",
+      "dynamic-dispatch",
+      "interface"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Polymorphism."
+  },
+  {
+    "question_id": 218,
+    "subject": "Object Oriented Programming",
+    "topic": "Polymorphism",
+    "topic_id": 27,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is runtime polymorphism?",
+    "options": [
+      "Method overloading resolved at compile time",
+      "Method overriding resolved at runtime based on the actual object type",
+      "Creating multiple objects",
+      "Using abstract classes"
+    ],
+    "correct_answer": "Method overriding resolved at runtime based on the actual object type",
+    "explanation": "Runtime polymorphism (dynamic dispatch) occurs when a parent class reference points to a child class object. The overridden method to call is determined at runtime.",
+    "tags": [
+      "polymorphism",
+      "overloading",
+      "overriding",
+      "dynamic-dispatch",
+      "interface"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Polymorphism to solve problems."
+  },
+  {
+    "question_id": 219,
+    "subject": "Object Oriented Programming",
+    "topic": "Polymorphism",
+    "topic_id": 27,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is an abstract class?",
+    "options": [
+      "A class with no methods",
+      "A class that cannot be instantiated and may contain abstract methods",
+      "A class with only static methods",
+      "A class that inherits from all other classes"
+    ],
+    "correct_answer": "A class that cannot be instantiated and may contain abstract methods",
+    "explanation": "An abstract class provides a partial implementation and defines abstract methods (without body) that must be implemented by concrete subclasses. It cannot be directly instantiated.",
+    "tags": [
+      "polymorphism",
+      "overloading",
+      "overriding",
+      "dynamic-dispatch",
+      "interface"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Polymorphism to solve problems."
+  },
+  {
+    "question_id": 220,
+    "subject": "Object Oriented Programming",
+    "topic": "Polymorphism",
+    "topic_id": 27,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the difference between an abstract class and an interface in Java?",
+    "options": [
+      "An abstract class can have concrete methods and state; an interface only defines a contract with method signatures (pre-Java 8)",
+      "An interface can have concrete methods; an abstract class cannot",
+      "They are identical",
+      "Abstract classes support multiple inheritance; interfaces do not"
+    ],
+    "correct_answer": "An abstract class can have concrete methods and state; an interface only defines a contract with method signatures (pre-Java 8)",
+    "explanation": "Abstract classes can have instance variables, constructors, and concrete methods. Interfaces (pre-Java 8) only have abstract methods and constants. Java 8+ allows default/static methods in interfaces.",
+    "tags": [
+      "polymorphism",
+      "overloading",
+      "overriding",
+      "dynamic-dispatch",
+      "interface"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Polymorphism."
+  },
+  {
+    "question_id": 221,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Arrays",
+    "topic_id": 1,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which of the following operations is NOT O(1) for an array?",
+    "options": [
+      "Access by index",
+      "Update by index",
+      "Insert at end (if space available)",
+      "Insert in the middle"
+    ],
+    "correct_answer": "Insert in the middle",
+    "explanation": "Inserting in the middle requires shifting elements, which is O(n). Access, update, and append (if space exists) are O(1).",
+    "tags": [
+      "array",
+      "indexing",
+      "traversal",
+      "in-place",
+      "sliding-window"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Arrays."
+  },
+  {
+    "question_id": 222,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Arrays",
+    "topic_id": 1,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a sparse array?",
+    "options": [
+      "An array with negative indices",
+      "An array where most elements are zero or empty",
+      "An array of arrays",
+      "A circular array"
+    ],
+    "correct_answer": "An array where most elements are zero or empty",
+    "explanation": "A sparse array has a majority of its elements as zero/null. Special storage structures (e.g., dictionaries) are used to save memory.",
+    "tags": [
+      "array",
+      "indexing",
+      "traversal",
+      "in-place",
+      "sliding-window"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Arrays to solve problems."
+  },
+  {
+    "question_id": 223,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Arrays",
+    "topic_id": 1,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What algorithm finds the maximum subarray sum in O(n)?",
+    "options": [
+      "Divide and Conquer",
+      "Brute Force",
+      "Kadane's Algorithm",
+      "Dynamic Programming (O(n\u00b2))"
+    ],
+    "correct_answer": "Kadane's Algorithm",
+    "explanation": "Kadane's Algorithm tracks the maximum subarray sum ending at each position in a single pass, achieving O(n) time and O(1) space.",
+    "tags": [
+      "array",
+      "indexing",
+      "traversal",
+      "in-place",
+      "sliding-window"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Arrays."
+  },
+  {
+    "question_id": 224,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Linked Lists",
+    "topic_id": 2,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "Which of the following best describes a circular linked list?",
+    "options": [
+      "The head points to null",
+      "The tail points to the head",
+      "It has no tail",
+      "It has two head nodes"
+    ],
+    "correct_answer": "The tail points to the head",
+    "explanation": "In a circular linked list, the last node's next pointer points back to the head, forming a circle.",
+    "tags": [
+      "linked-list",
+      "pointers",
+      "traversal",
+      "cycle-detection",
+      "reversal"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Linked Lists."
+  },
+  {
+    "question_id": 225,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Linked Lists",
+    "topic_id": 2,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the time complexity of merging two sorted linked lists?",
+    "options": [
+      "O(1)",
+      "O(n)",
+      "O(n+m)",
+      "O(n log n)"
+    ],
+    "correct_answer": "O(n+m)",
+    "explanation": "Merging two sorted lists of sizes n and m requires comparing elements from both lists, processing each element once, giving O(n+m) time.",
+    "tags": [
+      "linked-list",
+      "pointers",
+      "traversal",
+      "cycle-detection",
+      "reversal"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Linked Lists."
+  },
+  {
+    "question_id": 226,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Trees",
+    "topic_id": 5,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is a leaf node in a tree?",
+    "options": [
+      "A node with two children",
+      "A node with no children",
+      "The root node",
+      "A node with one child"
+    ],
+    "correct_answer": "A node with no children",
+    "explanation": "A leaf node (external node) is a node that has no children. It is at the bottom of the tree.",
+    "tags": [
+      "tree",
+      "binary-tree",
+      "BST",
+      "traversal",
+      "height",
+      "balancing"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Trees."
+  },
+  {
+    "question_id": 227,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Trees",
+    "topic_id": 5,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a Binary Search Tree (BST)?",
+    "options": [
+      "A tree where each node has at most two children with no ordering",
+      "A tree where left child < parent < right child",
+      "A tree where all leaves are at the same level",
+      "A tree where each node has exactly two children"
+    ],
+    "correct_answer": "A tree where left child < parent < right child",
+    "explanation": "In a BST, for every node: all nodes in the left subtree are smaller and all in the right subtree are larger. This enables efficient search in O(log n) on average.",
+    "tags": [
+      "tree",
+      "binary-tree",
+      "BST",
+      "traversal",
+      "height",
+      "balancing"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Trees to solve problems."
+  },
+  {
+    "question_id": 228,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Trees",
+    "topic_id": 5,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is a B-Tree used for?",
+    "options": [
+      "In-memory sorting",
+      "Balanced BST operations",
+      "Disk-based storage systems for databases and file systems",
+      "Graph traversal"
+    ],
+    "correct_answer": "Disk-based storage systems for databases and file systems",
+    "explanation": "B-Trees minimize disk I/O by allowing nodes to have many children and storing large amounts of data per node, making them ideal for databases and file systems.",
+    "tags": [
+      "tree",
+      "binary-tree",
+      "BST",
+      "traversal",
+      "height",
+      "balancing"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Trees."
+  },
+  {
+    "question_id": 229,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is an adjacency matrix?",
+    "options": [
+      "A list of edges",
+      "A 2D matrix where matrix[i][j]=1 if there is an edge between vertex i and j",
+      "A tree representation of a graph",
+      "A list of vertices"
+    ],
+    "correct_answer": "A 2D matrix where matrix[i][j]=1 if there is an edge between vertex i and j",
+    "explanation": "An adjacency matrix uses a V\u00d7V matrix to represent edges. Space is O(V\u00b2), but edge lookup is O(1).",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Graphs."
+  },
+  {
+    "question_id": 230,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a spanning tree?",
+    "options": [
+      "A tree with all nodes from a graph and minimum edges to connect them all without cycles",
+      "A tree with all edges of a graph",
+      "A tree with maximum edges",
+      "A graph with no cycles"
+    ],
+    "correct_answer": "A tree with all nodes from a graph and minimum edges to connect them all without cycles",
+    "explanation": "A spanning tree of a connected graph is a subgraph that includes all vertices and is a tree (connected, acyclic). A graph with V vertices has a spanning tree with V-1 edges.",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Graphs to solve problems."
+  },
+  {
+    "question_id": 231,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is the difference between Prim's and Kruskal's algorithms?",
+    "options": [
+      "Both find MST; Prim's grows from a vertex, Kruskal's adds globally cheapest edges",
+      "Prim's finds shortest path; Kruskal's finds MST",
+      "Kruskal's works only on directed graphs",
+      "They are identical"
+    ],
+    "correct_answer": "Both find MST; Prim's grows from a vertex, Kruskal's adds globally cheapest edges",
+    "explanation": "Both find the Minimum Spanning Tree. Prim's starts from a vertex and greedily adds the nearest vertex. Kruskal's sorts all edges by weight and adds them if they don't form a cycle.",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Graphs."
+  },
+  {
+    "question_id": 232,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What does the GROUP BY clause do?",
+    "options": [
+      "Sorts rows",
+      "Filters rows after aggregation",
+      "Groups rows with the same values for aggregate functions",
+      "Joins tables"
+    ],
+    "correct_answer": "Groups rows with the same values for aggregate functions",
+    "explanation": "GROUP BY groups rows sharing the same values in specified columns, typically used with aggregate functions like COUNT, SUM, AVG, MAX, MIN.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of SQL."
+  },
+  {
+    "question_id": 233,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a subquery?",
+    "options": [
+      "A stored procedure",
+      "A query nested inside another query",
+      "A view",
+      "An index"
+    ],
+    "correct_answer": "A query nested inside another query",
+    "explanation": "A subquery (inner query) is embedded within another SQL statement. It executes first, and its result is used by the outer query.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of SQL to solve problems."
+  },
+  {
+    "question_id": 234,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is the difference between UNION and UNION ALL?",
+    "options": [
+      "UNION removes duplicates; UNION ALL includes all rows including duplicates",
+      "UNION ALL removes duplicates",
+      "They are identical",
+      "UNION is faster than UNION ALL"
+    ],
+    "correct_answer": "UNION removes duplicates; UNION ALL includes all rows including duplicates",
+    "explanation": "UNION combines result sets and removes duplicate rows (slower). UNION ALL combines result sets and keeps all rows including duplicates (faster, no deduplication step).",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in SQL."
+  },
+  {
+    "question_id": 235,
+    "subject": "Operating Systems",
+    "topic": "Processes",
+    "topic_id": 15,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is inter-process communication (IPC)?",
+    "options": [
+      "Communication between threads",
+      "Mechanisms allowing processes to share data and signals",
+      "Network communication",
+      "Disk I/O"
+    ],
+    "correct_answer": "Mechanisms allowing processes to share data and signals",
+    "explanation": "IPC mechanisms (pipes, message queues, shared memory, semaphores, sockets) allow separate processes to communicate and synchronize their actions.",
+    "tags": [
+      "process",
+      "PCB",
+      "process-states",
+      "fork",
+      "IPC"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Processes to solve problems."
+  },
+  {
+    "question_id": 236,
+    "subject": "Operating Systems",
+    "topic": "Processes",
+    "topic_id": 15,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the difference between fork() and exec()?",
+    "options": [
+      "fork() creates a child process; exec() replaces the current process image with a new program",
+      "exec() creates a new process; fork() replaces the process",
+      "They are the same",
+      "fork() is for threads; exec() is for processes"
+    ],
+    "correct_answer": "fork() creates a child process; exec() replaces the current process image with a new program",
+    "explanation": "fork() duplicates the calling process, creating a child. exec() replaces the calling process's memory space with a new program without creating a new process.",
+    "tags": [
+      "process",
+      "PCB",
+      "process-states",
+      "fork",
+      "IPC"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Processes."
+  },
+  {
+    "question_id": 237,
+    "subject": "Operating Systems",
+    "topic": "Memory Management",
+    "topic_id": 19,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is virtual memory?",
+    "options": [
+      "RAM only",
+      "A technique that allows processes to use more memory than physically available by using disk space",
+      "Cache memory",
+      "GPU memory"
+    ],
+    "correct_answer": "A technique that allows processes to use more memory than physically available by using disk space",
+    "explanation": "Virtual memory extends available memory by using disk storage (swap space) to hold pages not currently in RAM, giving processes the illusion of larger memory.",
+    "tags": [
+      "paging",
+      "segmentation",
+      "virtual-memory",
+      "page-fault",
+      "fragmentation"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Memory Management."
+  },
+  {
+    "question_id": 238,
+    "subject": "Operating Systems",
+    "topic": "Memory Management",
+    "topic_id": 19,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is a page fault?",
+    "options": [
+      "A hardware failure",
+      "An error in the code",
+      "When a process accesses a page not currently in physical memory",
+      "A disk error"
+    ],
+    "correct_answer": "When a process accesses a page not currently in physical memory",
+    "explanation": "A page fault occurs when a running program accesses a page mapped in virtual memory that is not loaded in RAM. The OS then loads the page from disk.",
+    "tags": [
+      "paging",
+      "segmentation",
+      "virtual-memory",
+      "page-fault",
+      "fragmentation"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Memory Management."
+  },
+  {
+    "question_id": 239,
+    "subject": "Operating Systems",
+    "topic": "Memory Management",
+    "topic_id": 19,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "Which page replacement algorithm replaces the page that won't be used for the longest time?",
+    "options": [
+      "LRU",
+      "FIFO",
+      "Optimal",
+      "Clock"
+    ],
+    "correct_answer": "Optimal",
+    "explanation": "The Optimal (B\u00e9l\u00e1dy's) page replacement algorithm replaces the page that will not be used for the longest time in the future. It is theoretically optimal but impractical as future references are unknown.",
+    "tags": [
+      "paging",
+      "segmentation",
+      "virtual-memory",
+      "page-fault",
+      "fragmentation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Memory Management to solve problems."
+  },
+  {
+    "question_id": 240,
+    "subject": "Operating Systems",
+    "topic": "Memory Management",
+    "topic_id": 19,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is thrashing in operating systems?",
+    "options": [
+      "High CPU utilization",
+      "A situation where the system spends more time swapping pages than executing processes",
+      "A disk failure",
+      "A network issue"
+    ],
+    "correct_answer": "A situation where the system spends more time swapping pages than executing processes",
+    "explanation": "Thrashing occurs when a process has insufficient frames, causing constant page faults and swapping, leading to very low CPU utilization as the OS is busy with paging.",
+    "tags": [
+      "paging",
+      "segmentation",
+      "virtual-memory",
+      "page-fault",
+      "fragmentation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Memory Management to solve problems."
+  },
+  {
+    "question_id": 241,
+    "subject": "Operating Systems",
+    "topic": "Memory Management",
+    "topic_id": 19,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is internal fragmentation?",
+    "options": [
+      "Unused space between allocated memory blocks",
+      "Unused space within an allocated memory block due to rounding up allocation size",
+      "A type of memory leak",
+      "Fragmented disk storage"
+    ],
+    "correct_answer": "Unused space within an allocated memory block due to rounding up allocation size",
+    "explanation": "Internal fragmentation occurs when more memory is allocated than needed (e.g., allocating 4KB for a 3KB request). The unused 1KB inside the block is wasted.",
+    "tags": [
+      "paging",
+      "segmentation",
+      "virtual-memory",
+      "page-fault",
+      "fragmentation"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Memory Management."
+  },
+  {
+    "question_id": 242,
+    "subject": "Computer Networks",
+    "topic": "TCP/IP",
+    "topic_id": 21,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the purpose of ARP (Address Resolution Protocol)?",
+    "options": [
+      "Resolve domain names to IPs",
+      "Map IP addresses to MAC addresses",
+      "Assign IP addresses dynamically",
+      "Route packets between networks"
+    ],
+    "correct_answer": "Map IP addresses to MAC addresses",
+    "explanation": "ARP resolves a known IP address to the corresponding MAC address on a local network, enabling Layer 2 frame delivery.",
+    "tags": [
+      "TCP",
+      "UDP",
+      "IP",
+      "handshake",
+      "flow-control",
+      "congestion-control"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of TCP/IP."
+  },
+  {
+    "question_id": 243,
+    "subject": "Computer Networks",
+    "topic": "TCP/IP",
+    "topic_id": 21,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the difference between TCP and UDP?",
+    "options": [
+      "TCP is connectionless and faster; UDP is connection-oriented",
+      "TCP provides reliable ordered delivery; UDP is connectionless and faster but unreliable",
+      "UDP is more reliable than TCP",
+      "They use different IP versions"
+    ],
+    "correct_answer": "TCP provides reliable ordered delivery; UDP is connectionless and faster but unreliable",
+    "explanation": "TCP guarantees delivery, ordering, and error checking via connection establishment and acknowledgments. UDP is lightweight, connectionless, and faster but does not guarantee delivery (used for streaming, DNS, gaming).",
+    "tags": [
+      "TCP",
+      "UDP",
+      "IP",
+      "handshake",
+      "flow-control",
+      "congestion-control"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of TCP/IP to solve problems."
+  },
+  {
+    "question_id": 244,
+    "subject": "Computer Networks",
+    "topic": "OSI Model",
+    "topic_id": 20,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "At which OSI layer do switches operate?",
+    "options": [
+      "Layer 1",
+      "Layer 2",
+      "Layer 3",
+      "Layer 4"
+    ],
+    "correct_answer": "Layer 2",
+    "explanation": "Switches operate at Layer 2 (Data Link) and use MAC addresses to forward frames within a local network. Routers operate at Layer 3.",
+    "tags": [
+      "OSI",
+      "layers",
+      "protocol",
+      "networking",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of OSI Model to solve problems."
+  },
+  {
+    "question_id": 245,
+    "subject": "Computer Networks",
+    "topic": "DNS",
+    "topic_id": 22,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a CNAME record in DNS?",
+    "options": [
+      "A record mapping a name to an IP address",
+      "A canonical name record that creates an alias pointing to another domain name",
+      "A mail exchange record",
+      "A name server record"
+    ],
+    "correct_answer": "A canonical name record that creates an alias pointing to another domain name",
+    "explanation": "A CNAME (Canonical Name) record maps an alias hostname to the true (canonical) hostname. For example, www.example.com could be a CNAME for example.com.",
+    "tags": [
+      "DNS",
+      "domain",
+      "resolution",
+      "records",
+      "name-server"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of DNS to solve problems."
+  },
+  {
+    "question_id": 246,
+    "subject": "Object Oriented Programming",
+    "topic": "Polymorphism",
+    "topic_id": 27,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is method overloading?",
+    "options": [
+      "Overriding a parent class method",
+      "Defining multiple methods with the same name but different parameter lists in the same class",
+      "Creating multiple objects",
+      "Using inheritance"
+    ],
+    "correct_answer": "Defining multiple methods with the same name but different parameter lists in the same class",
+    "explanation": "Method overloading allows a class to have multiple methods sharing the same name but with different numbers or types of parameters, resolved at compile time.",
+    "tags": [
+      "polymorphism",
+      "overloading",
+      "overriding",
+      "dynamic-dispatch",
+      "interface"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Polymorphism."
+  },
+  {
+    "question_id": 247,
+    "subject": "Object Oriented Programming",
+    "topic": "Inheritance",
+    "topic_id": 26,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is the 'super' keyword used for?",
+    "options": [
+      "To create a superclass",
+      "To call the parent class's constructor or methods from a subclass",
+      "To define an abstract class",
+      "To prevent method overriding"
+    ],
+    "correct_answer": "To call the parent class's constructor or methods from a subclass",
+    "explanation": "The 'super' keyword in Java/Python refers to the parent class. It is used to call the parent's constructor (super()) or overridden methods (super.method()).",
+    "tags": [
+      "inheritance",
+      "subclass",
+      "superclass",
+      "extends",
+      "method-overriding"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Inheritance to solve problems."
+  },
+  {
+    "question_id": 248,
+    "subject": "Object Oriented Programming",
+    "topic": "Classes",
+    "topic_id": 24,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is the purpose of the 'static' keyword for a method?",
+    "options": [
+      "The method can be overridden",
+      "The method belongs to the class rather than any instance and can be called without creating an object",
+      "The method is private",
+      "The method returns nothing"
+    ],
+    "correct_answer": "The method belongs to the class rather than any instance and can be called without creating an object",
+    "explanation": "A static method is associated with the class itself, not individual objects. It can be called using the class name and cannot access instance variables directly.",
+    "tags": [
+      "class",
+      "OOP",
+      "constructor",
+      "static",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Classes to solve problems."
+  },
+  {
+    "question_id": 249,
+    "subject": "Object Oriented Programming",
+    "topic": "Objects",
+    "topic_id": 25,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the purpose of the 'final' keyword applied to a class in Java?",
+    "options": [
+      "The class cannot be instantiated",
+      "The class cannot be extended (subclassed)",
+      "The class has no constructors",
+      "All methods in the class are static"
+    ],
+    "correct_answer": "The class cannot be extended (subclassed)",
+    "explanation": "Marking a class as 'final' prevents any other class from inheriting from it. This is used for security and design reasons, e.g., java.lang.String is a final class.",
+    "tags": [
+      "object",
+      "instance",
+      "encapsulation",
+      "getter",
+      "setter"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Objects."
+  },
+  {
+    "question_id": 250,
+    "subject": "Object Oriented Programming",
+    "topic": "Polymorphism",
+    "topic_id": 27,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is dynamic dispatch?",
+    "options": [
+      "Creating objects at runtime",
+      "The mechanism by which a call to an overridden method is resolved at runtime based on the actual object type",
+      "Calling methods at compile time",
+      "Loading classes dynamically"
+    ],
+    "correct_answer": "The mechanism by which a call to an overridden method is resolved at runtime based on the actual object type",
+    "explanation": "Dynamic dispatch (late binding) determines which method to call at runtime. When a parent reference points to a child object and calls an overridden method, the child's version is executed.",
+    "tags": [
+      "polymorphism",
+      "overloading",
+      "overriding",
+      "dynamic-dispatch",
+      "interface"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Polymorphism."
+  },
+  {
+    "question_id": 251,
+    "subject": "Database Management Systems",
+    "topic": "DBMS Indexes",
+    "topic_id": 14,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is a database index?",
+    "options": [
+      "A copy of the table",
+      "A data structure that speeds up data retrieval at the cost of additional storage",
+      "A primary key",
+      "A foreign key constraint"
+    ],
+    "correct_answer": "A data structure that speeds up data retrieval at the cost of additional storage",
+    "explanation": "An index is a data structure (usually a B-Tree or hash) that allows the database to find rows quickly without scanning the entire table.",
+    "tags": [
+      "index",
+      "B-tree",
+      "clustered",
+      "non-clustered",
+      "query-optimization"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of DBMS Indexes."
+  },
+  {
+    "question_id": 252,
+    "subject": "Database Management Systems",
+    "topic": "DBMS Indexes",
+    "topic_id": 14,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is the difference between a clustered and a non-clustered index?",
+    "options": [
+      "Clustered index physically reorders the table data; non-clustered creates a separate structure with pointers",
+      "Non-clustered is always faster",
+      "Clustered stores all columns; non-clustered stores one column",
+      "They are identical"
+    ],
+    "correct_answer": "Clustered index physically reorders the table data; non-clustered creates a separate structure with pointers",
+    "explanation": "A clustered index determines the physical order of rows in a table (one per table). A non-clustered index is a separate structure with pointers to the actual rows, allowing multiple indexes per table.",
+    "tags": [
+      "index",
+      "B-tree",
+      "clustered",
+      "non-clustered",
+      "query-optimization"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of DBMS Indexes to solve problems."
+  },
+  {
+    "question_id": 253,
+    "subject": "Database Management Systems",
+    "topic": "Transactions",
+    "topic_id": 13,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is two-phase locking (2PL)?",
+    "options": [
+      "A technique using two locks per resource",
+      "A concurrency control protocol with a growing phase (acquire locks) and a shrinking phase (release locks), ensuring serializability",
+      "A two-step commit protocol",
+      "A deadlock prevention technique"
+    ],
+    "correct_answer": "A concurrency control protocol with a growing phase (acquire locks) and a shrinking phase (release locks), ensuring serializability",
+    "explanation": "2PL ensures serializability by requiring transactions to acquire all needed locks before releasing any. The growing phase acquires locks; the shrinking phase releases them. No new locks after first release.",
+    "tags": [
+      "ACID",
+      "transaction",
+      "concurrency",
+      "isolation",
+      "locking"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Transactions."
+  },
+  {
+    "question_id": 254,
+    "subject": "Computer Networks",
+    "topic": "Routing",
+    "topic_id": 23,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is NAT (Network Address Translation)?",
+    "options": [
+      "A routing protocol",
+      "A technique that maps private IP addresses to a public IP address for internet communication",
+      "A type of firewall",
+      "A DNS service"
+    ],
+    "correct_answer": "A technique that maps private IP addresses to a public IP address for internet communication",
+    "explanation": "NAT allows multiple devices on a private network to share a single public IP address. It translates private IPs to the public IP when packets leave the network and back when they return.",
+    "tags": [
+      "routing",
+      "routing-table",
+      "OSPF",
+      "BGP",
+      "RIP",
+      "subnet"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Routing to solve problems."
+  },
+  {
+    "question_id": 255,
+    "subject": "Computer Networks",
+    "topic": "TCP/IP",
+    "topic_id": 21,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is congestion control in TCP?",
+    "options": [
+      "Preventing too much data from being sent by a single sender to avoid overwhelming the network",
+      "Encrypting data",
+      "Compressing packets",
+      "Routing around congestion"
+    ],
+    "correct_answer": "Preventing too much data from being sent by a single sender to avoid overwhelming the network",
+    "explanation": "TCP congestion control (e.g., slow start, congestion avoidance, fast retransmit) regulates the sending rate to prevent network overload, adjusting the congestion window based on perceived network capacity.",
+    "tags": [
+      "TCP",
+      "UDP",
+      "IP",
+      "handshake",
+      "flow-control",
+      "congestion-control"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in TCP/IP."
+  },
+  {
+    "question_id": 256,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Sorting",
+    "topic_id": 7,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the space complexity of Merge Sort?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n\u00b2)"
+    ],
+    "correct_answer": "O(n)",
+    "explanation": "Merge Sort requires O(n) auxiliary space for the temporary arrays used during the merge step.",
+    "tags": [
+      "sorting",
+      "comparison-sort",
+      "divide-and-conquer",
+      "in-place",
+      "stability"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Sorting."
+  },
+  {
+    "question_id": 257,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Sorting",
+    "topic_id": 7,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "Which sorting algorithm works by building a max-heap and extracting elements?",
+    "options": [
+      "Merge Sort",
+      "Quick Sort",
+      "Heap Sort",
+      "Radix Sort"
+    ],
+    "correct_answer": "Heap Sort",
+    "explanation": "Heap Sort builds a max-heap from the input, then repeatedly extracts the maximum element to sort the array in-place with O(n log n) time complexity.",
+    "tags": [
+      "sorting",
+      "comparison-sort",
+      "divide-and-conquer",
+      "in-place",
+      "stability"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Sorting to solve problems."
+  },
+  {
+    "question_id": 258,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Sorting",
+    "topic_id": 7,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is the time complexity of Radix Sort for n numbers each with d digits in base b?",
+    "options": [
+      "O(n log n)",
+      "O(d(n+b))",
+      "O(n\u00b2)",
+      "O(n)"
+    ],
+    "correct_answer": "O(d(n+b))",
+    "explanation": "Radix Sort performs d passes of counting sort, each taking O(n+b) time. Total: O(d(n+b)). For fixed d and b, it is O(n), making it faster than comparison sorts.",
+    "tags": [
+      "sorting",
+      "comparison-sort",
+      "divide-and-conquer",
+      "in-place",
+      "stability"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Sorting."
+  },
+  {
+    "question_id": 259,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Recursion",
+    "topic_id": 9,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "Which technique improves the time complexity of recursive Fibonacci from O(2^n) to O(n)?",
+    "options": [
+      "Tail recursion",
+      "Memoization (top-down dynamic programming)",
+      "Iteration",
+      "Divide and conquer"
+    ],
+    "correct_answer": "Memoization (top-down dynamic programming)",
+    "explanation": "Memoization stores the results of previously computed subproblems, avoiding redundant calculations. Fibonacci with memoization runs in O(n) time and O(n) space.",
+    "tags": [
+      "recursion",
+      "base-case",
+      "call-stack",
+      "memoization",
+      "backtracking"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Recursion to solve problems."
+  },
+  {
+    "question_id": 260,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Recursion",
+    "topic_id": 9,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the Tower of Hanoi problem's time complexity for n disks?",
+    "options": [
+      "O(n)",
+      "O(n\u00b2)",
+      "O(2^n)",
+      "O(n log n)"
+    ],
+    "correct_answer": "O(2^n)",
+    "explanation": "The Tower of Hanoi requires 2^n - 1 moves for n disks. The recurrence T(n) = 2T(n-1) + 1 resolves to O(2^n).",
+    "tags": [
+      "recursion",
+      "base-case",
+      "call-stack",
+      "memoization",
+      "backtracking"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Recursion."
+  },
+  {
+    "question_id": 261,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Searching",
+    "topic_id": 8,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the best-case time complexity of Linear Search?",
+    "options": [
+      "O(n)",
+      "O(log n)",
+      "O(1)",
+      "O(n\u00b2)"
+    ],
+    "correct_answer": "O(1)",
+    "explanation": "The best case of linear search is O(1) when the target element is at the first position of the array.",
+    "tags": [
+      "searching",
+      "binary-search",
+      "linear-search",
+      "sorted-array"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Searching."
+  },
+  {
+    "question_id": 262,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Searching",
+    "topic_id": 8,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "Jump Search works on sorted arrays. What is its optimal jump size for an array of n elements?",
+    "options": [
+      "n/2",
+      "\u221an",
+      "log n",
+      "n/3"
+    ],
+    "correct_answer": "\u221an",
+    "explanation": "The optimal block size for Jump Search is \u221an. This minimizes the total number of comparisons to O(\u221an) on average.",
+    "tags": [
+      "searching",
+      "binary-search",
+      "linear-search",
+      "sorted-array"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Searching to solve problems."
+  },
+  {
+    "question_id": 263,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Searching",
+    "topic_id": 8,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is Exponential Search used for?",
+    "options": [
+      "Searching in unsorted arrays",
+      "Finding a range in which the element lies and then applying Binary Search, useful for unbounded arrays",
+      "Searching in sorted circular arrays",
+      "Hashing-based search"
+    ],
+    "correct_answer": "Finding a range in which the element lies and then applying Binary Search, useful for unbounded arrays",
+    "explanation": "Exponential Search doubles the index until it exceeds the target, finding a range, then performs Binary Search in that range. Time complexity is O(log i) where i is the index of the element.",
+    "tags": [
+      "searching",
+      "binary-search",
+      "linear-search",
+      "sorted-array"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Searching."
+  },
+  {
+    "question_id": 264,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Stacks",
+    "topic_id": 3,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is an infix expression?",
+    "options": [
+      "Operator before operands",
+      "Operator between operands",
+      "Operator after operands",
+      "Operands only"
+    ],
+    "correct_answer": "Operator between operands",
+    "explanation": "In infix notation, the operator is placed between operands (e.g., A + B). Prefix puts the operator before (+ A B) and postfix puts it after (A B +).",
+    "tags": [
+      "stack",
+      "LIFO",
+      "push",
+      "pop",
+      "expression-evaluation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Stacks to solve problems."
+  },
+  {
+    "question_id": 265,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Stacks",
+    "topic_id": 3,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What data structure is most commonly used to evaluate a postfix expression?",
+    "options": [
+      "Queue",
+      "Stack",
+      "Linked List",
+      "Tree"
+    ],
+    "correct_answer": "Stack",
+    "explanation": "To evaluate a postfix expression, scan from left to right: push operands onto the stack, and when an operator is found, pop two operands, apply the operator, and push the result.",
+    "tags": [
+      "stack",
+      "LIFO",
+      "push",
+      "pop",
+      "expression-evaluation"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Stacks."
+  },
+  {
+    "question_id": 266,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Queues",
+    "topic_id": 4,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a priority queue?",
+    "options": [
+      "A queue ordered by insertion time",
+      "A queue where each element has a priority and elements are dequeued by priority",
+      "A circular queue",
+      "A queue with two ends"
+    ],
+    "correct_answer": "A queue where each element has a priority and elements are dequeued by priority",
+    "explanation": "A priority queue dequeues elements based on their priority rather than insertion order. It is often implemented using a heap, giving O(log n) insert and delete-min/max.",
+    "tags": [
+      "queue",
+      "FIFO",
+      "enqueue",
+      "dequeue",
+      "BFS"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Queues to solve problems."
+  },
+  {
+    "question_id": 267,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Queues",
+    "topic_id": 4,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the time complexity of inserting into a binary heap-based priority queue?",
+    "options": [
+      "O(1)",
+      "O(log n)",
+      "O(n)",
+      "O(n log n)"
+    ],
+    "correct_answer": "O(log n)",
+    "explanation": "Insertion into a binary heap adds the element at the end and then sifts it up to maintain the heap property. This takes O(log n) in the worst case.",
+    "tags": [
+      "queue",
+      "FIFO",
+      "enqueue",
+      "dequeue",
+      "BFS"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Queues."
+  },
+  {
+    "question_id": 268,
+    "subject": "Database Management Systems",
+    "topic": "ER Model",
+    "topic_id": 10,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a multi-valued attribute?",
+    "options": [
+      "An attribute that can be NULL",
+      "An attribute that can hold more than one value for a single entity",
+      "An attribute that is a key",
+      "An attribute derived from other attributes"
+    ],
+    "correct_answer": "An attribute that can hold more than one value for a single entity",
+    "explanation": "A multi-valued attribute can have multiple values for a single entity. For example, a person can have multiple phone numbers. It is shown as a double ellipse in ER diagrams.",
+    "tags": [
+      "ER-diagram",
+      "entity",
+      "relationship",
+      "attribute",
+      "cardinality"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of ER Model to solve problems."
+  },
+  {
+    "question_id": 269,
+    "subject": "Database Management Systems",
+    "topic": "ER Model",
+    "topic_id": 10,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is a derived attribute in ER modeling?",
+    "options": [
+      "An attribute that is part of the primary key",
+      "An attribute whose value can be calculated from other attributes",
+      "An attribute with multiple values",
+      "A composite attribute"
+    ],
+    "correct_answer": "An attribute whose value can be calculated from other attributes",
+    "explanation": "A derived attribute's value is computed from other attributes. For example, 'Age' can be derived from 'Date of Birth' and the current date. It is shown as a dashed ellipse.",
+    "tags": [
+      "ER-diagram",
+      "entity",
+      "relationship",
+      "attribute",
+      "cardinality"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in ER Model."
+  },
+  {
+    "question_id": 270,
+    "subject": "Database Management Systems",
+    "topic": "Normalization",
+    "topic_id": 12,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is 4NF?",
+    "options": [
+      "A form that removes transitive dependencies",
+      "A form that removes multi-valued dependencies",
+      "A form that requires all columns to be atomic",
+      "A form where every determinant is a candidate key"
+    ],
+    "correct_answer": "A form that removes multi-valued dependencies",
+    "explanation": "Fourth Normal Form (4NF) requires the table to be in BCNF and have no non-trivial multi-valued dependencies, where one attribute independently determines multiple values of another.",
+    "tags": [
+      "normalization",
+      "1NF",
+      "2NF",
+      "3NF",
+      "BCNF",
+      "functional-dependency"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Normalization."
+  },
+  {
+    "question_id": 271,
+    "subject": "Operating Systems",
+    "topic": "Scheduling",
+    "topic_id": 17,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is the difference between preemptive and non-preemptive scheduling?",
+    "options": [
+      "In preemptive scheduling, a running process can be interrupted and moved back to the ready queue; non-preemptive lets a process run until it voluntarily releases the CPU",
+      "Non-preemptive is always faster",
+      "Preemptive scheduling doesn't use priorities",
+      "They are the same"
+    ],
+    "correct_answer": "In preemptive scheduling, a running process can be interrupted and moved back to the ready queue; non-preemptive lets a process run until it voluntarily releases the CPU",
+    "explanation": "Preemptive scheduling allows the OS to forcibly remove CPU from a process (e.g., Round Robin, SRTF). Non-preemptive scheduling lets the process finish or block before switching (e.g., FCFS, non-preemptive SJF).",
+    "tags": [
+      "scheduling",
+      "CPU",
+      "FCFS",
+      "SJF",
+      "round-robin",
+      "priority"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Scheduling."
+  },
+  {
+    "question_id": 272,
+    "subject": "Operating Systems",
+    "topic": "Scheduling",
+    "topic_id": 17,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is the convoy effect in FCFS scheduling?",
+    "options": [
+      "Short processes starving behind long processes",
+      "All processes finishing at the same time",
+      "Processes being scheduled by priority",
+      "CPU being idle"
+    ],
+    "correct_answer": "Short processes starving behind long processes",
+    "explanation": "The convoy effect in FCFS occurs when many short processes wait behind a long process, causing high average waiting time and poor CPU utilization.",
+    "tags": [
+      "scheduling",
+      "CPU",
+      "FCFS",
+      "SJF",
+      "round-robin",
+      "priority"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Scheduling to solve problems."
+  },
+  {
+    "question_id": 273,
+    "subject": "Operating Systems",
+    "topic": "Threads",
+    "topic_id": 16,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is a semaphore?",
+    "options": [
+      "A type of thread",
+      "A signaling mechanism used to control access to shared resources by multiple threads",
+      "A scheduling algorithm",
+      "A memory management technique"
+    ],
+    "correct_answer": "A signaling mechanism used to control access to shared resources by multiple threads",
+    "explanation": "A semaphore is an integer variable used for signaling between threads. A binary semaphore (0/1) works like a mutex. A counting semaphore allows n threads to access a resource simultaneously.",
+    "tags": [
+      "thread",
+      "multithreading",
+      "synchronization",
+      "race-condition",
+      "mutex"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Threads."
+  },
+  {
+    "question_id": 274,
+    "subject": "Operating Systems",
+    "topic": "Threads",
+    "topic_id": 16,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a critical section?",
+    "options": [
+      "A section of code that must execute atomically, accessed by at most one thread at a time",
+      "The most important function in a program",
+      "A section of code with no loops",
+      "A section of code with errors"
+    ],
+    "correct_answer": "A section of code that must execute atomically, accessed by at most one thread at a time",
+    "explanation": "A critical section is a segment of code that accesses shared resources and must not be executed by more than one thread simultaneously to prevent race conditions.",
+    "tags": [
+      "thread",
+      "multithreading",
+      "synchronization",
+      "race-condition",
+      "mutex"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Threads to solve problems."
+  },
+  {
+    "question_id": 275,
+    "subject": "Object Oriented Programming",
+    "topic": "Classes",
+    "topic_id": 24,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is abstraction in OOP?",
+    "options": [
+      "Hiding all data",
+      "Showing only relevant details and hiding implementation complexity",
+      "Duplicating code",
+      "Creating subclasses"
+    ],
+    "correct_answer": "Showing only relevant details and hiding implementation complexity",
+    "explanation": "Abstraction focuses on what an object does rather than how it does it, exposing only the necessary interface and hiding implementation details.",
+    "tags": [
+      "class",
+      "OOP",
+      "constructor",
+      "static",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Classes."
+  },
+  {
+    "question_id": 276,
+    "subject": "Object Oriented Programming",
+    "topic": "Objects",
+    "topic_id": 25,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a destructor?",
+    "options": [
+      "A method that creates objects",
+      "A special method called when an object is destroyed to release resources",
+      "A static method",
+      "A constructor with no parameters"
+    ],
+    "correct_answer": "A special method called when an object is destroyed to release resources",
+    "explanation": "A destructor is a special method called automatically when an object goes out of scope or is explicitly deleted. It is used to release resources (memory, file handles) held by the object.",
+    "tags": [
+      "object",
+      "instance",
+      "encapsulation",
+      "getter",
+      "setter"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Objects to solve problems."
+  },
+  {
+    "question_id": 277,
+    "subject": "Object Oriented Programming",
+    "topic": "Inheritance",
+    "topic_id": 26,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the Liskov Substitution Principle (LSP)?",
+    "options": [
+      "Any class can be substituted for another",
+      "Objects of a subclass should be substitutable for objects of the superclass without breaking the program",
+      "Subclasses must override all parent methods",
+      "Inheritance should be avoided"
+    ],
+    "correct_answer": "Objects of a subclass should be substitutable for objects of the superclass without breaking the program",
+    "explanation": "LSP (one of SOLID principles) states that if S is a subtype of T, then objects of type T can be replaced with objects of type S without altering the correctness of the program.",
+    "tags": [
+      "inheritance",
+      "subclass",
+      "superclass",
+      "extends",
+      "method-overriding"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Inheritance."
+  },
+  {
+    "question_id": 278,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a topological sort?",
+    "options": [
+      "Sorting vertices of a directed acyclic graph such that for every edge u\u2192v, u appears before v",
+      "Sorting graph edges by weight",
+      "Finding the shortest path",
+      "Detecting cycles"
+    ],
+    "correct_answer": "Sorting vertices of a directed acyclic graph such that for every edge u\u2192v, u appears before v",
+    "explanation": "Topological sort orders vertices of a DAG linearly so every directed edge goes from earlier to later in the order. Used in task scheduling, build systems, and dependency resolution.",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Graphs to solve problems."
+  },
+  {
+    "question_id": 279,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What does strongly connected mean for a directed graph?",
+    "options": [
+      "Every pair of vertices has a path in at least one direction",
+      "Every pair of vertices has a path in both directions",
+      "The graph has no cycles",
+      "The graph is a tree"
+    ],
+    "correct_answer": "Every pair of vertices has a path in both directions",
+    "explanation": "A directed graph is strongly connected if there is a path from every vertex to every other vertex. Tarjan's and Kosaraju's algorithms find strongly connected components in O(V+E).",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Graphs."
+  },
+  {
+    "question_id": 280,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "Which aggregate function returns the number of rows?",
+    "options": [
+      "SUM",
+      "AVG",
+      "COUNT",
+      "MAX"
+    ],
+    "correct_answer": "COUNT",
+    "explanation": "COUNT() returns the number of rows matching the condition. COUNT(*) counts all rows; COUNT(column) counts non-NULL values in that column.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of SQL."
+  },
+  {
+    "question_id": 281,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a view in SQL?",
+    "options": [
+      "A copy of a table stored on disk",
+      "A virtual table based on the result of a SELECT query",
+      "An index",
+      "A stored procedure"
+    ],
+    "correct_answer": "A virtual table based on the result of a SELECT query",
+    "explanation": "A view is a named query stored in the database. It behaves like a table but doesn't store data physically. Views simplify complex queries and provide a layer of abstraction.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of SQL to solve problems."
+  },
+  {
+    "question_id": 282,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is a stored procedure?",
+    "options": [
+      "A database backup",
+      "A precompiled set of SQL statements stored in the database that can be executed repeatedly",
+      "An index",
+      "A trigger"
+    ],
+    "correct_answer": "A precompiled set of SQL statements stored in the database that can be executed repeatedly",
+    "explanation": "A stored procedure is a precompiled SQL routine stored in the database. It can accept parameters, contain control flow logic, and be executed with a single CALL statement.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in SQL."
+  },
+  {
+    "question_id": 283,
+    "subject": "Computer Networks",
+    "topic": "OSI Model",
+    "topic_id": 20,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is the function of the Session layer?",
+    "options": [
+      "Routing packets",
+      "Establishing, managing, and terminating sessions between applications",
+      "Data encryption",
+      "Physical transmission"
+    ],
+    "correct_answer": "Establishing, managing, and terminating sessions between applications",
+    "explanation": "The Session layer (Layer 5) manages sessions between applications, handling establishment, maintenance, and termination of communication sessions, including checkpointing for recovery.",
+    "tags": [
+      "OSI",
+      "layers",
+      "protocol",
+      "networking",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in OSI Model."
+  },
+  {
+    "question_id": 284,
+    "subject": "Computer Networks",
+    "topic": "Routing",
+    "topic_id": 23,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is CIDR (Classless Inter-Domain Routing)?",
+    "options": [
+      "A routing protocol",
+      "A method of allocating IP addresses using variable-length subnet masks instead of fixed class boundaries",
+      "A type of NAT",
+      "A DNS record type"
+    ],
+    "correct_answer": "A method of allocating IP addresses using variable-length subnet masks instead of fixed class boundaries",
+    "explanation": "CIDR replaces classful networking by allowing flexible allocation of IP addresses with arbitrary prefix lengths (e.g., /24, /22), reducing IP address waste and enabling route aggregation.",
+    "tags": [
+      "routing",
+      "routing-table",
+      "OSPF",
+      "BGP",
+      "RIP",
+      "subnet"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Routing."
+  },
+  {
+    "question_id": 285,
+    "subject": "Computer Networks",
+    "topic": "DNS",
+    "topic_id": 22,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Apply",
+    "question": "What is an NS record in DNS?",
+    "options": [
+      "A name server record that specifies which DNS servers are authoritative for a domain",
+      "A record mapping name to IP",
+      "A mail server record",
+      "A text record"
+    ],
+    "correct_answer": "A name server record that specifies which DNS servers are authoritative for a domain",
+    "explanation": "An NS (Name Server) record identifies the authoritative DNS servers for a domain. When DNS is queried for a domain, NS records tell the resolver which servers have the authoritative answers.",
+    "tags": [
+      "DNS",
+      "domain",
+      "resolution",
+      "records",
+      "name-server"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in DNS."
+  },
+  {
+    "question_id": 286,
+    "subject": "Operating Systems",
+    "topic": "Deadlocks",
+    "topic_id": 18,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is resource allocation graph used for?",
+    "options": [
+      "Scheduling processes",
+      "Detecting deadlocks by visualizing resource assignments and requests",
+      "Allocating memory",
+      "Routing network packets"
+    ],
+    "correct_answer": "Detecting deadlocks by visualizing resource assignments and requests",
+    "explanation": "A Resource Allocation Graph (RAG) visually represents processes, resources, assignments, and requests. A cycle in the RAG indicates a potential deadlock.",
+    "tags": [
+      "deadlock",
+      "mutual-exclusion",
+      "circular-wait",
+      "Banker's-algorithm"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Deadlocks to solve problems."
+  },
+  {
+    "question_id": 287,
+    "subject": "Database Management Systems",
+    "topic": "ER Model",
+    "topic_id": 10,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What does cardinality in an ER relationship mean?",
+    "options": [
+      "The number of attributes",
+      "The number of entities in a relationship instance \u2014 one-to-one, one-to-many, or many-to-many",
+      "The depth of the ER diagram",
+      "The number of tables"
+    ],
+    "correct_answer": "The number of entities in a relationship instance \u2014 one-to-one, one-to-many, or many-to-many",
+    "explanation": "Cardinality specifies how many instances of one entity can be associated with instances of another. Types: 1:1, 1:N, M:N. It is a fundamental design constraint in ER modeling.",
+    "tags": [
+      "ER-diagram",
+      "entity",
+      "relationship",
+      "attribute",
+      "cardinality"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of ER Model."
+  },
+  {
+    "question_id": 288,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Arrays",
+    "topic_id": 1,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is a dynamic array (e.g., ArrayList in Java)?",
+    "options": [
+      "A fixed-size array",
+      "An array that resizes automatically when capacity is exceeded",
+      "An array stored on disk",
+      "A circular array"
+    ],
+    "correct_answer": "An array that resizes automatically when capacity is exceeded",
+    "explanation": "A dynamic array automatically doubles (or grows) its capacity when full, copying existing elements to the new array. Amortized insertion at the end is O(1).",
+    "tags": [
+      "array",
+      "indexing",
+      "traversal",
+      "in-place",
+      "sliding-window"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Arrays."
+  },
+  {
+    "question_id": 289,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Linked Lists",
+    "topic_id": 2,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "How is a doubly linked list different from a singly linked list?",
+    "options": [
+      "It stores more data",
+      "Each node has pointers to both the next and the previous node",
+      "It has no head pointer",
+      "It is circular"
+    ],
+    "correct_answer": "Each node has pointers to both the next and the previous node",
+    "explanation": "A doubly linked list has each node containing data, a 'next' pointer, and a 'prev' pointer, enabling traversal in both directions.",
+    "tags": [
+      "linked-list",
+      "pointers",
+      "traversal",
+      "cycle-detection",
+      "reversal"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Linked Lists to solve problems."
+  },
+  {
+    "question_id": 290,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Trees",
+    "topic_id": 5,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is the root of a tree?",
+    "options": [
+      "The bottom-most node",
+      "The topmost node with no parent",
+      "Any node with children",
+      "A leaf node"
+    ],
+    "correct_answer": "The topmost node with no parent",
+    "explanation": "The root is the topmost node in a tree and has no parent. Every other node is reachable from the root through a unique path.",
+    "tags": [
+      "tree",
+      "binary-tree",
+      "BST",
+      "traversal",
+      "height",
+      "balancing"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Trees."
+  },
+  {
+    "question_id": 291,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Trees",
+    "topic_id": 5,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a heap?",
+    "options": [
+      "A stack-based data structure",
+      "A complete binary tree where the parent is always greater (max-heap) or smaller (min-heap) than its children",
+      "A balanced BST",
+      "A graph with no cycles"
+    ],
+    "correct_answer": "A complete binary tree where the parent is always greater (max-heap) or smaller (min-heap) than its children",
+    "explanation": "A heap is a complete binary tree satisfying the heap property. Max-heap: parent \u2265 children. Min-heap: parent \u2264 children. Used for priority queues and Heap Sort.",
+    "tags": [
+      "tree",
+      "binary-tree",
+      "BST",
+      "traversal",
+      "height",
+      "balancing"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Trees to solve problems."
+  },
+  {
+    "question_id": 292,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is a directed graph (digraph)?",
+    "options": [
+      "A graph with weighted edges",
+      "A graph where edges have direction",
+      "A graph with no edges",
+      "A graph where all nodes are connected"
+    ],
+    "correct_answer": "A graph where edges have direction",
+    "explanation": "In a directed graph, each edge has a direction (from one vertex to another), represented by arrows. Edge (u,v) means u\u2192v exists, but v\u2192u may not.",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Graphs."
+  },
+  {
+    "question_id": 293,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Sorting",
+    "topic_id": 7,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is Counting Sort and when is it efficient?",
+    "options": [
+      "A comparison-based sort",
+      "A linear-time sort for integers within a known, small range",
+      "A recursive sort",
+      "A sort based on the pivot element"
+    ],
+    "correct_answer": "A linear-time sort for integers within a known, small range",
+    "explanation": "Counting Sort counts occurrences of each value and reconstructs the sorted array in O(n+k) where k is the range of values. It is efficient when k is O(n).",
+    "tags": [
+      "sorting",
+      "comparison-sort",
+      "divide-and-conquer",
+      "in-place",
+      "stability"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Sorting to solve problems."
+  },
+  {
+    "question_id": 294,
+    "subject": "Database Management Systems",
+    "topic": "Normalization",
+    "topic_id": 12,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a functional dependency?",
+    "options": [
+      "A relationship between tables",
+      "A constraint where the value of one attribute uniquely determines the value of another",
+      "A type of JOIN",
+      "An index type"
+    ],
+    "correct_answer": "A constraint where the value of one attribute uniquely determines the value of another",
+    "explanation": "Functional dependency X\u2192Y means that for any two tuples with the same X value, they must have the same Y value. It is the basis for normalization analysis.",
+    "tags": [
+      "normalization",
+      "1NF",
+      "2NF",
+      "3NF",
+      "BCNF",
+      "functional-dependency"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Normalization to solve problems."
+  },
+  {
+    "question_id": 295,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What does the DISTINCT keyword do in SQL?",
+    "options": [
+      "Selects only NULL values",
+      "Returns only unique values in the result set",
+      "Sorts the result",
+      "Filters rows by condition"
+    ],
+    "correct_answer": "Returns only unique values in the result set",
+    "explanation": "SELECT DISTINCT removes duplicate rows from the query result, returning only unique values for the specified columns.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of SQL to solve problems."
+  },
+  {
+    "question_id": 296,
+    "subject": "Database Management Systems",
+    "topic": "Transactions",
+    "topic_id": 13,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is a savepoint in SQL transactions?",
+    "options": [
+      "A backup of the database",
+      "A point within a transaction to which you can partially roll back",
+      "An autocommit setting",
+      "A transaction lock"
+    ],
+    "correct_answer": "A point within a transaction to which you can partially roll back",
+    "explanation": "A SAVEPOINT marks a point in a transaction. ROLLBACK TO SAVEPOINT undoes changes only back to that point, without rolling back the entire transaction.",
+    "tags": [
+      "ACID",
+      "transaction",
+      "concurrency",
+      "isolation",
+      "locking"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Transactions to solve problems."
+  },
+  {
+    "question_id": 297,
+    "subject": "Operating Systems",
+    "topic": "Memory Management",
+    "topic_id": 19,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is paging in OS memory management?",
+    "options": [
+      "Dividing processes into segments",
+      "Dividing physical memory into fixed-size frames and logical memory into same-sized pages",
+      "A disk scheduling method",
+      "A CPU scheduling algorithm"
+    ],
+    "correct_answer": "Dividing physical memory into fixed-size frames and logical memory into same-sized pages",
+    "explanation": "Paging divides physical memory into fixed-size frames and process memory into same-size pages. A page table maps logical pages to physical frames, eliminating external fragmentation.",
+    "tags": [
+      "paging",
+      "segmentation",
+      "virtual-memory",
+      "page-fault",
+      "fragmentation"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Memory Management."
+  },
+  {
+    "question_id": 298,
+    "subject": "Operating Systems",
+    "topic": "Memory Management",
+    "topic_id": 19,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is segmentation?",
+    "options": [
+      "Dividing memory into equal fixed-size blocks",
+      "Dividing a program into logical variable-sized segments (code, data, stack)",
+      "A page replacement algorithm",
+      "Virtual memory technique"
+    ],
+    "correct_answer": "Dividing a program into logical variable-sized segments (code, data, stack)",
+    "explanation": "Segmentation divides a program into logical units (segments) of variable sizes, each with its own base and limit. It supports logical organization but can cause external fragmentation.",
+    "tags": [
+      "paging",
+      "segmentation",
+      "virtual-memory",
+      "page-fault",
+      "fragmentation"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Memory Management to solve problems."
+  },
+  {
+    "question_id": 299,
+    "subject": "Operating Systems",
+    "topic": "Processes",
+    "topic_id": 15,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the difference between a process and a thread?",
+    "options": [
+      "Threads are heavier than processes",
+      "A process has its own memory space; threads within a process share memory",
+      "Processes are faster",
+      "There is no difference"
+    ],
+    "correct_answer": "A process has its own memory space; threads within a process share memory",
+    "explanation": "A process is an independent execution unit with its own address space. Threads are lighter-weight units within a process that share the same address space, making communication easier but requiring synchronization.",
+    "tags": [
+      "process",
+      "PCB",
+      "process-states",
+      "fork",
+      "IPC"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Processes."
+  },
+  {
+    "question_id": 300,
+    "subject": "Computer Networks",
+    "topic": "OSI Model",
+    "topic_id": 20,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the Physical layer responsible for?",
+    "options": [
+      "Routing packets",
+      "Transmitting raw bits over a physical medium",
+      "Establishing sessions",
+      "Data encryption"
+    ],
+    "correct_answer": "Transmitting raw bits over a physical medium",
+    "explanation": "The Physical layer (Layer 1) deals with the actual transmission of raw bits (0s and 1s) over a physical medium (cables, radio waves), defining voltages, speeds, and connectors.",
+    "tags": [
+      "OSI",
+      "layers",
+      "protocol",
+      "networking",
+      "encapsulation"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of OSI Model."
+  },
+  {
+    "question_id": 301,
+    "subject": "Computer Networks",
+    "topic": "TCP/IP",
+    "topic_id": 21,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Understand",
+    "question": "What is DHCP used for?",
+    "options": [
+      "Translating domain names to IPs",
+      "Dynamically assigning IP addresses to devices on a network",
+      "Routing between networks",
+      "Encrypting data"
+    ],
+    "correct_answer": "Dynamically assigning IP addresses to devices on a network",
+    "explanation": "DHCP (Dynamic Host Configuration Protocol) automatically assigns IP addresses, subnet masks, default gateways, and DNS server addresses to devices joining a network.",
+    "tags": [
+      "TCP",
+      "UDP",
+      "IP",
+      "handshake",
+      "flow-control",
+      "congestion-control"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of TCP/IP to solve problems."
+  },
+  {
+    "question_id": 302,
+    "subject": "Computer Networks",
+    "topic": "DNS",
+    "topic_id": 22,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is a root DNS server?",
+    "options": [
+      "The DNS server of your ISP",
+      "The top-level DNS server that knows where TLD servers are",
+      "A local caching server",
+      "A recursive resolver"
+    ],
+    "correct_answer": "The top-level DNS server that knows where TLD servers are",
+    "explanation": "Root DNS servers are at the top of the DNS hierarchy. They don't know every domain but know where to find TLD (Top-Level Domain) servers (.com, .org, .in). There are 13 root server clusters worldwide.",
+    "tags": [
+      "DNS",
+      "domain",
+      "resolution",
+      "records",
+      "name-server"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of DNS."
+  },
+  {
+    "question_id": 303,
+    "subject": "Object Oriented Programming",
+    "topic": "Polymorphism",
+    "topic_id": 27,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is an interface in OOP?",
+    "options": [
+      "A class with all concrete methods",
+      "A purely abstract type that defines a contract \u2014 method signatures without implementation",
+      "A static class",
+      "An abstract class with constructors"
+    ],
+    "correct_answer": "A purely abstract type that defines a contract \u2014 method signatures without implementation",
+    "explanation": "An interface defines method signatures (and constants) that implementing classes must provide. It supports multiple inheritance of type in Java and enables polymorphism and loose coupling.",
+    "tags": [
+      "polymorphism",
+      "overloading",
+      "overriding",
+      "dynamic-dispatch",
+      "interface"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Polymorphism to solve problems."
+  },
+  {
+    "question_id": 304,
+    "subject": "Object Oriented Programming",
+    "topic": "Inheritance",
+    "topic_id": 26,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the 'is-a' relationship in OOP?",
+    "options": [
+      "Composition relationship",
+      "Inheritance relationship \u2014 a subclass is a type of its superclass",
+      "Association relationship",
+      "Aggregation relationship"
+    ],
+    "correct_answer": "Inheritance relationship \u2014 a subclass is a type of its superclass",
+    "explanation": "The 'is-a' relationship represents inheritance. E.g., 'Dog is-a Animal' means Dog extends Animal. This is different from 'has-a' (composition/aggregation), e.g., 'Car has-a Engine'.",
+    "tags": [
+      "inheritance",
+      "subclass",
+      "superclass",
+      "extends",
+      "method-overriding"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Inheritance."
+  },
+  {
+    "question_id": 305,
+    "subject": "Object Oriented Programming",
+    "topic": "Objects",
+    "topic_id": 25,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is a getter method?",
+    "options": [
+      "A method that sets an attribute value",
+      "A method that retrieves (returns) the value of a private attribute",
+      "A constructor",
+      "A static method"
+    ],
+    "correct_answer": "A method that retrieves (returns) the value of a private attribute",
+    "explanation": "Getter methods provide controlled read access to private instance variables, supporting encapsulation. Corresponding setter methods provide write access with potential validation.",
+    "tags": [
+      "object",
+      "instance",
+      "encapsulation",
+      "getter",
+      "setter"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Objects."
+  },
+  {
+    "question_id": 306,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Recursion",
+    "topic_id": 9,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is the risk of recursion without a proper base case?",
+    "options": [
+      "The program runs slowly",
+      "Stack overflow due to infinite recursive calls",
+      "Memory heap overflow",
+      "Compilation error"
+    ],
+    "correct_answer": "Stack overflow due to infinite recursive calls",
+    "explanation": "Without a base case, a recursive function calls itself indefinitely, pushing stack frames until the call stack is exhausted, causing a stack overflow error.",
+    "tags": [
+      "recursion",
+      "base-case",
+      "call-stack",
+      "memoization",
+      "backtracking"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Recursion."
+  },
+  {
+    "question_id": 307,
+    "subject": "Data Structures & Algorithms",
+    "topic": "Graphs",
+    "topic_id": 6,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is DFS (Depth-First Search)?",
+    "options": [
+      "Explores neighbors level by level using a queue",
+      "Explores as far as possible along a branch before backtracking, using a stack",
+      "Finds shortest path",
+      "Finds minimum spanning tree"
+    ],
+    "correct_answer": "Explores as far as possible along a branch before backtracking, using a stack",
+    "explanation": "DFS explores a graph by going deep along each path before backtracking. It uses a stack (or recursion) and is used for cycle detection, topological sort, and connected components.",
+    "tags": [
+      "graph",
+      "BFS",
+      "DFS",
+      "shortest-path",
+      "traversal",
+      "connectivity"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of Graphs to solve problems."
+  },
+  {
+    "question_id": 308,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Remember",
+    "question": "What is a primary key?",
+    "options": [
+      "A key used to join tables",
+      "A unique, non-null identifier for each row in a table",
+      "A foreign key",
+      "An index on a column"
+    ],
+    "correct_answer": "A unique, non-null identifier for each row in a table",
+    "explanation": "A primary key uniquely identifies each record in a table. It must be unique and cannot be NULL. A table can have only one primary key, which can consist of one or more columns (composite key).",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of SQL."
+  },
+  {
+    "question_id": 309,
+    "subject": "Database Management Systems",
+    "topic": "SQL",
+    "topic_id": 11,
+    "difficulty": "Medium",
+    "estimated_time": 45,
+    "bloom_level": "Apply",
+    "question": "What is a foreign key?",
+    "options": [
+      "The primary key of the same table",
+      "A column that references the primary key of another table to establish a link between tables",
+      "An index",
+      "A unique constraint"
+    ],
+    "correct_answer": "A column that references the primary key of another table to establish a link between tables",
+    "explanation": "A foreign key enforces referential integrity by linking a column in one table to the primary key in another table, ensuring that referenced records exist.",
+    "tags": [
+      "SQL",
+      "query",
+      "joins",
+      "aggregation",
+      "DDL",
+      "DML"
+    ],
+    "learning_outcome": "Student understands and can apply core principles of SQL to solve problems."
+  },
+  {
+    "question_id": 310,
+    "subject": "Operating Systems",
+    "topic": "Memory Management",
+    "topic_id": 19,
+    "difficulty": "Hard",
+    "estimated_time": 60,
+    "bloom_level": "Analyze",
+    "question": "What is the difference between first fit, best fit, and worst fit memory allocation?",
+    "options": [
+      "They are identical",
+      "First fit allocates the first sufficient free block; best fit allocates the smallest sufficient block; worst fit allocates the largest block",
+      "Best fit is always optimal",
+      "First fit causes the most fragmentation"
+    ],
+    "correct_answer": "First fit allocates the first sufficient free block; best fit allocates the smallest sufficient block; worst fit allocates the largest block",
+    "explanation": "First Fit is fast but may leave unusable fragments. Best Fit minimizes leftover space but is slow and causes many small fragments. Worst Fit leaves large fragments for future use but wastes large blocks.",
+    "tags": [
+      "paging",
+      "segmentation",
+      "virtual-memory",
+      "page-fault",
+      "fragmentation"
+    ],
+    "learning_outcome": "Student can analyze complex scenarios and evaluate trade-offs in Memory Management."
+  },
+  {
+    "question_id": 311,
+    "subject": "Computer Networks",
+    "topic": "Routing",
+    "topic_id": 23,
+    "difficulty": "Easy",
+    "estimated_time": 30,
+    "bloom_level": "Understand",
+    "question": "What is a subnet mask?",
+    "options": [
+      "A DNS record",
+      "A 32-bit value that separates the network portion from the host portion of an IP address",
+      "A routing protocol",
+      "A firewall rule"
+    ],
+    "correct_answer": "A 32-bit value that separates the network portion from the host portion of an IP address",
+    "explanation": "A subnet mask (e.g., 255.255.255.0 or /24) uses 1s for the network portion and 0s for the host portion of an IP address, enabling subnetting for logical network division.",
+    "tags": [
+      "routing",
+      "routing-table",
+      "OSPF",
+      "BGP",
+      "RIP",
+      "subnet"
+    ],
+    "learning_outcome": "Student can recall and identify basic concepts of Routing."
+  }
+]
