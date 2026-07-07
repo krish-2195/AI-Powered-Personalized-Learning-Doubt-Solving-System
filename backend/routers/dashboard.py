@@ -132,7 +132,8 @@ async def get_dashboard(user_id: int, db: Session = Depends(get_db), current_use
                 "averageScore": round(pg_data["avg_score"], 1), 
                 "topicsMastered": pg_data["topics_mastered"],
                 "videosWatched": pg_data["videos_watched"],
-                "studyHours": pg_data["study_hours"]
+                "studyHours": pg_data["study_hours"],
+                "quizzesTaken": pg_data.get("quiz_count", 0)
             },
             "recentActivity": pg_data["recent_activity"],
             "examReadiness": pg_data["readiness"],

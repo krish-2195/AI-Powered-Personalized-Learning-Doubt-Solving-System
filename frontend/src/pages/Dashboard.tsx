@@ -12,6 +12,9 @@ export default function Dashboard() {
     const cached = localStorage.getItem('dashboardData')
     return cached ? JSON.parse(cached) : null
   })
+  const [skipWelcome, setSkipWelcome] = useState(() => {
+    return localStorage.getItem('skipWelcome') === 'true'
+  })
 
   useEffect(() => {
     if (user?.user_id) {
@@ -81,7 +84,7 @@ export default function Dashboard() {
         { type: 'revision', title: 'Graph Traversal', topic: 'Graphs', time: 20 },
       ]
 
-  if (is_new_user) {
+  if (is_new_user && !skipWelcome) {
     return (
       <div className="space-y-6 text-slate-100 max-w-5xl mx-auto">
         <div className="flex flex-col items-center justify-center bg-gradient-to-br from-primary-600/80 via-primary-500/70 to-accent-500/60 backdrop-blur-xl rounded-3xl p-12 shadow-2xl shadow-purple-900/40 border border-white/20 text-center relative overflow-hidden">
@@ -115,12 +118,23 @@ export default function Dashboard() {
             </div>
           </div>
           
-          <button 
-            onClick={() => navigate('/learning')}
-            className="bg-white text-primary-700 hover:bg-slate-50 px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition-all transform hover:scale-105 shadow-xl"
-          >
-            Start Learning <ArrowRight size={20} />
-          </button>
+          <div className="flex flex-col sm:flex-row items-center gap-4">
+            <button 
+              onClick={() => navigate('/learning')}
+              className="bg-white text-primary-700 hover:bg-slate-50 px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition-all transform hover:scale-105 shadow-xl"
+            >
+              Start Learning <ArrowRight size={20} />
+            </button>
+            <button 
+              onClick={() => {
+                localStorage.setItem('skipWelcome', 'true');
+                setSkipWelcome(true);
+              }}
+              className="text-white/70 hover:text-white px-6 py-4 rounded-xl font-medium transition-colors"
+            >
+              Skip for now
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -286,9 +300,18 @@ export default function Dashboard() {
                 <span className="font-bold text-amber-300 mt-2 text-sm">Need 3<br/>Quizzes</span>
               </div>
               <div className="text-left bg-black/20 rounded-xl p-4 mt-4 border border-white/5 w-full">
-                <p className="text-xs text-amber-300 font-semibold mb-1">Cold Start Detected</p>
-                <p className="text-sm text-slate-300 leading-relaxed">
+                <p className="text-xs text-amber-300 font-semibold mb-2 uppercase tracking-wider">Unlock Predictions</p>
+                <p className="text-sm text-slate-300 mb-3">
                   {examReadiness?.reason || 'Complete at least 3 quizzes to unlock ML predictions.'}
+                </p>
+                <div className="w-full bg-slate-800 rounded-full h-2.5 border border-slate-700">
+                  <div 
+                    className="bg-amber-400 h-2.5 rounded-full transition-all duration-500"
+                    style={{ width: `${Math.min(((dashboardData?.stats?.quizzesTaken || 0) / 3) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <p className="text-xs text-slate-400 mt-2 text-right">
+                  {dashboardData?.stats?.quizzesTaken || 0} / 3 Quizzes Completed
                 </p>
               </div>
             </div>

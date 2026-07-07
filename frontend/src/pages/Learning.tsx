@@ -248,8 +248,8 @@ export default function Learning() {
               {activeTab === 'articles' && (
                 <div className="col-span-full p-12 text-center bg-white/5 rounded-xl border border-white/10 mt-4">
                   <FileText className="w-12 h-12 text-gray-500 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-white mb-2">Study Materials Coming Soon!</h3>
-                  <p className="text-gray-400">We are currently curating the best reading materials for you. Check back in a future update.</p>
+                  <h3 className="text-xl font-bold text-white mb-2">Future Content</h3>
+                  <p className="text-gray-400">Planned Feature - Reserved for Phase 2</p>
                 </div>
               )}
               {activeTab === 'practice' && renderGroupedContentCards(practice)}

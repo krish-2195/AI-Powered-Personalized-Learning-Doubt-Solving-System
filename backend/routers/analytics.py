@@ -31,9 +31,19 @@ def get_analytics_summary(user_id: int, db: Session = Depends(get_db), current_u
                 ).first()
                 attempts = perf.total_attempts if perf else 0
                 acc = round(wt.ewma_accuracy or 0)
+                time_taken = perf.avg_time_seconds if perf and perf.avg_time_seconds else 60
+                
+                reason = "Pattern identified by ML model"
+                if acc < 60 and attempts > 3:
+                    reason = "Struggling after multiple attempts"
+                elif acc < 60:
+                    reason = "Low overall accuracy"
+                elif time_taken > 120:
+                    reason = "High response time"
+                
                 weak_topics_data.append({
                     "topic": wt.topic.name,
-                    "reason": f"Average Accuracy: {acc}% | {attempts} Attempts"
+                    "reason": reason
                 })
 
         # 2. Topic Performance (Bar Chart Data)

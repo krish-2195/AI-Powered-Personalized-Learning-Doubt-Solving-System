@@ -8,7 +8,7 @@ from backend.config import settings
 from database.models.postgres_models import Base
 
 # PostgreSQL setup
-POSTGRES_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}?sslmode=require&connect_timeout=15"
+POSTGRES_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}?sslmode=require&connect_timeout=4"
 SQLITE_FALLBACK_URL = "sqlite:///./learning_platform.db"
 
 
@@ -38,8 +38,9 @@ def _create_engine_with_fallback():
             return pg_engine
         except Exception as err:
             if attempt < max_retries - 1:
-                print(f"PostgreSQL connection attempt {attempt + 1} failed: {err}. Retrying in 2 seconds...")
-                time.sleep(2)
+                sleep_time = 2 ** attempt
+                print(f"PostgreSQL connection attempt {attempt + 1} failed: {err}. Retrying in {sleep_time} seconds...")
+                time.sleep(sleep_time)
             else:
                 print(f"PostgreSQL unavailable after {max_retries} attempts, falling back to SQLite: {err}")
                 

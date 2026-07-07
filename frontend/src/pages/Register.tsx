@@ -25,6 +25,8 @@ export default function Register() {
     'Mathematics'
   ]
   const timelineOptions = ['4 weeks', '8 weeks', '12 weeks', '16 weeks', '24 weeks']
+  const courseOptions = ['Computer Science', 'Information Technology', 'Software Engineering', 'Data Science', 'Other']
+  const examTargetOptions = ['Midterms', 'Final Exam', 'University Finals', 'Certification', 'Other']
   const [formData, setFormData] = useState<RegisterForm>({
     fullName: '',
     email: '',
@@ -180,14 +182,17 @@ export default function Register() {
               <label className="block text-sm font-medium text-slate-200 mb-2">
                 Course
               </label>
-              <input
-                type="text"
+              <select
                 required
-                placeholder="e.g., Computer Science"
-                className="w-full px-4 py-2 border border-white/20 bg-white/10 text-slate-100 placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-white/20 bg-white/15 text-slate-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 value={formData.course}
                 onChange={(e) => setFormData({ ...formData, course: e.target.value })}
-              />
+              >
+                <option value="" disabled>Select your course</option>
+                {courseOptions.map((opt) => (
+                  <option key={opt} value={opt} className="text-slate-900">{opt}</option>
+                ))}
+              </select>
             </div>
 
             <div>
@@ -211,14 +216,17 @@ export default function Register() {
               <label className="block text-sm font-medium text-slate-200 mb-2">
                 Exam Target
               </label>
-              <input
-                type="text"
+              <select
                 required
-                placeholder="e.g., Final Exam, JEE"
-                className="w-full px-4 py-2 border border-white/20 bg-white/10 text-slate-100 placeholder-slate-400 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-white/20 bg-white/15 text-slate-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 value={formData.examTarget}
                 onChange={(e) => setFormData({ ...formData, examTarget: e.target.value })}
-              />
+              >
+                <option value="" disabled>Select exam target</option>
+                {examTargetOptions.map((opt) => (
+                  <option key={opt} value={opt} className="text-slate-900">{opt}</option>
+                ))}
+              </select>
             </div>
 
             <div>

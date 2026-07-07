@@ -149,6 +149,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setToken(null)
     setUser(null)
+    localStorage.clear()
   }
 
   const updateUser = (updates: Partial<User>) => {

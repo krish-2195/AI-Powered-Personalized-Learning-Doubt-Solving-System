@@ -12,8 +12,12 @@ from database.models.postgres_models import User, UserProfile, Topic, QuestionBa
 from backend.utils.response_formatter import success_response, error_response
 from ml.services.knowledge_graph import knowledge_graph
 from backend.routers.auth import get_current_admin
+import time
 
 router = APIRouter(dependencies=[Depends(get_current_admin)])
+
+_STATS_CACHE = {"time": 0, "data": None}
+CACHE_TTL = 60
 
 class QuestionCreate(BaseModel):
     topic: str
@@ -26,6 +30,10 @@ class QuestionCreate(BaseModel):
 @router.get("/stats")
 def get_admin_stats(db: Session = Depends(get_db)):
     """Fetch high-level statistics, ML stats, and Knowledge Graph stats for the admin dashboard."""
+    global _STATS_CACHE
+    if time.time() - _STATS_CACHE["time"] < CACHE_TTL and _STATS_CACHE["data"]:
+        return _STATS_CACHE["data"]
+
     try:
         # Platform Stats
         total_users = db.query(User).count()
@@ -97,7 +105,7 @@ def get_admin_stats(db: Session = Depends(get_db)):
             count = sum(1 for u in all_users if u.created_at and u.created_at.date() <= target_date)
             user_growth.append({"name": target_date.strftime("%b"), "users": count})
             
-        return success_response(data={
+        data_payload = {
             "platform": {
                 "total_users": total_users,
                 "active_users_today": active_users_today,
@@ -138,7 +146,13 @@ def get_admin_stats(db: Session = Depends(get_db)):
                 "user_growth": user_growth
             },
             "system_health": "healthy"
-        }, message="Admin stats fetched successfully")
+        }
+
+        result = success_response(data=data_payload, message="Admin stats fetched successfully")
+        _STATS_CACHE["time"] = time.time()
+        _STATS_CACHE["data"] = result
+        return result
+
     except Exception as e:
         return error_response(str(e), "Failed to fetch stats")
 
@@ -148,7 +162,7 @@ from sqlalchemy.orm import joinedload
 def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     """Fetch all users and their enriched profile info."""
     try:
-        users = db.query(User).options(joinedload(User.profile)).offset(skip).limit(limit).all()
+        users = db.query(User).options(joinedload(User.profile)).filter(~User.email.ilike('%test%')).offset(skip).limit(limit).all()
         user_ids = [u.id for u in users]
         
         quiz_counts = dict(db.query(QuizAttempt.user_id, func.count(QuizAttempt.id)).filter(QuizAttempt.user_id.in_(user_ids)).group_by(QuizAttempt.user_id).all())
