@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
-import { ShieldCheck } from 'lucide-react'
+import { ShieldCheck, LogOut } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import api from '../lib/api'
 import DashboardTab from '../components/admin/DashboardTab'
 import UsersTab from '../components/admin/UsersTab'
 import ContentTab from '../components/admin/ContentTab'
 
 export default function AdminPage() {
+  const { logout } = useAuth()
+  const navigate = useNavigate()
   const [activeTab, setActiveTab] = useState<'dashboard' | 'users' | 'content'>('dashboard')
   const [stats, setStats] = useState<any>(null)
   const [activity, setActivity] = useState<any[]>([])
@@ -73,16 +77,25 @@ export default function AdminPage() {
             <p className="mt-1 text-sm font-medium text-slate-400">Monitor platform health, AI models, and user activity.</p>
           </div>
         </div>
-        <div className="relative z-10 flex gap-1 overflow-x-auto rounded-xl border border-white/[0.08] bg-white/[0.03] p-1.5 backdrop-blur-xl">
-          {['dashboard', 'users', 'content'].map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab as any)}
-              className={`whitespace-nowrap rounded-lg px-5 py-2 text-sm font-semibold capitalize transition-all duration-300 ${activeTab === tab ? 'bg-gradient-to-r from-primary-600 to-accent-600 text-white shadow-glow' : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'}`}
-            >
-              {tab}
-            </button>
-          ))}
+        <div className="relative z-10 flex gap-3 items-center">
+          <div className="flex gap-1 overflow-x-auto rounded-xl border border-white/[0.08] bg-white/[0.03] p-1.5 backdrop-blur-xl">
+            {['dashboard', 'users', 'content'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as any)}
+                className={`whitespace-nowrap rounded-lg px-5 py-2 text-sm font-semibold capitalize transition-all duration-300 ${activeTab === tab ? 'bg-gradient-to-r from-primary-600 to-accent-600 text-white shadow-glow' : 'text-slate-400 hover:bg-white/5 hover:text-slate-100'}`}
+              >
+                {tab}
+              </button>
+            ))}
+          </div>
+          <button 
+            onClick={() => { logout(); navigate('/login') }}
+            className="flex h-[42px] w-[42px] shrink-0 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.03] text-slate-400 transition-colors hover:bg-red-500/10 hover:text-red-400"
+            title="Logout"
+          >
+            <LogOut size={18} />
+          </button>
         </div>
       </div>
 

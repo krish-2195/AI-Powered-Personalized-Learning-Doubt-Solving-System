@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
-import { Sparkles, Eye, EyeOff, Check } from 'lucide-react'
+import { Sparkles, Eye, EyeOff, Check, Brain, Target, Shield } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 
 type RegisterForm = {
@@ -128,192 +128,228 @@ export default function Register() {
       <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-primary-500/20 blur-3xl floating" aria-hidden />
       <div className="pointer-events-none absolute -right-16 bottom-6 h-72 w-72 rounded-full bg-accent-500/15 blur-3xl floating" aria-hidden />
 
-      <div className="relative w-full max-w-2xl rounded-3xl border border-white/10 glass-panel p-8 sm:p-10">
-        <div className="mb-8 text-center">
-          <div className="mb-4 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 to-accent-500 text-white shadow-glow">
-            <Sparkles size={26} />
-          </div>
-          <h1 className="text-2xl font-bold text-white sm:text-3xl">Join AI Learn</h1>
-          <p className="mt-2 text-sm text-slate-400">Create your personalized learning profile</p>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className={labelClass}>Full Name</label>
-              <input
-                type="text"
-                required
-                className={inputClass}
-                value={formData.fullName}
-                onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
-                placeholder="Jane Doe"
-              />
+      <div className="relative w-full max-w-5xl rounded-3xl border border-white/10 glass-panel p-8 sm:p-10 lg:p-12">
+        <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
+          {/* Left Side: Branding */}
+          <div className="md:w-1/3 md:border-r border-white/10 md:pr-8 lg:pr-12 flex flex-col justify-start pt-4">
+            <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 to-accent-500 text-white shadow-glow">
+              <Sparkles size={28} />
             </div>
+            <h1 className="text-3xl font-bold text-white sm:text-4xl mb-4">Join AI Learn</h1>
+            <p className="text-sm text-slate-400 leading-relaxed mb-10">
+              Create your personalized learning profile
+            </p>
 
-            <div>
-              <label className={labelClass}>Email Address</label>
-              <input
-                type="email"
-                required
-                className={inputClass}
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="you@example.com"
-              />
-              {emailHint && (
-                <p className={`mt-1.5 text-xs ${emailHint === 'Looks good' ? 'text-emerald-300' : 'text-slate-400'}`}>{emailHint}</p>
-              )}
-            </div>
-          </div>
-
-          <div>
-            <label className={labelClass}>Password</label>
-            <div className="relative">
-              <input
-                type={showPassword ? 'text' : 'password'}
-                required
-                className={`${inputClass} pr-12`}
-                value={formData.password}
-                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                placeholder="••••••••"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword((prev) => !prev)}
-                className="absolute inset-y-0 right-3 flex items-center text-slate-400 transition-colors hover:text-white"
-                aria-label={showPassword ? 'Hide password' : 'Show password'}
-              >
-                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-              </button>
-            </div>
-            {passwordHint && (
-              <p className={`mt-1.5 text-xs ${passwordHint === 'Strong password' ? 'text-emerald-300' : 'text-slate-400'}`}>{passwordHint}</p>
-            )}
-          </div>
-
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className={labelClass}>Course</label>
-              <select
-                required
-                className={selectClass}
-                value={formData.course}
-                onChange={(e) => setFormData({ ...formData, course: e.target.value })}
-              >
-                <option value="" disabled>Select your course</option>
-                {courseOptions.map((opt) => (
-                  <option key={opt} value={opt} className="text-slate-900">{opt}</option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className={labelClass}>Current Level</label>
-              <select
-                className={selectClass}
-                value={formData.currentLevel}
-                onChange={(e) => setFormData({ ...formData, currentLevel: e.target.value })}
-              >
-                <option value="Beginner" className="text-slate-900">Beginner</option>
-                <option value="Intermediate" className="text-slate-900">Intermediate</option>
-                <option value="Advanced" className="text-slate-900">Advanced</option>
-              </select>
+            <div className="hidden md:flex flex-col gap-6 mt-4">
+              <div className="flex gap-4">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary-500/20 text-primary-300">
+                  <Brain size={18} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-200 text-sm">Adaptive AI</h3>
+                  <p className="mt-1 text-xs text-slate-400 leading-relaxed">Our AI learns how you learn and customizes your path.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent-500/20 text-accent-300">
+                  <Target size={18} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-200 text-sm">Exam Focused</h3>
+                  <p className="mt-1 text-xs text-slate-400 leading-relaxed">Target specific goals to maximize your exam performance.</p>
+                </div>
+              </div>
+              <div className="flex gap-4">
+                <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-emerald-500/20 text-emerald-300">
+                  <Shield size={18} />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-slate-200 text-sm">Progress Tracking</h3>
+                  <p className="mt-1 text-xs text-slate-400 leading-relaxed">Visualize your mastery across different subjects instantly.</p>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <div>
-              <label className={labelClass}>Exam Target</label>
-              <select
-                required
-                className={selectClass}
-                value={formData.examTarget}
-                onChange={(e) => setFormData({ ...formData, examTarget: e.target.value })}
-              >
-                <option value="" disabled>Select exam target</option>
-                {examTargetOptions.map((opt) => (
-                  <option key={opt} value={opt} className="text-slate-900">{opt}</option>
-                ))}
-              </select>
-            </div>
+          {/* Right Side: Form */}
+          <div className="md:w-2/3">
+            <form onSubmit={handleSubmit} className="space-y-6">
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                  <label className={labelClass}>Full Name</label>
+                  <input
+                    type="text"
+                    required
+                    className={inputClass}
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
+                    placeholder="Karanpreet Singh"
+                  />
+                </div>
 
-            <div>
-              <label className={labelClass}>Timeline</label>
-              <select
-                required
-                className={selectClass}
-                value={formData.examTimeline}
-                onChange={(e) => setFormData({ ...formData, examTimeline: e.target.value })}
-              >
-                <option value="" disabled>Select timeline</option>
-                {timelineOptions.map((opt) => (
-                  <option key={opt} value={opt} className="text-slate-900">{opt}</option>
-                ))}
-              </select>
-            </div>
-          </div>
+                <div>
+                  <label className={labelClass}>Email Address</label>
+                  <input
+                    type="email"
+                    required
+                    className={inputClass}
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    placeholder="you@example.com"
+                  />
+                  {emailHint && (
+                    <p className={`mt-1.5 text-xs ${emailHint === 'Looks good' ? 'text-emerald-300' : 'text-slate-400'}`}>{emailHint}</p>
+                  )}
+                </div>
+              </div>
 
-          <div>
-            <label className={labelClass}>Subject Focus</label>
-            <div className="flex flex-wrap gap-2">
-              {subjectOptions.map((subject) => {
-                const active = formData.subjects.includes(subject)
-                return (
+              <div>
+                <label className={labelClass}>Password</label>
+                <div className="relative">
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    className={`${inputClass} pr-12`}
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="••••••••"
+                  />
                   <button
                     type="button"
-                    key={subject}
-                    onClick={() => toggleSubject(subject)}
-                    aria-pressed={active}
-                    className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-sm transition-all duration-150 ${
-                      active
-                        ? 'border-primary-400/60 bg-primary-500/20 text-primary-100 shadow-[0_0_0_1px_rgba(124,58,237,0.2)]'
-                        : 'border-white/10 bg-white/[0.05] text-slate-200 hover:border-primary-400/50 hover:bg-white/[0.09]'
-                    }`}
+                    onClick={() => setShowPassword((prev) => !prev)}
+                    className="absolute inset-y-0 right-3 flex items-center text-slate-400 transition-colors hover:text-white"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
                   >
-                    {active && <Check size={14} />}
-                    {subject}
+                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                   </button>
-                )
-              })}
-            </div>
-            <div className="mt-2 flex items-center gap-3">
-              <p className="text-xs text-slate-400">Choose multiple topics to tailor your plan.</p>
-              <button
-                type="button"
-                onClick={() => setFormData((prev) => ({ ...prev, subjects: [] }))}
-                className={`rounded-full border px-3 py-1 text-xs transition duration-150 ${
-                  formData.subjects.length
-                    ? 'border-white/20 text-slate-200 hover:border-primary-400 hover:text-primary-100'
-                    : 'cursor-not-allowed border-white/10 text-slate-500'
-                }`}
-                disabled={formData.subjects.length === 0}
-                aria-label="Clear all selected subjects"
-              >
-                Clear all
+                </div>
+                {passwordHint && (
+                  <p className={`mt-1.5 text-xs ${passwordHint === 'Strong password' ? 'text-emerald-300' : 'text-slate-400'}`}>{passwordHint}</p>
+                )}
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                  <label className={labelClass}>Course</label>
+                  <select
+                    required
+                    className={selectClass}
+                    value={formData.course}
+                    onChange={(e) => setFormData({ ...formData, course: e.target.value })}
+                  >
+                    <option value="" disabled>Select your course</option>
+                    {courseOptions.map((opt) => (
+                      <option key={opt} value={opt} className="text-slate-900">{opt}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={labelClass}>Current Level</label>
+                  <select
+                    className={selectClass}
+                    value={formData.currentLevel}
+                    onChange={(e) => setFormData({ ...formData, currentLevel: e.target.value })}
+                  >
+                    <option value="Beginner" className="text-slate-900">Beginner</option>
+                    <option value="Intermediate" className="text-slate-900">Intermediate</option>
+                    <option value="Advanced" className="text-slate-900">Advanced</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+                <div>
+                  <label className={labelClass}>Exam Target</label>
+                  <select
+                    required
+                    className={selectClass}
+                    value={formData.examTarget}
+                    onChange={(e) => setFormData({ ...formData, examTarget: e.target.value })}
+                  >
+                    <option value="" disabled>Select exam target</option>
+                    {examTargetOptions.map((opt) => (
+                      <option key={opt} value={opt} className="text-slate-900">{opt}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className={labelClass}>Timeline</label>
+                  <select
+                    required
+                    className={selectClass}
+                    value={formData.examTimeline}
+                    onChange={(e) => setFormData({ ...formData, examTimeline: e.target.value })}
+                  >
+                    <option value="" disabled>Select timeline</option>
+                    {timelineOptions.map((opt) => (
+                      <option key={opt} value={opt} className="text-slate-900">{opt}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className={labelClass}>Subject Focus</label>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  {subjectOptions.map((subject) => {
+                    const active = formData.subjects.includes(subject)
+                    return (
+                      <button
+                        type="button"
+                        key={subject}
+                        onClick={() => toggleSubject(subject)}
+                        aria-pressed={active}
+                        className={`inline-flex items-center gap-1.5 rounded-xl border px-3.5 py-2 text-sm transition-all duration-150 ${active
+                          ? 'border-primary-400/60 bg-primary-500/20 text-primary-100 shadow-[0_0_0_1px_rgba(124,58,237,0.2)]'
+                          : 'border-white/10 bg-white/[0.05] text-slate-200 hover:border-primary-400/50 hover:bg-white/[0.09]'
+                          }`}
+                      >
+                        {active && <Check size={14} />}
+                        {subject}
+                      </button>
+                    )
+                  })}
+                </div>
+                <div className="flex items-center gap-3">
+                  <p className="text-xs text-slate-400">Choose multiple topics to tailor your plan.</p>
+                  <button
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, subjects: [] }))}
+                    className={`rounded-full border px-3 py-1 text-xs transition duration-150 ${formData.subjects.length
+                      ? 'border-white/20 text-slate-200 hover:border-primary-400 hover:text-primary-100'
+                      : 'cursor-not-allowed border-white/10 text-slate-500'
+                      }`}
+                    disabled={formData.subjects.length === 0}
+                    aria-label="Clear all selected subjects"
+                  >
+                    Clear all
+                  </button>
+                </div>
+                {subjectError && <p className="mt-1.5 text-xs text-red-400">{subjectError}</p>}
+              </div>
+
+              {error && (
+                <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>
+              )}
+              {successMessage && (
+                <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">{successMessage}</p>
+              )}
+
+              <button type="submit" className="btn-primary mt-4 w-full py-3.5 text-base" disabled={loading}>
+                {loading ? 'Creating…' : 'Create Account'}
               </button>
-            </div>
-            {subjectError && <p className="mt-1.5 text-xs text-red-400">{subjectError}</p>}
+            </form>
+
+            <p className="mt-6 text-center text-sm text-slate-400">
+              Already have an account?{' '}
+              <Link to="/login" className="font-semibold text-primary-300 transition-colors hover:text-primary-200">
+                Sign in
+              </Link>
+            </p>
           </div>
-
-          {error && (
-            <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300">{error}</p>
-          )}
-          {successMessage && (
-            <p className="rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">{successMessage}</p>
-          )}
-
-          <button type="submit" className="btn-primary mt-2 w-full py-3" disabled={loading}>
-            {loading ? 'Creating…' : 'Create Account'}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-slate-400">
-          Already have an account?{' '}
-          <Link to="/login" className="font-semibold text-primary-300 transition-colors hover:text-primary-200">
-            Sign in
-          </Link>
-        </p>
+        </div>
       </div>
     </div>
   )

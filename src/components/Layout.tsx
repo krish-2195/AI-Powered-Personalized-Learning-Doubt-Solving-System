@@ -21,14 +21,14 @@ export default function Layout() {
     : 'AL'
 
   return (
-    <div className="relative min-h-screen overflow-x-hidden text-slate-50">
+    <div className="relative h-screen overflow-hidden text-slate-50">
       <div className="absolute inset-0 bg-grid opacity-70" aria-hidden />
       <div className="pointer-events-none absolute -left-24 top-8 h-72 w-72 rounded-full bg-primary-500/25 blur-3xl floating" aria-hidden />
       <div className="pointer-events-none absolute -right-16 bottom-10 h-72 w-72 rounded-full bg-accent-500/20 blur-3xl floating" aria-hidden />
 
-      <div className="relative flex min-h-screen p-3 gap-3">
+      <div className="relative flex h-screen p-3 gap-3">
         {/* Sidebar */}
-        <aside className="hidden md:flex w-72 shrink-0 flex-col gap-6 rounded-3xl border border-white/10 glass-panel px-5 py-7">
+        <aside className="hidden md:flex w-72 shrink-0 flex-col gap-6 rounded-3xl border border-white/10 glass-panel px-5 py-7 overflow-y-auto">
           <div className="flex items-center gap-3">
             <div className="sparkle flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 to-accent-500 text-white shadow-glow">
               <Sparkles size={22} />
