@@ -1,15 +1,27 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from backend.routers import auth, users, learning, performance, recommendations, chat, analytics, dashboard, admin, content, streak
 from backend.config import settings
-from database.connection import engine
+from database.connection import engine, MongoDBManager, init_postgres_db
 from database.models.postgres_models import Base
 from sqlalchemy import text
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Manage application startup and shutdown lifecycle."""
+    # Startup
+    init_postgres_db()
+    MongoDBManager.connect_db()
+    yield
+    # Shutdown
+    MongoDBManager.close_db()
 
 app = FastAPI(
     title="AI-Powered Adaptive Learning Platform API",
     description="Backend API for personalized learning with AI/ML capabilities",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # CORS middleware
@@ -34,17 +46,6 @@ app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(content.router, prefix="/api/content", tags=["Content"])
 app.include_router(streak.router, prefix="/api/streak", tags=["Streak"])
 
-
-from database.connection import engine, MongoDBManager, init_postgres_db
-
-@app.on_event("startup")
-async def startup_init_db():
-    init_postgres_db()
-    MongoDBManager.connect_db()
-
-@app.on_event("shutdown")
-async def shutdown_db():
-    MongoDBManager.close_db()
 
 @app.get("/")
 async def root():
