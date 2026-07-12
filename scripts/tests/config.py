@@ -8,3 +8,9 @@ def print_result(name, success, error_msg=""):
     if not success and error_msg:
         print(f"   Reason: {error_msg}")
     return success
+
+def get_headers():
+    token = STATE.get("token")
+    if token:
+        return {"Authorization": f"Bearer {token}"}
+    return {}

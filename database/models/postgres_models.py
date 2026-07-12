@@ -40,6 +40,8 @@ class UserProfile(Base):
     exam_timeline = Column(String)
     exam_date = Column(DateTime, nullable=True)
     streak_count = Column(Integer, default=0)
+    longest_streak = Column(Integer, default=0)
+    last_check_in = Column(DateTime, nullable=True)
     last_active_date = Column(DateTime, nullable=True)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
@@ -77,10 +79,17 @@ class Content(Base):
     topic_id = Column(Integer, ForeignKey("topics.id"))
     content_type = Column(String)  # video, quiz, article
     title = Column(String, nullable=False)
+    description = Column(String)
     text_content = Column(String)  # Main text or summary for TF-IDF
     difficulty = Column(String)
     duration_minutes = Column(Integer)
     url = Column(String)
+    youtube_video_id = Column(String)
+    youtube_url = Column(String)
+    thumbnail_url = Column(String)
+    estimated_time = Column(Integer)
+    program = Column(String, nullable=True)
+    tags = Column(String, nullable=True)
     
     # Relationships
     topic = relationship("Topic", back_populates="content")
@@ -110,7 +119,12 @@ class LearningLog(Base):
     duration_seconds = Column(Integer)
     completed = Column(Boolean, default=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
+    started_at = Column(DateTime)
+    ended_at = Column(DateTime)
+    watch_duration = Column(Integer)
+    completion_percentage = Column(Float)
     extra_metadata = Column("metadata", JSON)  # Additional flexible data
+    last_position = Column(Integer, default=0)
     
     # Relationships
     user = relationship("User", back_populates="learning_logs")

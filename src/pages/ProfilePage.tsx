@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { User, BookOpen, Clock, Activity, Target, Award, Brain } from 'lucide-react'
+import { User, BookOpen, Clock, Activity, Target, Award, Brain, Check } from 'lucide-react'
 import api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
 
@@ -8,20 +8,32 @@ export default function ProfilePage() {
   const [profile, setProfile] = useState<any>(null)
   const [stats, setStats] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  
+  const [courseMappings, setCourseMappings] = useState<Record<string, string[]>>({})
+  const [isEditingSubjects, setIsEditingSubjects] = useState(false)
+  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
+  const [savingSubjects, setSavingSubjects] = useState(false)
 
   useEffect(() => {
     if (!authUser?.user_id) return
 
     const fetchProfileData = async () => {
       try {
-        const [profileRes, statsRes] = await Promise.all([
+        const [profileRes, statsRes, mappingsRes] = await Promise.all([
           api.get(`/api/users/profile/${authUser.user_id}`),
-          api.get(`/api/users/stats/${authUser.user_id}`)
+          api.get(`/api/users/stats/${authUser.user_id}`),
+          api.get('/api/content/course-mappings')
         ])
         
-        // FastAPI returns { data: ..., message: ... } for these endpoints
-        setProfile(profileRes.data.data || profileRes.data)
+        const profData = profileRes.data.data || profileRes.data
+        setProfile(profData)
         setStats(statsRes.data.data || statsRes.data)
+        if (mappingsRes.data && mappingsRes.data.data) {
+          setCourseMappings(mappingsRes.data.data)
+        }
+        if (profData && profData.subjects) {
+          setSelectedSubjects(profData.subjects)
+        }
       } catch (error) {
         console.error("Failed to load profile data", error)
       } finally {
@@ -69,7 +81,7 @@ export default function ProfilePage() {
         {/* Profile Card */}
         <div className="card text-slate-100">
           <div className="flex items-center gap-4 mb-6">
-            <div className="relative w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary-600 via-primary-500 to-accent-500 flex items-center justify-center text-2xl font-display font-bold shadow-glow">
+            <div className="relative w-16 h-16 shrink-0 rounded-2xl bg-gradient-to-tr from-primary-600 via-primary-500 to-accent-500 flex items-center justify-center text-2xl font-display font-bold shadow-glow">
               {profile.full_name ? profile.full_name.charAt(0).toUpperCase() : 'U'}
             </div>
             <div>
@@ -228,19 +240,100 @@ export default function ProfilePage() {
           
           {/* Subjects Grid */}
           <div className="card text-slate-100">
-            <h2 className="text-xl font-display font-semibold mb-4 flex items-center gap-2">
-              <Brain className="text-primary-400" size={20} /> My Subjects
-            </h2>
-            <div className="flex flex-wrap gap-2">
-              {profile.subjects && profile.subjects.map((sub: string, idx: number) => (
-                <span key={idx} className="px-4 py-2 bg-primary-500/10 text-primary-200 border border-primary-500/30 rounded-lg text-sm font-medium">
-                  {sub}
-                </span>
-              ))}
-              {(!profile.subjects || profile.subjects.length === 0) && (
-                <p className="text-slate-400 text-sm">No subjects selected.</p>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-display font-semibold flex items-center gap-2">
+                <Brain className="text-primary-400" size={20} /> My Subjects
+              </h2>
+              {!isEditingSubjects && (
+                <button
+                  onClick={() => {
+                    setSelectedSubjects(profile.subjects || []);
+                    setIsEditingSubjects(true);
+                  }}
+                  className="btn-secondary !py-1.5 px-3.5 text-xs hover:border-primary-400 transition-colors"
+                >
+                  Manage Subjects
+                </button>
               )}
             </div>
+
+            {isEditingSubjects ? (
+              <div className="space-y-4">
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  Toggle subjects focus under your registered course (<strong>{profile.course}</strong>):
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {(courseMappings[profile.course] || []).map((subject) => {
+                    const active = selectedSubjects.includes(subject);
+                    return (
+                      <button
+                        type="button"
+                        key={subject}
+                        onClick={() => {
+                          setSelectedSubjects((prev) =>
+                            prev.includes(subject)
+                              ? prev.filter((s) => s !== subject)
+                              : [...prev, subject]
+                          );
+                        }}
+                        className={`inline-flex items-center gap-1.5 rounded-xl border px-3 py-1.5 text-xs transition-all duration-150 ${
+                          active
+                            ? 'border-primary-400/60 bg-primary-500/20 text-primary-100'
+                            : 'border-white/10 bg-white/[0.05] text-slate-200 hover:border-primary-400/50'
+                        }`}
+                      >
+                        {active && <Check size={12} />}
+                        {subject}
+                      </button>
+                    );
+                  })}
+                </div>
+                {selectedSubjects.length === 0 && (
+                  <p className="text-xs text-red-400">Select at least one subject to save.</p>
+                )}
+                <div className="flex gap-2 pt-2">
+                  <button
+                    disabled={savingSubjects || selectedSubjects.length === 0}
+                    onClick={async () => {
+                      setSavingSubjects(true);
+                      try {
+                        if (!authUser?.user_id) return;
+                        await api.put(`/api/users/profile/${authUser.user_id}`, {
+                          subjects: selectedSubjects,
+                        });
+                        setProfile((prev: any) => ({ ...prev, subjects: selectedSubjects }));
+                        setIsEditingSubjects(false);
+                      } catch (err) {
+                        console.error("Failed to update profile subjects", err);
+                      } finally {
+                        setSavingSubjects(false);
+                      }
+                    }}
+                    className="btn-primary !py-1.5 px-4 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {savingSubjects ? "Saving..." : "Save Changes"}
+                  </button>
+                  <button
+                    disabled={savingSubjects}
+                    onClick={() => setIsEditingSubjects(false)}
+                    className="btn-secondary !py-1.5 px-4 text-xs"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {profile.subjects && profile.subjects.map((sub: string, idx: number) => (
+                  <span key={idx} className="px-4 py-2 bg-primary-500/10 text-primary-200 border border-primary-500/30 rounded-lg text-sm font-medium">
+                    {sub}
+                  </span>
+                ))}
+                {(!profile.subjects || profile.subjects.length === 0) && (
+                  <p className="text-slate-400 text-sm">No subjects selected.</p>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </div>

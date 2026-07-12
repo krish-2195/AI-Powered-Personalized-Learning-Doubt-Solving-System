@@ -11,12 +11,13 @@ from backend.routers.auth import get_current_user
 
 router = APIRouter()
 
-class VideoWatch(BaseModel):
+class VideoProgress(BaseModel):
     user_id: str
-    video_id: str
-    topic: str
-    duration_seconds: int
+    content_id: str
+    progress: float  # completion percentage (0 - 100)
+    watch_duration: int
     completed: bool
+    last_position: int
 
 class QuizAttempt(BaseModel):
     user_id: str
@@ -44,37 +45,109 @@ class NextStep(BaseModel):
     estimated_time_minutes: int
     path: List[str]
 
-from database.models.postgres_models import LearningLog, TopicPerformance
+from database.models.postgres_models import LearningLog, TopicPerformance, Content
 
-@router.post("/video/track")
-def track_video_watch(watch_data: VideoWatch, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+@router.get("/video-progress/{user_id}/{content_id}")
+def get_video_progress(user_id: str, content_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
-    Track video watching activity in PostgreSQL
+    Get the latest playback progress/resume position for a video content
     """
     try:
-        user_id_int = int(watch_data.user_id) if str(watch_data.user_id).isdigit() else 1
+        user_id_int = int(user_id) if str(user_id).isdigit() else 1
     except ValueError:
         user_id_int = 1
         
-    topic = db.query(Topic).filter(Topic.name == watch_data.topic).first()
-    topic_id = topic.id if topic else None
+    log = db.query(LearningLog).filter(
+        LearningLog.user_id == user_id_int,
+        LearningLog.activity_type == "video",
+        LearningLog.resource_id == str(content_id)
+    ).order_by(LearningLog.timestamp.desc()).first()
     
-    new_log = LearningLog(
-        user_id=user_id_int,
-        activity_type="video",
-        resource_id=watch_data.video_id,
-        topic_id=topic_id,
-        duration_seconds=watch_data.duration_seconds,
-        completed=watch_data.completed
-    )
+    if log:
+        return {
+            "progress": log.completion_percentage or 0.0,
+            "completed": log.completed or False,
+            "last_position": log.last_position or 0
+        }
+    return {
+        "progress": 0.0,
+        "completed": False,
+        "last_position": 0
+    }
+
+@router.post("/video-progress")
+def track_video_progress(progress_data: VideoProgress, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """
+    Track or update video watching progress in PostgreSQL (avoiding duplicate writes in same session)
+    """
+    from datetime import timedelta
+    try:
+        user_id_int = int(progress_data.user_id) if str(progress_data.user_id).isdigit() else 1
+    except ValueError:
+        user_id_int = 1
+        
+    # Get content details to retrieve topic_id
+    content_item = db.query(Content).filter(Content.id == int(progress_data.content_id) if str(progress_data.content_id).isdigit() else Content.id == 0).first()
+    topic_id = content_item.topic_id if content_item else None
     
-    db.add(new_log)
+    # Mark as completed if progress is >= 80%
+    is_completed = progress_data.completed or (progress_data.progress >= 80.0)
+    
+    # Check if a recent log exists for this session (within 4 hours)
+    four_hours_ago = datetime.utcnow() - timedelta(hours=4)
+    log = db.query(LearningLog).filter(
+        LearningLog.user_id == user_id_int,
+        LearningLog.activity_type == "video",
+        LearningLog.resource_id == str(progress_data.content_id),
+        LearningLog.timestamp >= four_hours_ago
+    ).order_by(LearningLog.timestamp.desc()).first()
+    
+    if log:
+        # Update existing log
+        log.duration_seconds = max(log.duration_seconds or 0, progress_data.watch_duration)
+        log.watch_duration = max(log.watch_duration or 0, progress_data.watch_duration)
+        log.completion_percentage = max(log.completion_percentage or 0.0, progress_data.progress)
+        log.last_position = progress_data.last_position
+        log.timestamp = datetime.utcnow()
+        if is_completed:
+            log.completed = True
+        new_log = log
+    else:
+        # Create new log
+        new_log = LearningLog(
+            user_id=user_id_int,
+            activity_type="video",
+            resource_id=str(progress_data.content_id),
+            topic_id=topic_id,
+            duration_seconds=progress_data.watch_duration,
+            completed=is_completed,
+            started_at=datetime.utcnow(),
+            ended_at=datetime.utcnow(),
+            watch_duration=progress_data.watch_duration,
+            completion_percentage=progress_data.progress,
+            last_position=progress_data.last_position
+        )
+        db.add(new_log)
+        
     db.commit()
     
+    # If newly completed in this request, check streak updates
+    if is_completed:
+        from database.models.postgres_models import UserProfile
+        from backend.services.gamification import GamificationService
+        profile = db.query(UserProfile).filter(UserProfile.user_id == user_id_int).first()
+        if profile:
+            try:
+                GamificationService.update_streak_on_login(db, profile)
+                db.commit()
+            except Exception as e:
+                db.rollback()
+                print("Failed to update streak:", e)
+                
     return {
-        "message": "Video watch tracked in PostgreSQL",
-        "timestamp": datetime.utcnow(),
-        "progress_updated": True
+        "message": "Video progress tracked successfully",
+        "completed": is_completed,
+        "progress": new_log.completion_percentage
     }
 
 @router.post("/quiz/submit")
@@ -86,7 +159,7 @@ def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db), current_u
     accuracy = (quiz_data.correct_answers / quiz_data.questions_count) * 100 if quiz_data.questions_count > 0 else 0
     
     # 1. Resolve Topic ID
-    topic = db.query(Topic).filter(Topic.name == quiz_data.topic).first()
+    topic = db.query(Topic).filter(Topic.name.ilike(quiz_data.topic.strip())).first()
     topic_id = topic.id if topic else None
 
     # Handle string user_ids passed from the frontend mockup
@@ -105,33 +178,37 @@ def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db), current_u
     )
     db.add(new_attempt)
     
-    # 3. Update PerformanceRecord
-    perf = db.query(PerformanceRecord).filter(
-        PerformanceRecord.user_id == user_id_int,
-        PerformanceRecord.topic_id == topic_id
-    ).first()
-    
-    if not perf:
-        perf = PerformanceRecord(
-            user_id=user_id_int,
-            topic_id=topic_id,
-            accuracy=accuracy,
-            avg_time_seconds=quiz_data.time_taken_seconds,
-            total_attempts=1,
-            status="pending" # ML service will update this next
-        )
-        db.add(perf)
-    else:
-        # Update running averages
-        perf.accuracy = ((perf.accuracy * perf.total_attempts) + accuracy) / (perf.total_attempts + 1)
-        perf.avg_time_seconds = ((perf.avg_time_seconds * perf.total_attempts) + quiz_data.time_taken_seconds) / (perf.total_attempts + 1)
-        perf.total_attempts += 1
+    ml_prediction = None
+    if topic_id:
+        # 3. Update PerformanceRecord
+        perf = db.query(PerformanceRecord).filter(
+            PerformanceRecord.user_id == user_id_int,
+            PerformanceRecord.topic_id == topic_id
+        ).first()
         
-    db.commit()
-    
-    # 4. Trigger ML Service
-    ml_prediction = ml_service.predict_weakness(db, user_id_int, topic_id)
-    
+        if not perf:
+            perf = PerformanceRecord(
+                user_id=user_id_int,
+                topic_id=topic_id,
+                accuracy=accuracy,
+                avg_time_seconds=quiz_data.time_taken_seconds,
+                total_attempts=1,
+                status="pending" # ML service will update this next
+            )
+            db.add(perf)
+        else:
+            # Update running averages
+            perf.accuracy = ((perf.accuracy * perf.total_attempts) + accuracy) / (perf.total_attempts + 1)
+            perf.avg_time_seconds = ((perf.avg_time_seconds * perf.total_attempts) + quiz_data.time_taken_seconds) / (perf.total_attempts + 1)
+            perf.total_attempts += 1
+            
+        db.commit()
+        
+        # 4. Trigger ML Service
+        ml_prediction = ml_service.predict_weakness(db, user_id_int, topic_id)
+    else:
+        db.commit()
+        
     return {
         "message": "Quiz submitted and recorded successfully",
         "ml_prediction": ml_prediction,

@@ -6,28 +6,34 @@ class GamificationService:
     @staticmethod
     def update_streak_on_login(db: Session, profile: UserProfile):
         """
-        Updates the user's streak count based on their last active date.
-        Call this during the login flow.
+        Updates the user's streak count based on their last check in date.
+        Call this during the login flow or explicit check-ins.
         """
-        today = datetime.utcnow().date()
+        now = datetime.utcnow()
+        today = now.date()
         
-        if profile.last_active_date is None:
-            # First time logging in after registration
+        if profile.last_check_in is None:
+            # First check-in
             profile.streak_count = 1
         else:
-            last_active = profile.last_active_date.date()
-            delta_days = (today - last_active).days
+            last_check_in_date = profile.last_check_in.date()
+            delta_days = (today - last_check_in_date).days
             
             if delta_days == 1:
-                # Logged in yesterday -> increment
+                # Checked in yesterday -> increment
                 profile.streak_count += 1
             elif delta_days > 1:
                 # Missed a day -> reset
                 profile.streak_count = 1
-            # If delta_days == 0, logged in today already, no change to streak
+            # If delta_days == 0, already checked in today, no change to streak
             
-        # Update last active date to now
-        profile.last_active_date = datetime.utcnow()
+        # Update longest streak if applicable
+        if profile.streak_count > (profile.longest_streak or 0):
+            profile.longest_streak = profile.streak_count
+            
+        # Update dates
+        profile.last_check_in = now
+        profile.last_active_date = now  # Keep general active date updated as well
         
         db.add(profile)
         db.commit()

@@ -28,8 +28,8 @@ export function useStreak() {
     setHasCelebratedToday(true);
   };
 
-  // Mocked extended stats for the UI
-  const longestStreak = Math.max(currentStreak, currentStreak + (currentStreak % 5 === 0 ? 0 : 5 - (currentStreak % 5)));
+  // Extended stats for the UI using actual longest streak from backend if available
+  const longestStreak = user?.longest_streak || Math.max(currentStreak, currentStreak + (currentStreak % 5 === 0 ? 0 : 5 - (currentStreak % 5)));
   const nextMilestone = Math.ceil((currentStreak + 1) / 10) * 10;
   
   let tier = 'small';

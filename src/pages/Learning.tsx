@@ -25,26 +25,75 @@ export default function Learning() {
   const [practice, setPractice] = useState<ContentItem[]>([])
   const [activeTab, setActiveTab] = useState<'videos' | 'articles' | 'practice'>('videos')
   
+  const [selectedCourse, setSelectedCourse] = useState<string>("")
+  const [userProfileSubjects, setUserProfileSubjects] = useState<string[]>([])
+  const [selectedSubject, setSelectedSubject] = useState<string>("")
+  const [localSearch, setLocalSearch] = useState<string>("")
+  const [searchQuery, setSearchQuery] = useState<string>("")
+  const [loadingFilters, setLoadingFilters] = useState(true)
+
+  // Fetch user's profile preferences on mount
+  useEffect(() => {
+    const loadFiltersAndProfile = async () => {
+      if (!user?.user_id) return
+      try {
+        const { data } = await api.get(`/api/users/profile/${user.user_id}`)
+        const profile = data.data || data
+        if (profile) {
+          if (profile.course) {
+            setSelectedCourse(profile.course)
+          }
+          if (profile.subjects) {
+            setUserProfileSubjects(profile.subjects)
+          }
+          if (profile.subjects && profile.subjects.length > 0) {
+            setSelectedSubject(profile.subjects[0])
+          }
+        }
+      } catch (err) {
+        console.error("Failed to initialize course-subject filters", err)
+      } finally {
+        setLoadingFilters(false)
+      }
+    }
+    
+    loadFiltersAndProfile()
+  }, [user])
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSearchQuery(localSearch)
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [localSearch])
+
+  // Fetch filtered learning path items
   useEffect(() => {
     const fetchContent = async () => {
-      if (!user?.user_id) return
-      
+      if (!user?.user_id || loadingFilters) return
+      setLoading(true)
       try {
-        const { data } = await api.get(`/api/content/learning-path/${user.user_id}`)
+        const params: any = {}
+        if (selectedCourse) params.course = selectedCourse
+        if (selectedSubject) params.subject = selectedSubject
+        if (searchQuery) params.search = searchQuery
+        
+        const { data } = await api.get(`/api/content/learning-path/${user.user_id}`, { params })
         if (data && data.data) {
           setVideos(data.data.videos || [])
           setArticles(data.data.articles || [])
           setPractice(data.data.practice || [])
         }
       } catch (err) {
-        console.error("Failed to load learning path", err)
+        console.error("Failed to load dynamic learning path", err)
       } finally {
         setLoading(false)
       }
     }
     
     fetchContent()
-  }, [user])
+  }, [user, selectedCourse, selectedSubject, searchQuery, loadingFilters])
 
   const handleAskAI = (item: ContentItem) => {
     const context = item.is_recommended ? "Note: This is a weak topic for me." : ""
@@ -121,6 +170,14 @@ export default function Learning() {
                 Start Practice
                 <ExternalLink className="w-4 h-4" />
               </button>
+            ) : type === 'video' ? (
+              <button
+                onClick={() => navigate(`/learning/video/${item.id}`)}
+                className="flex-1 btn-primary text-sm cursor-pointer"
+              >
+                Watch Video
+                <Play className="w-4 h-4 ml-1" />
+              </button>
             ) : (
               <a 
                 href={item.url !== '#' && !item.url.includes('example.com') ? item.url : '#'}
@@ -134,7 +191,7 @@ export default function Learning() {
                 }}
                 className="flex-1 btn-primary text-sm"
               >
-                {type === 'video' ? 'Watch Video' : 'Read Article'}
+                Read Article
                 <ExternalLink className="w-4 h-4" />
               </a>
             )}
@@ -190,6 +247,48 @@ export default function Learning() {
             Learning <span className="gradient-text">Repository</span>
           </h1>
           <p className="text-slate-400 mt-1">Videos, study materials, and practice quizzes tailored to your knowledge gaps.</p>
+        </div>
+      </div>
+
+      {/* Dynamic Course and Subject Filters */}
+      <div className="card grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
+        <div>
+          <label className="block text-xs font-semibold uppercase text-slate-400 mb-2">Registered Course (Locked)</label>
+          <select
+            value={selectedCourse}
+            disabled
+            className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-slate-400 cursor-not-allowed transition-all focus:outline-none"
+          >
+            {selectedCourse && (
+              <option value={selectedCourse} className="text-slate-900">{selectedCourse}</option>
+            )}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold uppercase text-slate-400 mb-2">Select Subject</label>
+          <select
+            value={selectedSubject}
+            onChange={(e) => setSelectedSubject(e.target.value)}
+            disabled={userProfileSubjects.length === 0}
+            className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-slate-100 transition-all focus:border-primary-500/50 focus:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-primary-500/30 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <option value="" className="text-slate-900">All My Subjects</option>
+            {userProfileSubjects.map((subject) => (
+              <option key={subject} value={subject} className="text-slate-900">{subject}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-xs font-semibold uppercase text-slate-400 mb-2">Search Within Subject</label>
+          <input
+            type="text"
+            placeholder="Search lessons, tags, topics..."
+            value={localSearch}
+            onChange={(e) => setLocalSearch(e.target.value)}
+            className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-slate-100 transition-all focus:border-primary-500/50 focus:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-primary-500/30"
+          />
         </div>
       </div>
 

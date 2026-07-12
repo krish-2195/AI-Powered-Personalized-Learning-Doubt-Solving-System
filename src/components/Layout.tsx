@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
-import { Home, BookOpen, MessageSquare, User, BarChart3, LogOut, Sparkles, Flame, Zap } from 'lucide-react'
+import { Home, BookOpen, MessageSquare, User, BarChart3, LogOut, Sparkles, Zap } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import PageTransition from './PageTransition'
 import StreakWidget from './StreakWidget'
@@ -96,7 +96,7 @@ export default function Layout() {
             </div>
 
             <div className="flex items-center gap-3 rounded-xl border border-white/[0.08] bg-white/[0.04] px-3 py-2.5">
-              <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 text-sm font-bold text-white">
+              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-accent-500 text-sm font-bold text-white">
                 {initials}
               </div>
               <div className="min-w-0 flex-1">

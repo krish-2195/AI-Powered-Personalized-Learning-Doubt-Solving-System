@@ -103,6 +103,56 @@ class HybridRecommendationEngine:
             # 50/50 blend
             hybrid_scores[c_id] = 0.5 * cb + 0.5 * cf
             
+        # Filter scores by user's selected subjects & prioritize course/subject
+        from database.models.postgres_models import UserProfile, Topic, Subject
+        profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+        selected_subjects = profile.subjects if profile and profile.subjects else []
+        user_course = profile.course if profile else None
+        
+        course_name_to_code = {
+            'Computer Science': 'CS',
+            'Information Technology': 'IT',
+            'Software Engineering': 'SE',
+            'Data Science': 'DS'
+        }
+        user_course_code = course_name_to_code.get(user_course) if user_course else None
+        
+        # Query content details
+        content_details = db.query(Content.id, Subject.name, Content.program)\
+            .join(Topic, Content.topic_id == Topic.id)\
+            .join(Subject, Topic.subject_id == Subject.id).all()
+        
+        content_info_map = {c_id: (s_name, prog) for c_id, s_name, prog in content_details}
+        
+        from backend.utils.course_mapping import CourseMappingService
+        
+        prioritized_scores = {}
+        for c_id, score in hybrid_scores.items():
+            subject_name, program_str = content_info_map.get(c_id, (None, ""))
+            
+            # Translate database subject name to user-facing display name
+            user_subject = CourseMappingService.CSV_TO_USER_SUBJECT.get(subject_name, subject_name) if subject_name else None
+            
+            # If selected_subjects is defined, filter out non-matching subjects
+            if selected_subjects and user_subject and user_subject not in selected_subjects:
+                continue
+                
+            boost = 1.0
+            
+            # Prioritize matching course
+            if user_course_code and program_str:
+                c_programs = [p.strip().upper() for p in program_str.split(",") if p.strip()]
+                if user_course_code in c_programs:
+                    boost *= 1.5
+                    
+            # Prioritize matching subjects
+            if selected_subjects and user_subject in selected_subjects:
+                boost *= 1.8
+                
+            prioritized_scores[c_id] = score * boost
+            
+        hybrid_scores = prioritized_scores
+            
         # 5. Sort and return top N
         sorted_content = sorted(hybrid_scores.items(), key=lambda x: x[1], reverse=True)
         

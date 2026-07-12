@@ -6,6 +6,7 @@ interface User {
   email: string
   full_name: string
   streak_count: number
+  longest_streak?: number
   role: string
 }
 
@@ -70,7 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
              // Sync latest role/streak on hard refresh
              updateUser({
                role: data.data.role,
-               streak_count: data.data.streak_count
+               streak_count: data.data.streak_count,
+               longest_streak: data.data.longest_streak
              })
           }
         } catch {
@@ -99,6 +101,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         full_name: data.data.full_name,
         role: data.data.role || 'student',
         streak_count: data.data.streak_count || 0,
+        longest_streak: data.data.longest_streak || 0,
       }
       setUser(newUser)
       return newUser
@@ -135,6 +138,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         full_name: data.data.full_name,
         role: data.data.role || 'student',
         streak_count: data.data.streak_count || 0,
+        longest_streak: data.data.longest_streak || 0,
       }
       setUser(newUser)
       return newUser

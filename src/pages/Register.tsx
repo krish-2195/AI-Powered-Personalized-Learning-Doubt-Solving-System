@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { Sparkles, Eye, EyeOff, Check, Brain, Target, Shield } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import api from '../lib/api'
 
 type RegisterForm = {
   fullName: string
@@ -17,16 +18,31 @@ type RegisterForm = {
 export default function Register() {
   const navigate = useNavigate()
   const { register, loading, error } = useAuth()
-  const subjectOptions = [
-    'Data Structures',
-    'Algorithms',
-    'Operating Systems',
-    'DBMS',
-    'AI/ML',
-    'Mathematics'
-  ]
+  
+  const [courseMappings, setCourseMappings] = useState<Record<string, string[]>>({})
+  const [courseOptions, setCourseOptions] = useState<string[]>([
+    'Computer Science', 
+    'Information Technology', 
+    'Software Engineering', 
+    'Data Science'
+  ])
+
+  useEffect(() => {
+    const fetchMappings = async () => {
+      try {
+        const { data } = await api.get('/api/content/course-mappings')
+        if (data && data.data) {
+          setCourseMappings(data.data)
+          setCourseOptions(Object.keys(data.data))
+        }
+      } catch (err) {
+        console.error("Failed to load dynamic course mappings", err)
+      }
+    }
+    fetchMappings()
+  }, [])
+
   const timelineOptions = ['4 weeks', '8 weeks', '12 weeks', '16 weeks', '24 weeks']
-  const courseOptions = ['Computer Science', 'Information Technology', 'Software Engineering', 'Data Science', 'Other']
   const examTargetOptions = ['Midterms', 'Final Exam', 'University Finals', 'Certification', 'Other']
   const [formData, setFormData] = useState<RegisterForm>({
     fullName: '',
@@ -38,6 +54,7 @@ export default function Register() {
     examTarget: '',
     examTimeline: '',
   })
+  const subjectOptions = formData.course ? (courseMappings[formData.course] || []) : []
   const [showPassword, setShowPassword] = useState(false)
   const [subjectError, setSubjectError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -235,7 +252,7 @@ export default function Register() {
                     required
                     className={selectClass}
                     value={formData.course}
-                    onChange={(e) => setFormData({ ...formData, course: e.target.value })}
+                    onChange={(e) => setFormData({ ...formData, course: e.target.value, subjects: [] })}
                   >
                     <option value="" disabled>Select your course</option>
                     {courseOptions.map((opt) => (

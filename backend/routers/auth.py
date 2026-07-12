@@ -46,6 +46,10 @@ def create_access_token(data: dict):
 @router.post("/register")
 def register(user: UserRegister, db: Session = Depends(get_db)):
     """Register a new user with profile information and persist to PostgreSQL."""
+    
+    from backend.utils.course_mapping import CourseMappingService
+    if not CourseMappingService.validate_course_subject(user.course.strip(), user.subjects):
+        return error_response("Invalid subjects selected for the chosen course", "Registration Failed")
 
     normalized_email = user.email.strip().lower()
     try:
@@ -72,6 +76,8 @@ def register(user: UserRegister, db: Session = Depends(get_db)):
         exam_target=user.exam_target.strip(),
         exam_timeline=user.exam_timeline,
         streak_count=1,
+        longest_streak=1,
+        last_check_in=datetime.utcnow(),
     )
 
     try:
@@ -125,6 +131,8 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
         "full_name": user.full_name,
         "role": user.role,
         "streak_count": user.profile.streak_count if user.profile else 0,
+        "longest_streak": user.profile.longest_streak if user.profile else 0,
+        "last_check_in": user.profile.last_check_in if user.profile else None,
         "token": access_token
     }
     
@@ -161,6 +169,8 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         "exam_target": profile.exam_target if profile else None,
         "exam_timeline": profile.exam_timeline if profile else None,
         "streak_count": profile.streak_count if profile else 0,
+        "longest_streak": profile.longest_streak if profile else 0,
+        "last_check_in": profile.last_check_in if profile else None,
         "last_active_date": profile.last_active_date if profile else None,
         "role": user.role
     }

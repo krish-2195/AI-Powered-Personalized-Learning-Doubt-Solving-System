@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { BookOpen, TrendingUp, Target, Clock, Sparkles, ArrowRight, Check, Brain, CheckCircle, Play } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import api from '../lib/api'
@@ -7,7 +7,18 @@ import api from '../lib/api'
 export default function Dashboard() {
   const { user, updateUser } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [loading, setLoading] = useState(true)
+  const [showOnboardingSuccess, setShowOnboardingSuccess] = useState(false)
+  
+  useEffect(() => {
+    if (location.state?.onboardingComplete) {
+      setShowOnboardingSuccess(true)
+      window.history.replaceState({}, document.title)
+      const timer = setTimeout(() => setShowOnboardingSuccess(false), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [location.state])
   const [dashboardData, setDashboardData] = useState<any>(() => {
     const cached = localStorage.getItem('dashboardData')
     return cached ? JSON.parse(cached) : null
@@ -120,7 +131,7 @@ export default function Dashboard() {
           
           <div className="flex flex-col sm:flex-row items-center gap-4">
             <button 
-              onClick={() => navigate('/learning')}
+              onClick={() => navigate('/chat', { state: { generateQuiz: true, topic: 'Baseline Assessment', isBaseline: true } })}
               className="bg-white text-primary-700 hover:bg-slate-50 px-8 py-4 rounded-xl font-bold text-lg flex items-center gap-3 transition-all transform hover:scale-105 shadow-xl"
             >
               Start Learning <ArrowRight size={20} />
@@ -392,10 +403,14 @@ export default function Dashboard() {
                           <span className="text-xs text-slate-500">{rec.time} min</span>
                         </div>
                         <h4 className="font-bold text-white text-base mb-1">{rec.title}</h4>
-                        <div className="flex gap-2 mt-2">
-                          <span className="text-[10px] text-slate-400 flex items-center gap-1"><CheckCircle size={10} className="text-green-400"/> Weak Topic</span>
-                          <span className="text-[10px] text-slate-400 flex items-center gap-1"><CheckCircle size={10} className="text-green-400"/> Prerequisite</span>
-                        </div>
+                        {rec.subject && (
+                          <p className="text-xs text-slate-400 font-medium mb-1.5">
+                            {rec.subject} › {rec.topic}
+                          </p>
+                        )}
+                        <p className="text-xs text-slate-500 leading-normal mb-1">
+                          {rec.reason || "Recommended for you"}
+                        </p>
                       </div>
                     </div>
                     <button onClick={() => handleStartRecommendation(rec)} className="shrink-0 px-4 py-2 border border-white/10 hover:border-slate-500 rounded-lg text-sm font-semibold text-slate-300 hover:text-white transition-colors bg-transparent">
@@ -406,6 +421,16 @@ export default function Dashboard() {
               ))}
         </div>
       </div>
+      
+      {showOnboardingSuccess && (
+        <div className="fixed bottom-6 right-6 bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-4 rounded-2xl shadow-[0_0_30px_rgba(16,185,129,0.3)] flex items-center gap-3.5 z-50 animate-bounce border border-green-400/20">
+          <Sparkles size={20} className="text-amber-300 animate-pulse" />
+          <div>
+            <p className="font-extrabold text-sm">Onboarding Complete!</p>
+            <p className="text-xs text-white/90 font-medium">Your personalized learning path has been successfully generated.</p>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

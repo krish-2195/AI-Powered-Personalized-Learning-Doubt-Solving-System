@@ -11,6 +11,7 @@ const ChatPage = lazy(() => import('./pages/ChatPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'))
 const AdminPage = lazy(() => import('./pages/AdminPage'))
+const VideoLearningPage = lazy(() => import('./pages/VideoLearningPage'))
 
 function App() {
   const { token, user } = useAuth()
@@ -39,6 +40,7 @@ function App() {
           <Route index element={isAuthenticated ? <Dashboard /> : redirect} />
           <Route path="dashboard" element={isAuthenticated ? <Dashboard /> : redirect} />
           <Route path="learning" element={isAuthenticated ? <Learning /> : redirect} />
+          <Route path="learning/video/:id" element={isAuthenticated ? <VideoLearningPage /> : redirect} />
           <Route path="chat" element={isAuthenticated ? <ChatPage /> : redirect} />
           <Route path="profile" element={isAuthenticated ? <ProfilePage /> : redirect} />
           <Route path="analytics" element={isAuthenticated ? <AnalyticsPage /> : redirect} />

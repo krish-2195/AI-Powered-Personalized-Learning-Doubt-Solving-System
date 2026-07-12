@@ -5,7 +5,7 @@ import { useStreak } from '../hooks/useStreak';
 import { Flame } from 'lucide-react';
 
 export default function StreakCelebration() {
-  const { currentStreak, hasCelebratedToday, markCelebrated, tier } = useStreak();
+  const { currentStreak, hasCelebratedToday, markCelebrated } = useStreak();
   const [isVisible, setIsVisible] = useState(false);
   const [displayCount, setDisplayCount] = useState(Math.max(0, currentStreak - 1));
 

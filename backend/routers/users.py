@@ -78,6 +78,14 @@ def update_user_profile(user_id: str, profile_data: UpdateProfile, db: Session =
         profile = DBUserProfile(user_id=uid)
         db.add(profile)
         
+    # Validate course-subject combination
+    course_to_val = profile_data.course if profile_data.course is not None else (profile.course or "")
+    subjects_to_val = profile_data.subjects if profile_data.subjects is not None else (profile.subjects or [])
+    if course_to_val and subjects_to_val:
+        from backend.utils.course_mapping import CourseMappingService
+        if not CourseMappingService.validate_course_subject(course_to_val.strip(), subjects_to_val):
+            return error_response("Invalid subjects selected for the chosen course", "Update Failed")
+        
     if profile_data.course is not None: profile.course = profile_data.course
     if profile_data.subjects is not None: profile.subjects = profile_data.subjects
     if profile_data.current_level is not None: profile.current_level = profile_data.current_level

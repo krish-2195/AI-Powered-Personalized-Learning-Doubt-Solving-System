@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState } from 'react'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Send, Sparkles, CheckCircle2, XCircle, BarChart2, BrainCircuit, Target, AlertTriangle, Copy, Check, Plus } from 'lucide-react'
 import api from '../lib/api'
 import { useAuth } from '../context/AuthContext'
@@ -59,12 +59,14 @@ export default function ChatPage() {
   const [quizCount, setQuizCount] = useState(5)
   const [isGeneratingQuiz, setIsGeneratingQuiz] = useState(false)
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
-
+  const [isBaseline, setIsBaseline] = useState(false)
+  const [onboardingStep, setOnboardingStep] = useState(0) // 0: none, 1: submitting, 2: analyzing, 3: roadmap, 4: complete
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   const { user } = useAuth()
   const userId = user?.user_id || 1
+  const navigate = useNavigate()
   
   const [sessionId, setSessionId] = useState(() => {
     const saved = localStorage.getItem('chatSessionId')
@@ -119,13 +121,32 @@ export default function ChatPage() {
   useEffect(() => {
     if (location.state?.prefill) {
       setInput(location.state.prefill)
-      // Optional: Clear state so it doesn't prefill again on refresh
       window.history.replaceState({}, document.title)
     } else if (location.state?.generateQuiz && location.state?.topic) {
+      if (location.state?.isBaseline) {
+        setIsBaseline(true)
+      }
       handleGenerateQuiz(location.state.topic)
       window.history.replaceState({}, document.title)
     }
   }, [location.state])
+
+  useEffect(() => {
+    if (isBaseline && quizMLResult && onboardingStep === 0) {
+      setOnboardingStep(1)
+    }
+  }, [isBaseline, quizMLResult, onboardingStep])
+
+  useEffect(() => {
+    if (onboardingStep > 0 && onboardingStep < 4) {
+      const timer = setTimeout(() => {
+        setOnboardingStep(prev => prev + 1)
+      }, 1500)
+      return () => clearTimeout(timer)
+    } else if (onboardingStep === 4) {
+      navigate('/dashboard', { state: { onboardingComplete: true } })
+    }
+  }, [onboardingStep, navigate])
 
   useEffect(() => {
     if (userId) {
@@ -270,21 +291,29 @@ export default function ChatPage() {
         <div className="flex items-center justify-between px-6 py-4 border-b border-white/[0.08] bg-[#0a0b10]/90 backdrop-blur-md sticky top-0 z-10">
           <div>
             <h1 className="text-xl font-display font-bold flex items-center gap-2">
-              <Sparkles className="text-primary-400" size={20}/> <span className="gradient-text">AI Tutor</span>
+              <Sparkles className="text-primary-400" size={20}/> <span className="gradient-text">{isBaseline ? "AI Diagnostic Onboarding" : "AI Tutor"}</span>
             </h1>
           </div>
-          <div className="flex gap-1 bg-[#151722] p-1 rounded-xl border border-white/[0.08]">
-            <button onClick={() => setActiveTab('chat')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'chat' ? 'bg-[#212435] text-white shadow-sm border border-white/10' : 'text-slate-400 hover:text-slate-200'}`}>Chat</button>
-            <button onClick={() => setActiveTab('quiz')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'quiz' ? 'bg-[#212435] text-white shadow-sm border border-white/10' : 'text-slate-400 hover:text-slate-200'}`}>Quiz</button>
-            <button onClick={() => setActiveTab('summary')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'summary' ? 'bg-[#212435] text-white shadow-sm border border-white/10' : 'text-slate-400 hover:text-slate-200'}`}>Summary</button>
-          </div>
+          {!isBaseline ? (
+            <div className="flex gap-1 bg-[#151722] p-1 rounded-xl border border-white/[0.08]">
+              <button onClick={() => setActiveTab('chat')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'chat' ? 'bg-[#212435] text-white shadow-sm border border-white/10' : 'text-slate-400 hover:text-slate-200'}`}>Chat</button>
+              <button onClick={() => setActiveTab('quiz')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'quiz' ? 'bg-[#212435] text-white shadow-sm border border-white/10' : 'text-slate-400 hover:text-slate-200'}`}>Quiz</button>
+              <button onClick={() => setActiveTab('summary')} className={`px-4 py-1.5 text-sm font-semibold rounded-lg transition-all ${activeTab === 'summary' ? 'bg-[#212435] text-white shadow-sm border border-white/10' : 'text-slate-400 hover:text-slate-200'}`}>Summary</button>
+            </div>
+          ) : (
+            <div className="text-xs font-bold text-primary-400 bg-primary-500/10 px-4 py-1.5 rounded-full border border-primary-500/20 animate-pulse uppercase tracking-wider">
+              Diagnostic Mode
+            </div>
+          )}
           <div>
-            <button 
-              onClick={startNewSession}
-              className="btn-primary text-sm !px-4 !py-2"
-            >
-              <Plus size={16} /> New Session
-            </button>
+            {!isBaseline && (
+              <button 
+                onClick={startNewSession}
+                className="btn-primary text-sm !px-4 !py-2"
+              >
+                <Plus size={16} /> New Session
+              </button>
+            )}
           </div>
         </div>
 
@@ -438,9 +467,11 @@ export default function ChatPage() {
         {/* ── QUIZ TAB ── */}
         {activeTab === 'quiz' && (
           <div className="flex-1 min-h-0 overflow-y-auto px-4 py-8 custom-scrollbar relative">
-             <button onClick={() => setActiveTab('chat')} className="absolute top-8 left-8 text-slate-400 hover:text-white flex items-center gap-2 text-sm font-semibold transition-colors">
-               ← Back to Chat
-             </button>
+             {!isBaseline && (
+               <button onClick={() => setActiveTab('chat')} className="absolute top-8 left-8 text-slate-400 hover:text-white flex items-center gap-2 text-sm font-semibold transition-colors">
+                 ← Back to Chat
+               </button>
+             )}
             <div className="max-w-[850px] mx-auto mt-10">
             {isGeneratingQuiz ? (
               <div className="h-64 flex flex-col items-center justify-center gap-5 text-slate-400 mt-20">
@@ -694,6 +725,51 @@ export default function ChatPage() {
           )}
         </div>
       </div>
+
+      {/* Onboarding Diagnostics Overlay */}
+      {onboardingStep > 0 && (
+        <div className="fixed inset-0 bg-[#06070a]/95 backdrop-blur-xl z-50 flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-[#0a0b10] border border-white/10 rounded-[32px] p-8 shadow-2xl text-center space-y-8 animate-pulse-slow">
+            <div className="flex justify-center">
+              <div className="w-16 h-16 rounded-full bg-primary-500/10 border border-primary-500/30 flex items-center justify-center text-primary-400 animate-spin">
+                <Sparkles size={28} />
+              </div>
+            </div>
+            
+            <div className="space-y-2">
+              <h2 className="text-2xl font-display font-extrabold text-white">AI Diagnostics Engine</h2>
+              <p className="text-sm text-slate-400">Please wait while we set up your personalized learning path</p>
+            </div>
+            
+            <div className="space-y-4 text-left">
+              <div className="flex items-center gap-3">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${onboardingStep > 1 ? 'bg-green-500/20 text-green-400 border border-green-500/30' : 'bg-primary-500/20 text-primary-400 border border-primary-500/30 animate-pulse'}`}>
+                  {onboardingStep > 1 ? "✓" : "1"}
+                </div>
+                <span className={`text-sm font-medium ${onboardingStep >= 1 ? 'text-slate-200' : 'text-slate-500'}`}>Submitting baseline responses...</span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${onboardingStep > 2 ? 'bg-green-500/20 text-green-400 border border-green-500/30' : onboardingStep === 2 ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30 animate-pulse' : 'bg-slate-800 text-slate-600 border border-slate-700'}`}>
+                  {onboardingStep > 2 ? "✓" : "2"}
+                </div>
+                <span className={`text-sm font-medium ${onboardingStep >= 2 ? 'text-slate-200' : 'text-slate-500'}`}>AI is analyzing your knowledge graph...</span>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <div className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold ${onboardingStep > 3 ? 'bg-green-500/20 text-green-400 border border-green-500/30' : onboardingStep === 3 ? 'bg-primary-500/20 text-primary-400 border border-primary-500/30 animate-pulse' : 'bg-slate-800 text-slate-600 border border-slate-700'}`}>
+                  {onboardingStep > 3 ? "✓" : "3"}
+                </div>
+                <span className={`text-sm font-medium ${onboardingStep >= 3 ? 'text-slate-200' : 'text-slate-500'}`}>Generating personalized roadmap & recommendations...</span>
+              </div>
+            </div>
+            
+            <div className="h-1.5 w-full bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-full bg-primary-500 transition-all duration-500" style={{ width: `${(onboardingStep / 4) * 100}%` }}></div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

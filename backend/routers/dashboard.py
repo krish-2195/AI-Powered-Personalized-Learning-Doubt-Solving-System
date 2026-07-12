@@ -64,6 +64,7 @@ def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
 
     # ── Recommendations ──
     try:
+        from backend.utils.course_mapping import CourseMappingService
         recs_objects = recommendation_service.get_recommendations(db, user_id, 3)
         recs = [
             {
@@ -71,13 +72,15 @@ def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
                 "type": r["content"].content_type,
                 "title": r["content"].title,
                 "topic": r["content"].topic.name if r["content"].topic else "General",
+                "subject": CourseMappingService.CSV_TO_USER_SUBJECT.get(r["content"].topic.subject.name, r["content"].topic.subject.name) if (r["content"].topic and r["content"].topic.subject) else "General",
                 "time": r["content"].duration_minutes,
                 "match_score": r["match_score"],
                 "reason": r["reason"]
             }
             for r in recs_objects
         ]
-    except Exception:
+    except Exception as e:
+        print("Failed to get dashboard recommendations:", e)
         recs = []
 
     from backend.services.student_stats import student_stats_service

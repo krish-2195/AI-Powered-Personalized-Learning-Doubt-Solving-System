@@ -40,14 +40,24 @@ def seed_articles():
         
         # Check if already exists
         existing = db.query(Content).filter(Content.title == title).first()
-        if not existing:
+        description_text = f"This is a comprehensive article about {topic.name}. It covers all the essential details and provides clear examples."
+        est_time = random.randint(5, 20)
+        
+        if existing:
+            existing.description = description_text
+            existing.estimated_time = est_time
+            existing.text_content = description_text
+            existing.duration_minutes = est_time
+        else:
             new_article = Content(
                 topic_id=topic.id,
                 content_type="article",
                 title=title,
-                text_content=f"This is a comprehensive article about {topic.name}. It covers all the essential details and provides clear examples.",
+                description=description_text,
+                text_content=description_text,
                 difficulty=random.choice(["Beginner", "Medium", "Hard"]),
-                duration_minutes=random.randint(5, 20),
+                duration_minutes=est_time,
+                estimated_time=est_time,
                 url="https://example.com/article"
             )
             db.add(new_article)

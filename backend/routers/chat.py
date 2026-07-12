@@ -74,13 +74,56 @@ async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_
     """
     Checks the PostgreSQL QuestionBank first. 
     If not enough questions exist, uses OpenAI as a fallback dynamic generator.
+    Filters by user's selected subjects if generating a baseline assessment quiz.
     """
+    from database.models.postgres_models import UserProfile, Subject, LearningLog, Topic
+    
+    # Retrieve user profile and selected subjects
+    profile = db.query(UserProfile).filter(UserProfile.user_id == payload.user_id).first()
+    selected_subjects = profile.subjects if profile and profile.subjects else []
+    
+    # Resolve topic based on latest completed video or read material if generic topic requested
+    topic_resolved = payload.topic
+    if not topic_resolved or topic_resolved.strip().lower() in ["general problem solving", "latest", "auto", "default", ""]:
+        latest_log = db.query(LearningLog).filter(
+            LearningLog.user_id == payload.user_id,
+            LearningLog.activity_type.in_(["video", "article"]),
+            LearningLog.completed == True
+        ).order_by(LearningLog.timestamp.desc()).first()
+        
+        if latest_log and latest_log.topic_id:
+            topic_obj = db.query(Topic).get(latest_log.topic_id)
+            if topic_obj:
+                topic_resolved = topic_obj.name
+                
+        # If no activity history, fallback to first chosen subject
+        if not topic_resolved or topic_resolved.strip().lower() in ["general problem solving", "latest", "auto", "default", ""]:
+            if selected_subjects:
+                fallback_topic = db.query(Topic).join(Subject).filter(
+                    Subject.name == selected_subjects[0]
+                ).first()
+                if fallback_topic:
+                    topic_resolved = fallback_topic.name
+            
+            # Absolute fallback
+            if not topic_resolved or topic_resolved.strip().lower() in ["general problem solving", "latest", "auto", "default", ""]:
+                topic_resolved = "Arrays"
+                
+        payload.topic = topic_resolved
+        
+    is_baseline = "baseline" in payload.topic.lower()
+    
     # 1. Check PostgreSQL Database if not strictly AI
     if payload.quiz_type in ["standard", "hybrid"]:
-        existing_questions = db.query(QuestionBank).join(Topic).filter(
-            Topic.name.ilike(f"%{payload.topic}%")
-        ).limit(payload.count).all()
-        
+        if is_baseline and selected_subjects:
+            existing_questions = db.query(QuestionBank).join(Topic).join(Subject).filter(
+                Subject.name.in_(selected_subjects)
+            ).limit(payload.count).all()
+        else:
+            existing_questions = db.query(QuestionBank).join(Topic).filter(
+                Topic.name.ilike(f"%{payload.topic}%")
+            ).limit(payload.count).all()
+            
         if payload.quiz_type == "standard" or len(existing_questions) >= payload.count:
             quiz_data = []
             for q in existing_questions:
@@ -99,8 +142,14 @@ async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_
             return success_response(data={"topic": payload.topic, "source": "postgres", "questions": quiz_data})
             
     # 2. Dynamic Generation using LLM
+    if is_baseline and selected_subjects:
+        subject_str = ", ".join(selected_subjects)
+        topic_clause = f"covering baseline assessment questions for the selected subjects: {subject_str}"
+    else:
+        topic_clause = f"on the topic of {payload.topic}"
+        
     prompt = (
-        f"Generate a {payload.count} question multiple choice quiz on the topic of {payload.topic} at a {payload.difficulty} difficulty. "
+        f"Generate a {payload.count} question multiple choice quiz {topic_clause} at a {payload.difficulty} difficulty. "
         "Output strictly as a JSON array of objects with keys: 'question', 'options' (array of 4 strings), 'answer_index' (0-3), and 'explanation'. "
         "CRITICAL RULES: "
         "1. Do NOT include ANY emojis (like checkmarks or cross marks) in the text. "

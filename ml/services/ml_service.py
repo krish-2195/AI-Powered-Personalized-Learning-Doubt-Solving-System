@@ -146,6 +146,10 @@ class MLService:
                 prediction_class = "Weak"
                 confidence = 0.91
                 
+        # Override to guarantee weak topic detection if quiz score is low (< 60%)
+        if perf.accuracy < 60.0 or ewma < 60.0:
+            prediction_class = "Weak"
+
         # 3. Update PerformanceRecord Status
         perf.status = prediction_class.lower()
         

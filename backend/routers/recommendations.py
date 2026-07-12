@@ -18,14 +18,19 @@ def get_personalized_recommendations(user_id: int, top_n: int = 10, db: Session 
     try:
         recommended_content = recommendation_service.get_recommendations(db, user_id, top_n)
         
+        from backend.utils.course_mapping import CourseMappingService
         results = []
         for rec in recommended_content:
             c = rec["content"]
+            subject_name = c.topic.subject.name if c.topic and c.topic.subject else None
+            user_subject = CourseMappingService.CSV_TO_USER_SUBJECT.get(subject_name, subject_name) if subject_name else None
+            
             results.append({
                 "resource_id": c.id,
                 "type": c.content_type,
                 "title": c.title,
                 "topic": c.topic.name if c.topic else "General",
+                "subject": user_subject,
                 "difficulty": c.difficulty,
                 "estimated_time_minutes": c.duration_minutes,
                 "url": c.url,
