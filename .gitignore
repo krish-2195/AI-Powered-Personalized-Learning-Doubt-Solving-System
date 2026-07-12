@@ -38,10 +38,6 @@ wheels/
 .DS_Store
 Thumbs.db
 
-# ML Models
-ml_models/saved_models/*.pkl
-ml_models/saved_models/*.pt
-ml_models/saved_models/*.h5
 
 # Node
 node_modules/
