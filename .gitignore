@@ -66,8 +66,24 @@ htmlcov/
 # Frontend specific
 frontend/dist/
 frontend/.vite/
+
+# Root-level frontend artifacts (SHOULD NEVER EXIST - see CONTRIBUTING.md)
+# These guard against accidentally running `npm install` in the repo root.
+/node_modules/
+/package-lock.json
+/bun.lock
+/index.html
+/postcss.config.js
+/tailwind.config.js
+/tsconfig.json
+/tsconfig.node.json
+/vite.config.ts
+/.eslintrc.cjs
 # Agent Files
 .agents/
+.claude/
+agent/
+skills-lock.json
 PENDING_TASKS.md
 PROJECT_STATUS.md
 .venv/
