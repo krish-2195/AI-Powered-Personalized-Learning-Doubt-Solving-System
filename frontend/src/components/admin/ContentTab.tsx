@@ -80,7 +80,7 @@ export default function ContentTab() {
   })
 
   return (
-    <div className="bg-surface-850/60 backdrop-blur-xl backdrop-saturate-150 rounded-2xl border border-white/[0.08] shadow-soft overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+    <div className="bg-surface-850/60 backdrop-blur-xl backdrop-saturate-150 rounded-2xl border border-white/[0.08] shadow-soft overflow-hidden flex flex-col md:flex-row h-[700px]">
       
       {/* Sidebar for SubTabs */}
       <div className="w-full md:w-64 bg-surface-800 border-r border-white/[0.08] flex flex-col">

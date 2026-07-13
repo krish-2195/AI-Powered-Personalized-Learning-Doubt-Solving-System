@@ -87,3 +87,24 @@ def get_analytics_summary(user_id: int, db: Session = Depends(get_db), current_u
         })
     except Exception as e:
         return error_response(str(e), "Failed to fetch analytics")
+
+import os
+import json
+
+@router.get("/model-metrics")
+def get_model_metrics(current_user = Depends(get_current_user)):
+    """
+    Returns the Random Forest model training and evaluation metrics,
+    including overall accuracy, classification report, confusion matrix, and feature importance.
+    """
+    try:
+        report_path = os.path.join(os.path.dirname(__file__), '../../ml/artifacts/evaluation_report.json')
+        if not os.path.exists(report_path):
+            return error_response("Evaluation report not found", "Evaluation report not found")
+            
+        with open(report_path, 'r') as f:
+            report_data = json.load(f)
+            
+        return success_response(data=report_data)
+    except Exception as e:
+        return error_response(str(e), "Failed to fetch model metrics")

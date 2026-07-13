@@ -96,7 +96,7 @@ export default function UsersTab() {
                           setSelectedUser(u)
                           setIsModalOpen(true)
                           setModalLoading(true)
-                          api.get(`/api/dashboard/${u.user_id}`).then(res => {
+                          api.get(`/api/admin/users/${u.user_id}`).then(res => {
                             setUserDetails(res.data.data)
                             setModalLoading(false)
                           }).catch(() => setModalLoading(false))

@@ -81,8 +81,8 @@ export default function DashboardTab({ stats, activity }: { stats: any, activity
                   </tr>
                 </thead>
                 <tbody>
-                  {stats.ml.history.map((h: any, idx: number) => {
-                    const isLatest = idx === stats.ml.history.length - 1;
+                  {stats.ml.history.slice(-1).map((h: any, idx: number) => {
+                    const isLatest = true;
                     return (
                       <tr key={idx} className="border-b border-white/[0.08] hover:bg-slate-800/50 transition-colors">
                         <td className="px-4 py-4 font-bold text-white flex items-center gap-2">

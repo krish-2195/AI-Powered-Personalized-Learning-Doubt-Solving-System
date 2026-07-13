@@ -76,7 +76,35 @@ class CourseMappingService:
     @classmethod
     def validate_course_subject(cls, course: str, subjects: list[str]) -> bool:
         mappings = cls.get_mappings()
-        if course not in mappings:
+        
+        # Soft match course: check if any key of mappings is in the input course, or vice versa
+        matched_course = None
+        for c in mappings.keys():
+            if c.lower() in course.lower() or course.lower() in c.lower():
+                matched_course = c
+                break
+                
+        if not matched_course:
             return False
-        valid_subjects = set(mappings[course])
-        return all(s in valid_subjects for s in subjects)
+            
+        valid_subjects = mappings[matched_course]
+        
+        # Soft match subjects
+        for sub in subjects:
+            sub_lower = sub.lower().strip()
+            match_found = False
+            for val_sub in valid_subjects:
+                val_sub_lower = val_sub.lower()
+                if sub_lower == val_sub_lower:
+                    match_found = True
+                    break
+                if f"({sub_lower})" in val_sub_lower or val_sub_lower.startswith(sub_lower):
+                    match_found = True
+                    break
+                if sub_lower in val_sub_lower:
+                    match_found = True
+                    break
+            if not match_found:
+                return False
+                
+        return True

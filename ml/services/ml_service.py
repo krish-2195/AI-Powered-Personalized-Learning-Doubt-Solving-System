@@ -87,7 +87,19 @@ class MLService:
             tp_current = db.query(TopicPerformance).filter(
                 TopicPerformance.user_id == user_id, TopicPerformance.topic_id == topic_id
             ).first()
-            ewma = tp_current.ewma_accuracy if tp_current else perf.accuracy
+            
+            # Correct EWMA: Calculate using latest quiz attempt accuracy
+            from database.models.postgres_models import QuizAttempt
+            latest_attempt = db.query(QuizAttempt).filter(
+                QuizAttempt.user_id == user_id,
+                QuizAttempt.topic_id == topic_id
+            ).order_by(QuizAttempt.timestamp.desc()).first()
+            latest_accuracy = latest_attempt.accuracy if latest_attempt else perf.accuracy
+            
+            if tp_current:
+                ewma = (0.2 * latest_accuracy) + (0.8 * tp_current.ewma_accuracy)
+            else:
+                ewma = latest_accuracy
             
             # Construct feature DataFrame mapping
             features = {col: 0 for col in self.feature_columns}
@@ -152,7 +164,7 @@ class MLService:
 
         # 3. Update PerformanceRecord Status
         perf.status = prediction_class.lower()
-        
+
         # 4. Update TopicPerformance (EWMA)
         tp = db.query(TopicPerformance).filter(
             TopicPerformance.user_id == user_id,
@@ -163,14 +175,14 @@ class MLService:
             tp = TopicPerformance(
                 user_id=user_id,
                 topic_id=topic_id,
-                ewma_accuracy=perf.accuracy,
+                ewma_accuracy=ewma,
                 mastery_level=prediction_class
             )
             db.add(tp)
         else:
-            tp.ewma_accuracy = (0.2 * perf.accuracy) + (0.8 * tp.ewma_accuracy)
+            tp.ewma_accuracy = ewma
             tp.mastery_level = prediction_class
-            
+
         # 5. Save exactly what you requested: PredictionHistory
         history = PredictionHistory(
             user_id=user_id,
@@ -188,6 +200,119 @@ class MLService:
             "confidence": round(confidence, 2),
             "model_version": history.model_version,
             "reasons": reasons if 'reasons' in locals() else []
+        }
+
+    def predict_overall_performance(self, db: Session, user_id: int) -> dict:
+        """
+        Uses the Random Forest model to predict user's overall performance category.
+        Aggregates features across all attempted topics.
+        """
+        # Fetch all performance records for this user
+        perfs = db.query(PerformanceRecord).filter(PerformanceRecord.user_id == user_id).all()
+        if not perfs:
+            return {
+                "predicted_score": "Moderate",
+                "confidence": 70,
+                "reasons": ["No performance records found. Start practicing to update prediction."]
+            }
+            
+        # Average quiz accuracy and attempts
+        avg_accuracy = sum(p.accuracy for p in perfs) / len(perfs)
+        avg_attempts = sum(p.total_attempts for p in perfs) / len(perfs)
+        avg_time = sum(p.avg_time_seconds or 60.0 for p in perfs) / len(perfs)
+        
+        # Topic performances (EWMA)
+        tps = db.query(TopicPerformance).filter(TopicPerformance.user_id == user_id).all()
+        avg_ewma = sum(tp.ewma_accuracy for tp in tps) / len(tps) if tps else avg_accuracy
+        
+        # User profile streak
+        user_prof = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+        streak = user_prof.streak_count if user_prof else 0
+        
+        # Logs totals
+        logs = db.query(LearningLog).filter(LearningLog.user_id == user_id).all()
+        videos = sum(1 for l in logs if l.activity_type == 'video' and l.completed)
+        articles = sum(1 for l in logs if l.activity_type == 'article' and l.completed)
+        chatbots = sum(1 for l in logs if l.activity_type == 'chat')
+        study_dur = sum(l.duration_seconds for l in logs) / 3600.0 if logs else 0.0
+        
+        # Prerequisite mastery (average across topics)
+        prereq_mastery_list = []
+        for p in perfs:
+            topic = db.query(Topic).get(p.topic_id)
+            if topic:
+                prereqs = knowledge_graph.get_prerequisites(topic.name)
+                if prereqs:
+                    prereq_tps = db.query(TopicPerformance).join(Topic).filter(
+                        TopicPerformance.user_id == user_id,
+                        Topic.name.in_(prereqs)
+                    ).all()
+                    if prereq_tps:
+                        prereq_mastery_list.append(sum(tp.ewma_accuracy for tp in prereq_tps) / len(prereq_tps))
+        prereq_mastery = sum(prereq_mastery_list) / len(prereq_mastery_list) if prereq_mastery_list else 50.0
+        
+        predicted_score = "Moderate"
+        confidence = 0.70
+        
+        import pandas as pd
+        if self.model and self.feature_columns:
+            features = {col: 0 for col in self.feature_columns}
+            if 'quiz_accuracy' in features: features['quiz_accuracy'] = avg_accuracy
+            if 'total_attempts' in features: features['total_attempts'] = avg_attempts
+            if 'prerequisite_mastery' in features: features['prerequisite_mastery'] = prereq_mastery
+            if 'videos_watched' in features: features['videos_watched'] = videos
+            if 'articles_read' in features: features['articles_read'] = articles
+            if 'chatbot_questions' in features: features['chatbot_questions'] = chatbots
+            if 'study_duration' in features: features['study_duration'] = study_dur
+            if 'daily_streak' in features: features['daily_streak'] = streak
+            if 'ewma_accuracy' in features: features['ewma_accuracy'] = avg_ewma
+            if 'avg_time_per_question' in features: features['avg_time_per_question'] = avg_time
+            
+            df = pd.DataFrame([features])
+            try:
+                preds = self.model.predict(df)
+                raw_pred = preds[0]
+                predicted_score = self.LABEL_MAP.get(raw_pred, self.LABEL_MAP.get(str(raw_pred), str(raw_pred)))
+                
+                if hasattr(self.model, "predict_proba"):
+                    probs = self.model.predict_proba(df)
+                    confidence = float(max(probs[0]))
+                
+                if confidence < 0.60:
+                    predicted_score = "Moderate"
+            except Exception as e:
+                print(f"Overall prediction failed: {e}")
+        else:
+            # Fallback heuristic
+            if avg_ewma >= 80:
+                predicted_score = "Strong"
+                confidence = 0.92
+            elif avg_ewma >= 50:
+                predicted_score = "Moderate"
+                confidence = 0.85
+            else:
+                predicted_score = "Weak"
+                confidence = 0.78
+                
+        # Heuristic overrides/guards matching user expectations
+        if avg_ewma < 60.0:
+            predicted_score = "Weak"
+            
+        reasons = []
+        if avg_accuracy < 60:
+            reasons.append("Low quiz accuracy")
+        if prereq_mastery < 60:
+            reasons.append("Prerequisite gaps identified")
+        if avg_time > 120:
+            reasons.append("High average response time")
+            
+        if not reasons:
+            reasons.append("Consistent performance" if predicted_score == "Strong" else "Continue regular revisions")
+            
+        return {
+            "predicted_score": predicted_score,
+            "confidence": round(confidence * 100),
+            "reasons": reasons
         }
 
 ml_service = MLService()

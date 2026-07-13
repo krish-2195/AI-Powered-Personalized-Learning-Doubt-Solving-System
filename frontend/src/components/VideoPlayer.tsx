@@ -6,8 +6,7 @@ import VideoControlBar from './video/VideoControlBar';
 
 interface VideoPlayerProps {
   videoId: string;
-  contentId: string | number;
-  onComplete?: () => void;
+  player: any; // Externalized player state
 }
 
 const youtubeOpts: YouTubeProps['opts'] = {
@@ -25,9 +24,7 @@ const youtubeOpts: YouTubeProps['opts'] = {
   },
 };
 
-export default function VideoPlayer({ videoId, contentId, onComplete }: VideoPlayerProps) {
-  const player = useVideoPlayer({ contentId, onComplete });
-
+export default function VideoPlayer({ videoId, player }: VideoPlayerProps) {
   if (!videoId) {
     return (
       <div className="w-full aspect-video bg-slate-900 rounded-2xl flex items-center justify-center border border-white/10">
@@ -106,6 +103,11 @@ export default function VideoPlayer({ videoId, contentId, onComplete }: VideoPla
         onSpeedChange={player.handleSpeedChange}
         onQualityChange={player.handleQualityChange}
         onToggleCc={player.handleToggleCc}
+        bookmarks={player.bookmarks}
+        onBookmarkClick={(time) => {
+          player.playerRef.current?.seekTo(time, true);
+          player.playerRef.current?.playVideo();
+        }}
       />
     </div>
   );

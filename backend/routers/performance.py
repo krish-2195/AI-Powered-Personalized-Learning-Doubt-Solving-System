@@ -21,20 +21,6 @@ def get_prediction(user_id: int, db: Session = Depends(get_db), current_user = D
     Returns the user's overall ML prediction status.
     Used by ChatPage sidebar to display prediction badge.
     """
-    avg_score = db.query(func.avg(TopicPerformance.ewma_accuracy)).filter(TopicPerformance.user_id == user_id).scalar() or 0
-    
-    if avg_score >= 80:
-        predicted_score = "Strong"
-        confidence = 92
-    elif avg_score >= 50:
-        predicted_score = "Moderate"
-        confidence = 85
-    else:
-        predicted_score = "Weak"
-        confidence = 78
-        
-    return success_response(data={
-        "predicted_score": predicted_score,
-        "confidence": confidence,
-        "reasons": ["Review fundamentals" if predicted_score == "Weak" else "Keep practicing"]
-    })
+    from ml.services.ml_service import ml_service
+    res = ml_service.predict_overall_performance(db, user_id)
+    return success_response(data=res)

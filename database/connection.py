@@ -121,3 +121,7 @@ def get_daily_quests_collection():
 
 def get_session_summary_collection():
     return MongoDBManager.get_collection("session_summary")
+
+def get_video_bookmarks_collection():
+    return MongoDBManager.get_collection("video_bookmarks")
+

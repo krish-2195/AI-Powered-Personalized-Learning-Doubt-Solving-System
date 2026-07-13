@@ -39,6 +39,8 @@ interface VideoControlBarProps {
   onSpeedChange: (rate: number) => void;
   onQualityChange: (quality: string) => void;
   onToggleCc: () => void;
+  bookmarks?: any[];
+  onBookmarkClick?: (time: number) => void;
 }
 
 /**
@@ -56,6 +58,8 @@ export default function VideoControlBar({
   onTogglePlay, onSeekStart, onSeek, onSeekEnd,
   onVolumeChange, onToggleMute, onFullscreen,
   onSkip, onSpeedChange, onQualityChange, onToggleCc,
+  bookmarks = [],
+  onBookmarkClick,
 }: VideoControlBarProps) {
   const progressPct = duration > 0 ? (currentTime / duration) * 100 : 0;
   const volumePct = isMuted ? 0 : volume;
@@ -74,6 +78,24 @@ export default function VideoControlBar({
         </span>
 
         <div className="flex-1 relative group py-2">
+          {/* Bookmark Timeline Markers */}
+          {bookmarks.map((bm) => {
+            const leftPct = duration > 0 ? (bm.timestamp / duration) * 100 : 0;
+            return (
+              <div
+                key={bm.id}
+                className="absolute top-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-red-500 border border-white cursor-pointer z-20 group/marker transition-transform hover:scale-150"
+                style={{ left: `${leftPct}%` }}
+                onClick={() => onBookmarkClick && onBookmarkClick(bm.timestamp)}
+              >
+                {/* Tooltip */}
+                <div className="absolute bottom-5 left-1/2 -translate-x-1/2 bg-slate-950 text-white text-[10px] py-1 px-2 rounded-lg border border-white/10 shadow-xl opacity-0 group-hover/marker:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-30 font-medium font-sans">
+                  {bm.note ? `${bm.note} (${formatTime(bm.timestamp)})` : `Bookmark (${formatTime(bm.timestamp)})`}
+                </div>
+              </div>
+            );
+          })}
+
           <input
             type="range"
             min={0}

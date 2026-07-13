@@ -49,21 +49,47 @@ class HybridRecommendationEngine:
 
     def _get_collaborative_scores(self, db: Session, user_id: int) -> dict:
         """
-        Simplified SVD-inspired collaborative filtering.
-        In production, this uses the Surprise library or TruncatedSVD on a user-item interaction matrix.
-        Here we mock the matrix factorization approach by returning heuristic collaborative scores.
+        Calculates collaborative scores based on real popularity data (interactions in RecommendationFeedback and LearningLogs).
         """
         if self._cached_content_ids is None:
             if not self._build_cache(db):
                 return {}
                 
-        # Mock collaborative scores based on generic popularity + a random user offset
-        np.random.seed(user_id) # deterministic mock
+        from database.models.postgres_models import RecommendationFeedback, LearningLog
+        from sqlalchemy import func
+        
+        # Query click counts from RecommendationFeedback
+        feedback_counts = dict(
+            db.query(RecommendationFeedback.content_id, func.count(RecommendationFeedback.id))
+            .filter(RecommendationFeedback.clicked == True)
+            .group_by(RecommendationFeedback.content_id).all()
+        )
+        
+        # Query execution/interaction counts from LearningLogs
+        log_counts = {}
+        logs_query = db.query(LearningLog.resource_id, func.count(LearningLog.id)).group_by(LearningLog.resource_id).all()
+        for r_id, count in logs_query:
+            try:
+                if r_id and r_id.isdigit():
+                    log_counts[int(r_id)] = count
+            except ValueError:
+                pass
+                
         scores = {}
         for c_id in self._cached_content_ids:
-            # Simulate SVD output between 0.1 and 0.9
-            scores[c_id] = np.random.uniform(0.1, 0.9)
+            clicks = feedback_counts.get(c_id, 0)
+            logs = log_counts.get(c_id, 0)
+            total_activity = clicks + logs
             
+            # Use logarithmic scaling or normalization to fit in [0.1, 0.9] range
+            if total_activity > 0:
+                # Log-scale so very popular items do not dominate completely
+                score_val = 0.1 + 0.8 * (np.log1p(total_activity) / np.log1p(100))
+                scores[c_id] = min(0.9, score_val)
+            else:
+                # Deterministic baseline to avoid complete flat score
+                scores[c_id] = 0.1 + (c_id % 5) * 0.02
+                
         return scores
 
     def get_recommendations(self, db: Session, user_id: int, top_n: int = 10) -> list:
@@ -170,14 +196,21 @@ class HybridRecommendationEngine:
         final_recs = []
         for r in results_sorted:
             score = hybrid_scores.get(r.id, 0.0)
+            cb = cb_scores.get(r.id, 0.0)
+            cf = cf_scores.get(r.id, 0.0)
+            
             # Rationale logic: if the topic is in kg_focus_topics, it's a prerequisite gap
-            if r.topic and r.topic.name in kg_focus_topics:
-                reason = f"Prerequisite for {weak_topic_names[0] if weak_topic_names else 'your weak topics'}"
+            if r.topic and kg_focus_topics and r.topic.name in kg_focus_topics:
+                reason = f"Foundational prerequisite for {weak_topic_names[0] if weak_topic_names else 'your weak topics'} (matches {r.topic.name})."
             elif r.topic and r.topic.name in weak_topic_names:
-                reason = f"Direct practice for {r.topic.name}"
+                reason = f"Direct practice resource to improve your weak topic: {r.topic.name}."
             else:
-                reason = "Highly rated content"
-                
+                reason = "Recommended based on similar student success profiles."
+            
+            # Enrich with explanation details
+            explanation = f"Hybrid blend: matches syllabus alignment ({round(cb*100)}%) and student popularity ({round(cf*100)}%)."
+            full_reason = f"{reason} {explanation}"
+            
             # Log recommendation to DB for admin tracking
             rec_entry = db.query(Recommendation).filter_by(user_id=user_id, resource_id=str(r.id)).first()
             if not rec_entry:
@@ -186,18 +219,18 @@ class HybridRecommendationEngine:
                     recommendation_type=r.content_type,
                     resource_id=str(r.id),
                     topic_id=r.topic_id,
-                    reason=reason,
+                    reason=full_reason,
                     relevance_score=score
                 )
                 db.add(rec_entry)
             else:
                 rec_entry.relevance_score = score
-                rec_entry.reason = reason
+                rec_entry.reason = full_reason
                 
             final_recs.append({
                 "content": r,
                 "match_score": round(min(99, score * 100)), # Convert to percentage
-                "reason": reason
+                "reason": full_reason
             })
             
         db.commit()

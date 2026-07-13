@@ -6,17 +6,21 @@ U6,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50
 U7,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50.0,0.0,Weak
 U8,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50.0,0.0,Weak
 U9,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,0,40.0,50.0,0.0,Weak
-U10,1,Arrays,Data Structures & Algorithms,0.4,30.0,3,Medium,1,0,0,5.0,2,0.4000000000000001,50.0,0.4,Weak
+U10,1,Arrays,Data Structures & Algorithms,0.4,30.0,3,Medium,1,0,0,5.0,3,0.4000000000000001,50.0,0.4,Weak
 U11,1,Arrays,Data Structures & Algorithms,40.0,300.0,1,Medium,0,0,0,0.0,1,40.0,50.0,0.0,Weak
 U15,1,Arrays,Data Structures & Algorithms,0.0,30.0,1,Medium,0,0,0,0.0,1,0.0,50.0,0.0,Moderate
 U18,1,Arrays,Data Structures & Algorithms,1.0,30.0,1,Medium,0,0,0,0.0,1,1.0,50.0,0.0,Moderate
 U19,9,Recursion,Data Structures & Algorithms,100.0,30.0,1,Medium,0,0,0,0.0,1,100.0,50.0,0.0,Moderate
 U19,7,Sorting,Data Structures & Algorithms,80.0,30.0,1,Medium,0,0,0,0.0,1,80.0,50.0,0.0,Moderate
-U10,1,Arrays,Data Structures & Algorithms,10.2,108.5,2,Medium,1,0,0,5.0,2,0.4000000000000001,50.0,0.4,Weak
-U10,1,Arrays,Data Structures & Algorithms,0.4,30.0,2,Medium,1,0,0,5.0,2,0.4000000000000001,50.0,0.4,Weak
-U10,2,Linked Lists,Data Structures & Algorithms,80.0,210.0,1,Medium,0,0,0,0.0,2,80.0,50.0,0.0,Moderate
-U10,7,Sorting,Data Structures & Algorithms,0.0,45.0,1,Medium,0,0,0,0.0,2,0.0,50.0,0.0,Weak
-U10,,Unknown,Unknown,100.0,120.0,1,Medium,0,0,0,0.0,2,100.0,50.0,0.0,Moderate
+U10,1,Arrays,Data Structures & Algorithms,10.2,108.5,2,Medium,1,0,0,5.0,3,0.4000000000000001,50.0,0.4,Weak
+U10,1,Arrays,Data Structures & Algorithms,0.4,30.0,2,Medium,1,0,0,5.0,3,0.4000000000000001,50.0,0.4,Weak
+U10,2,Linked Lists,Data Structures & Algorithms,80.0,210.0,1,Medium,0,0,0,0.0,3,80.0,50.0,0.0,Moderate
+U10,7,Sorting,Data Structures & Algorithms,0.0,45.0,1,Medium,0,0,0,0.0,3,0.0,50.0,0.0,Weak
+U10,,Unknown,Unknown,100.0,120.0,1,Medium,0,0,0,0.0,3,100.0,50.0,0.0,Moderate
 U36,,Unknown,Unknown,100.0,120.0,1,Medium,0,0,0,0.0,1,100.0,50.0,0.0,Moderate
 U40,5,Trees,Data Structures & Algorithms,20.0,300.0,1,Medium,0,0,0,0.0,1,20.0,50.0,0.0,Weak
 U41,5,Trees,Data Structures & Algorithms,20.0,300.0,1,Medium,0,0,0,0.0,1,20.0,50.0,0.0,Weak
+U43,,Unknown,Unknown,100.0,120.0,1,Medium,0,0,0,0.0,1,100.0,50.0,0.0,Moderate
+U42,,Unknown,Unknown,20.0,120.0,1,Medium,0,0,0,0.0,1,20.0,50.0,0.0,Weak
+U44,,Unknown,Unknown,20.0,120.0,1,Medium,0,0,0,0.0,3,20.0,50.0,0.0,Weak
+U45,5,Trees,Data Structures & Algorithms,20.0,300.0,1,Medium,0,0,0,0.0,1,20.0,50.0,0.0,Weak

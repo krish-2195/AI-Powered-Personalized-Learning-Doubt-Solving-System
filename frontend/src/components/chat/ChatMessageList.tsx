@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { Sparkles, Copy, Check } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -9,7 +10,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { Message } from '../../types/chat'
 
-/** Inline code block with a copy button — used inside ReactMarkdown components prop */
+/** Inline code block with a copy button */
 function CodeBlock({ language, children }: { language: string; children: string }) {
   const [copied, setCopied] = useState(false)
   const handleCopy = () => {
@@ -38,7 +39,7 @@ function CodeBlock({ language, children }: { language: string; children: string 
   )
 }
 
-/** ReactMarkdown components map — shared across all AI message renders */
+/** ReactMarkdown components map */
 const markdownComponents: any = {
   code({ node, inline, className, children, ...props }: any) {
     const match = /language-(\w+)/.exec(className || '')
@@ -73,58 +74,80 @@ export default function ChatMessageList({ messages, isThinking, messagesEndRef }
   return (
     <div className="flex-1 overflow-y-auto px-4 py-8 pb-40 scroll-smooth custom-scrollbar">
       <div className="max-w-[850px] mx-auto space-y-10">
-        {messages.map((msg, idx) => (
-          <div key={idx} className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-            {msg.role === 'ai' && (
-              <div className="flex-shrink-0 mr-4 mt-1 hidden sm:block">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#151722] border border-white/10">
-                  <Sparkles size={14} className="text-primary-400" />
-                </div>
-              </div>
-            )}
-
-            <div className={`${msg.role === 'user'
-              ? 'bg-[#1e2132] text-slate-100 rounded-[20px] rounded-tr-sm px-6 py-4 max-w-[85%] sm:max-w-[70%] border border-white/10'
-              : 'w-full sm:w-[85%] text-slate-300 bg-transparent py-2'}`}
+        <AnimatePresence initial={false}>
+          {messages.map((msg, idx) => (
+            <motion.div
+              key={idx}
+              initial={{ opacity: 0, y: 14, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{
+                duration: 0.45,
+                ease: [0.22, 1, 0.36, 1],
+              }}
+              className={`flex w-full ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              {msg.role === 'user' ? (
-                <p className="text-[15px] whitespace-pre-wrap leading-relaxed">{msg.content}</p>
-              ) : (
-                <div className="prose prose-invert max-w-none text-[15px] leading-[1.8]">
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm, remarkMath]}
-                    rehypePlugins={[rehypeKatex]}
-                    components={markdownComponents}
-                  >
-                    {msg.content}
-                  </ReactMarkdown>
-                  <div className="mt-4 pt-3 flex items-center justify-between">
-                    <div className="text-[11px] text-slate-500 font-semibold flex items-center gap-1.5">
-                      AI Learn Powered by Gemini 2.5 Flash
-                    </div>
-                    <div className="text-[11px] text-slate-600">~1.2 sec</div>
+              {msg.role === 'ai' && (
+                <div className="flex-shrink-0 mr-4 mt-1 hidden sm:block">
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#151722] border border-white/10 shadow-[0_0_12px_rgba(124,58,237,0.2)]">
+                    <Sparkles size={14} className="text-primary-400" />
                   </div>
                 </div>
               )}
-            </div>
-          </div>
-        ))}
+
+              <div className={`${msg.role === 'user'
+                ? 'bg-gradient-to-br from-[#1e2132] to-[#181a28] text-slate-100 rounded-[20px] rounded-tr-sm px-6 py-4 max-w-[85%] sm:max-w-[70%] border border-white/10 shadow-[0_4px_20px_-6px_rgba(0,0,0,0.5)]'
+                : 'w-full sm:w-[85%] text-slate-300 bg-transparent py-2'}`}
+              >
+                {msg.role === 'user' ? (
+                  <p className="text-[15px] whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                ) : (
+                  <div className="prose prose-invert max-w-none text-[15px] leading-[1.8]">
+                    <ReactMarkdown
+                      remarkPlugins={[remarkGfm, remarkMath]}
+                      rehypePlugins={[rehypeKatex]}
+                      components={markdownComponents}
+                    >
+                      {msg.content}
+                    </ReactMarkdown>
+                    <div className="mt-4 pt-3 flex items-center justify-between border-t border-white/[0.04]">
+                      <div className="text-[11px] text-slate-500 font-semibold flex items-center gap-1.5">
+                        AI Learn · Powered by Gemini 2.5 Flash
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
 
         {/* Thinking indicator */}
-        {isThinking && (
-          <div className="flex w-full justify-start max-w-4xl mx-auto">
-            <div className="flex-shrink-0 mr-4 mt-1 hidden sm:block">
-              <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#151722] border border-white/10">
-                <Sparkles size={14} className="text-primary-400" />
+        <AnimatePresence>
+          {isThinking && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+              className="flex w-full justify-start max-w-4xl mx-auto"
+            >
+              <div className="flex-shrink-0 mr-4 mt-1 hidden sm:block">
+                <div className="w-8 h-8 rounded-full flex items-center justify-center text-white bg-[#151722] border border-white/10 shadow-[0_0_16px_rgba(124,58,237,0.35)] animate-[pulseGlow_2s_ease-in-out_infinite]">
+                  <Sparkles size={14} className="text-primary-400" />
+                </div>
               </div>
-            </div>
-            <div className="bg-transparent py-4 flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" />
-              <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" style={{ animationDelay: '150ms' }} />
-              <span className="w-2 h-2 rounded-full bg-primary-500 animate-pulse" style={{ animationDelay: '300ms' }} />
-            </div>
-          </div>
-        )}
+              <div className="bg-transparent py-4 flex items-center gap-2">
+                {[0, 150, 300].map((delay) => (
+                  <span
+                    key={delay}
+                    className="w-2 h-2 rounded-full bg-primary-500 animate-pulse"
+                    style={{ animationDelay: `${delay}ms` }}
+                  />
+                ))}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         <div ref={messagesEndRef} className="h-4" />
       </div>

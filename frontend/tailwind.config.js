@@ -68,12 +68,17 @@ export default {
       backgroundImage: {
         'grid-fade': 'radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.18), transparent 60%)',
       },
+      transitionTimingFunction: {
+        spring: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+        smooth: 'cubic-bezier(0.32, 0.72, 0, 1)',
+      },
       animation: {
-        fadeIn: 'fadeIn 0.4s ease-out',
-        'fade-up': 'fadeInUp 0.5s cubic-bezier(0.22, 1, 0.36, 1)',
+        fadeIn: 'fadeIn 0.4s cubic-bezier(0.32, 0.72, 0, 1)',
+        'fade-up': 'fadeInUp 0.55s cubic-bezier(0.22, 1, 0.36, 1)',
         float: 'float 7s ease-in-out infinite',
         shimmer: 'shimmer 2.4s linear infinite',
         'pulse-glow': 'pulseGlow 3.5s ease-in-out infinite',
+        'skeleton-shimmer': 'skeleton-shimmer 1.8s ease-in-out infinite',
       },
       keyframes: {
         fadeIn: {
@@ -95,6 +100,10 @@ export default {
         pulseGlow: {
           '0%,100%': { opacity: '0.5' },
           '50%': { opacity: '0.9' },
+        },
+        'skeleton-shimmer': {
+          '0%': { backgroundPosition: '-200% 0' },
+          '100%': { backgroundPosition: '200% 0' },
         },
       },
     },
