@@ -69,11 +69,20 @@ export default function ChatPage() {
           const remoteMessages = data.data.messages
           const localMessages = JSON.parse(localStorage.getItem('chatMessages') || '[]')
           const localSession = localStorage.getItem('chatSessionId')
-          if (remoteSession !== localSession || remoteMessages.length > localMessages.length) {
+          if (remoteSession !== localSession) {
             setSessionId(remoteSession)
             setMessages(remoteMessages)
             localStorage.setItem('chatSessionId', remoteSession)
             localStorage.setItem('chatMessages', JSON.stringify(remoteMessages))
+          } else {
+            // Merge strategy: Keep optimistic local messages that haven't reached remote yet
+            const merged = [...remoteMessages]
+            if (localMessages.length > remoteMessages.length) {
+              const optimisticMessages = localMessages.slice(remoteMessages.length)
+              merged.push(...optimisticMessages)
+            }
+            setMessages(merged)
+            localStorage.setItem('chatMessages', JSON.stringify(merged))
           }
         }
       } catch (err) {

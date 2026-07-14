@@ -41,15 +41,7 @@ export default function AnalyticsPage() {
     ])
       .then(([analyticsRes, statsRes]) => {
         const rawData = analyticsRes.data.data || { trend_data: [], weak_topics: [], topic_performance: [] }
-        // Enrich trend data with missing UI metrics for the charts
-        if (rawData.trend_data) {
-          rawData.trend_data = rawData.trend_data.map((d: any) => ({
-            ...d,
-            coverage: Math.min(100, (d.accuracy || 40) * 1.2),
-            consistency: Math.max(20, (d.accuracy || 50) * 0.8),
-            engagement: 60 + (d.topics * 10)
-          }))
-        }
+
         setData(rawData)
         setStats(statsRes.data.data || statsRes.data)
         setLoading(false)

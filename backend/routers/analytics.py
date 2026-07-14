@@ -52,32 +52,53 @@ def get_analytics_summary(user_id: int, db: Session = Depends(get_db), current_u
         topic_performance_data = [{"topic": p.topic.name, "score": round(p.accuracy or 0)} for p in all_performance if p.topic]
 
         # 3. Performance Trend over the last 5 weeks (Line Chart Data)
+        from database.models.postgres_models import Topic, LearningLog
         trend_data = []
         now = datetime.utcnow()
+        total_topics = db.query(Topic).count() or 1
+        
         for i in range(4, -1, -1):
             start_date = now - timedelta(weeks=i+1)
             end_date = now - timedelta(weeks=i)
             
-            # Get quizzes for this week
+            # Get quizzes and logs for this week
             quizzes_this_week = db.query(QuizAttempt).filter(
                 QuizAttempt.user_id == user_id,
                 QuizAttempt.timestamp >= start_date,
                 QuizAttempt.timestamp < end_date
             ).all()
             
+            logs_count = db.query(LearningLog).filter(
+                LearningLog.user_id == user_id,
+                LearningLog.timestamp >= start_date,
+                LearningLog.timestamp < end_date
+            ).count()
+            
             if quizzes_this_week:
-                avg_acc = sum((q.accuracy or 0) for q in quizzes_this_week) / len(quizzes_this_week)
-                # Count unique topics
+                quiz_count = len(quizzes_this_week)
+                avg_acc = sum((q.accuracy or 0) for q in quizzes_this_week) / quiz_count
                 topics_count = len(set(q.topic_id for q in quizzes_this_week if q.topic_id))
+                
+                variance = sum((q.accuracy - avg_acc) ** 2 for q in quizzes_this_week) / quiz_count
+                std_dev = variance ** 0.5
+                consistency = max(0.0, 100.0 - (std_dev * 2))
+                coverage = (topics_count / total_topics) * 100
+                engagement = min(100.0, (logs_count * 5) + (quiz_count * 5))
             else:
                 avg_acc = 0
                 topics_count = 0
+                consistency = 0
+                coverage = 0
+                engagement = min(100.0, logs_count * 5)
                 
             label = "Current" if i == 0 else f"Week -{i}"
             trend_data.append({
                 "date": label,
                 "accuracy": round(avg_acc),
-                "topics": topics_count
+                "topics": topics_count,
+                "consistency": round(consistency),
+                "coverage": round(coverage),
+                "engagement": round(engagement)
             })
 
         return success_response(data={

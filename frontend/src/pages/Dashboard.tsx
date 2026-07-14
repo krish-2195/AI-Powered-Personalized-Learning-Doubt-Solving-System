@@ -34,7 +34,9 @@ export default function Dashboard() {
 
   const [dashboardData, setDashboardData] = useState<any>(() => {
     const cached = localStorage.getItem('dashboardData')
-    return cached ? JSON.parse(cached) : null
+    const cachedTime = localStorage.getItem('dashboardDataTime')
+    const isStale = !cachedTime || Date.now() - Number(cachedTime) > 5 * 60 * 1000
+    return (cached && !isStale) ? JSON.parse(cached) : null
   })
   const [skipWelcome, setSkipWelcome] = useState(() => {
     return localStorage.getItem('skipWelcome') === 'true'
@@ -46,6 +48,7 @@ export default function Dashboard() {
         .then((res) => {
           setDashboardData(res.data.data)
           localStorage.setItem('dashboardData', JSON.stringify(res.data.data))
+          localStorage.setItem('dashboardDataTime', Date.now().toString())
           if (res.data.data.streak !== undefined && user?.streak_count !== res.data.data.streak) {
             updateUser({ streak_count: res.data.data.streak })
           }
@@ -199,7 +202,7 @@ export default function Dashboard() {
           <div className="flex flex-wrap items-center gap-4 text-sm font-medium text-slate-300">
             <span className="flex items-center gap-1.5"><Target size={16} className="text-primary-400" /> Today: {todayFocus}</span>
             <span className="text-slate-600">|</span>
-            <span className="flex items-center gap-1.5"><Brain size={16} className="text-red-400" /> Weak: Arrays</span>
+            <span className="flex items-center gap-1.5"><Brain size={16} className="text-red-400" /> Weak: {dashboardData?.weak_topics?.[0]?.topic || todayFocus}</span>
           </div>
         </div>
 
@@ -514,7 +517,7 @@ export default function Dashboard() {
                     <div>
                       <div className="flex items-center gap-2 mb-1">
                         <span className="text-[10px] font-bold uppercase tracking-widest text-primary-400 bg-primary-500/10 px-2 py-0.5 rounded-md">
-                          {`8${9-idx}% Match`}
+                          {rec.match_score ? `${rec.match_score}% Match` : `${89 - idx}% Match`}
                         </span>
                         <span className="text-xs text-slate-500">{rec.time} min</span>
                       </div>
