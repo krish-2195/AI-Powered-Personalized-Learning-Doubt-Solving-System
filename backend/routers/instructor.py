@@ -26,11 +26,11 @@ class CourseCreate(BaseModel):
 router = APIRouter(
     prefix="/api/instructor",
     tags=["Instructor"],
-    dependencies=[Depends(require_role("instructor", "super_admin"))]
+    dependencies=[require_role("instructor", "super_admin")]
 )
 
 @router.get("/stats")
-def get_instructor_stats(db: Session = Depends(get_db), current_user: User = Depends(require_role("instructor", "super_admin"))):
+def get_instructor_stats(db: Session = Depends(get_db), current_user: User = require_role("instructor", "super_admin")):
     """Get high-level stats for the instructor dashboard."""
     try:
         active_students = db.query(User).filter(User.role == "student").count()
@@ -52,7 +52,7 @@ def get_instructor_stats(db: Session = Depends(get_db), current_user: User = Dep
         return error_response(str(e), "Failed to fetch stats")
 
 @router.get("/courses")
-def get_instructor_courses(db: Session = Depends(get_db), current_user: User = Depends(require_role("instructor", "super_admin"))):
+def get_instructor_courses(db: Session = Depends(get_db), current_user: User = require_role("instructor", "super_admin")):
     """Fetch all courses owned by the current instructor."""
     try:
         courses = db.query(Course).filter(Course.instructor_id == current_user.id).all()
@@ -70,7 +70,7 @@ def get_instructor_courses(db: Session = Depends(get_db), current_user: User = D
         return error_response(str(e), "Failed to fetch courses")
 
 @router.post("/courses")
-def create_instructor_course(payload: CourseCreate, db: Session = Depends(get_db), current_user: User = Depends(require_role("instructor", "super_admin"))):
+def create_instructor_course(payload: CourseCreate, db: Session = Depends(get_db), current_user: User = require_role("instructor", "super_admin")):
     """Create a new course owned by the instructor."""
     try:
         new_course = Course(
@@ -105,7 +105,7 @@ def upload_content(
     topic: str = Form(...),
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
-    current_user: User = Depends(require_role("instructor", "super_admin"))
+    current_user: User = require_role("instructor", "super_admin")
 ):
     """Upload new course content."""
     try:
