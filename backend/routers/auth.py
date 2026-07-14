@@ -259,16 +259,16 @@ def login(payload: LoginRequest, response: Response, request: Request, db: Sessi
 def refresh_token(request: Request, response: Response, db: Session = Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
     if not refresh_token:
-        return error_response("No refresh token provided", "Unauthorized", status_code=401)
+        raise HTTPException(status_code=401, detail="No refresh token provided")
         
     user_id = SessionService.validate_session(db, refresh_token)
     if not user_id:
         response.delete_cookie("refresh_token")
-        return error_response("Invalid or expired session", "Unauthorized", status_code=401)
+        raise HTTPException(status_code=401, detail="Invalid or expired session")
         
     user = db.query(User).filter(User.id == user_id).first()
     if not user or not user.is_active:
-        return error_response("User is inactive or deleted", "Unauthorized", status_code=401)
+        raise HTTPException(status_code=401, detail="User is inactive or deleted")
         
     access_token = TokenService.create_access_token(user.id, user.email, user.role)
     return success_response(data={"token": access_token}, message="Token refreshed")
@@ -510,13 +510,13 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
         payload = TokenService.decode_access_token(token)
         email = payload.get("sub")
         if not email:
-            return error_response("Invalid authentication credentials", "Unauthorized", status_code=401)
+            raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     except Exception:
-        return error_response("Invalid authentication credentials", "Unauthorized", status_code=401)
+        raise HTTPException(status_code=401, detail="Invalid authentication credentials")
     
     user = db.query(User).filter(User.email == email).first()
     if not user:
-        return error_response("User not found", "Unauthorized", status_code=401)
+        raise HTTPException(status_code=401, detail="User not found")
 
     profile = user.profile
 
