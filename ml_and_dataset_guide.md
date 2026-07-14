@@ -62,3 +62,7 @@ When `retrain_model.py` finishes training, it tests the new model's accuracy.
 - It reads `history.json` to see the accuracy of the currently deployed production model.
 - If the newly trained model is **better** (or equal), it overwrites `models/production.pkl` and saves a versioned copy (like `random_forest_v3.pkl`) in the artifacts folder.
 - If the new model performs **worse** (e.g., because a batch of bad data came in), it rejects the deployment, throws a warning, and saves it as `_rejected.pkl`, keeping the old production model safely in place.
+
+## ML Model Limitations & Known Data Leakage
+- **`topic_id` feature data leakage**: The `topic_id` variable is currently included in the model's feature set and ranks somewhat high in feature importance. Including a raw integer ID means the model is partially learning topic-specific patterns by memorizing IDs rather than learning generalizable signals. This is a known overfitting concern and should be acknowledged in any academic papers or architectural reviews describing the system. Future retrains may remove this feature to ensure pure generalization.
+- **Model Nuance & Guardrails**: Previously, the system used a hard override that forced a "Weak" classification regardless of the model's prediction if raw scores dipped below 60%. This has been removed to allow the ML model to speak for itself, relying solely on its internal confidence scores rather than deterministic overrides.

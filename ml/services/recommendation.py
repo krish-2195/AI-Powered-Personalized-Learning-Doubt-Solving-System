@@ -88,7 +88,7 @@ class HybridRecommendationEngine:
                 scores[c_id] = min(0.9, score_val)
             else:
                 # Deterministic baseline to avoid complete flat score
-                scores[c_id] = 0.1 + (c_id % 5) * 0.02
+                scores[c_id] = 0.1  # Neutral baseline for cold-start content
                 
         return scores
 

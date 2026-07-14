@@ -97,7 +97,8 @@ class MLService:
             latest_accuracy = latest_attempt.accuracy if latest_attempt else perf.accuracy
             
             if tp_current:
-                ewma = (0.2 * latest_accuracy) + (0.8 * tp_current.ewma_accuracy)
+                ALPHA = 0.3
+                ewma = (ALPHA * latest_accuracy) + ((1 - ALPHA) * tp_current.ewma_accuracy)
             else:
                 ewma = latest_accuracy
             
@@ -113,6 +114,18 @@ class MLService:
             if 'daily_streak' in features: features['daily_streak'] = streak
             if 'ewma_accuracy' in features: features['ewma_accuracy'] = ewma
             if 'avg_time_per_question' in features: features['avg_time_per_question'] = perf.avg_time_seconds or 60.0
+                
+            if 'previous_attempt_accuracy' in features:
+                prev_attempt = db.query(QuizAttempt).filter(
+                    QuizAttempt.user_id == user_id,
+                    QuizAttempt.topic_id == topic_id
+                ).order_by(QuizAttempt.timestamp.desc()).offset(1).first()
+                features['previous_attempt_accuracy'] = prev_attempt.accuracy if prev_attempt else perf.accuracy
+
+            if 'question_difficulty_enc' in features:
+                diff_map = {"Easy": 0, "Medium": 1, "Hard": 2}
+                difficulty = latest_attempt.difficulty if (latest_attempt and hasattr(latest_attempt, 'difficulty')) else "Medium"
+                features['question_difficulty_enc'] = diff_map.get(difficulty, 1)
                 
             df = pd.DataFrame([features])
             
@@ -158,10 +171,6 @@ class MLService:
                 prediction_class = "Weak"
                 confidence = 0.91
                 
-        # Override to guarantee weak topic detection if quiz score is low (< 60%)
-        if perf.accuracy < 60.0 or ewma < 60.0:
-            prediction_class = "Weak"
-
         # 3. Update PerformanceRecord Status
         perf.status = prediction_class.lower()
 
@@ -294,10 +303,6 @@ class MLService:
                 predicted_score = "Weak"
                 confidence = 0.78
                 
-        # Heuristic overrides/guards matching user expectations
-        if avg_ewma < 60.0:
-            predicted_score = "Weak"
-            
         reasons = []
         if avg_accuracy < 60:
             reasons.append("Low quiz accuracy")
