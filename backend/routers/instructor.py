@@ -6,7 +6,7 @@ from pydantic import BaseModel
 import time
 
 from database.connection import get_db
-from database.models.postgres_models import User, Content, QuizAttempt, PredictionHistory, QuestionBank, Topic
+from database.models.postgres_models import User, Content, QuizAttempt, PredictionHistory, QuestionBank, Topic, Course
 from backend.routers.auth import require_role, get_current_admin
 from backend.utils.response_formatter import success_response, error_response
 
@@ -18,6 +18,11 @@ class QuestionCreate(BaseModel):
     correct_answer_index: int
     explanation: str
 
+class CourseCreate(BaseModel):
+    title: str
+    description: str
+    is_published: bool = False
+
 router = APIRouter(
     prefix="/api/instructor",
     tags=["Instructor"],
@@ -28,13 +33,9 @@ router = APIRouter(
 def get_instructor_stats(db: Session = Depends(get_db), current_user: User = Depends(require_role("instructor", "super_admin"))):
     """Get high-level stats for the instructor dashboard."""
     try:
-        # In a real app, this would filter by the instructor's courses/students
-        # For now, we'll return mock/global data
         active_students = db.query(User).filter(User.role == "student").count()
-        total_courses = 0  # To be implemented when Course model is added
+        total_courses = db.query(Course).filter(Course.instructor_id == current_user.id).count()
 
-        
-        # Calculate average quiz score
         avg_score_query = db.query(func.avg(QuizAttempt.score)).scalar()
         avg_score = round(avg_score_query, 1) if avg_score_query else 0
         
@@ -49,6 +50,51 @@ def get_instructor_stats(db: Session = Depends(get_db), current_user: User = Dep
         )
     except Exception as e:
         return error_response(str(e), "Failed to fetch stats")
+
+@router.get("/courses")
+def get_instructor_courses(db: Session = Depends(get_db), current_user: User = Depends(require_role("instructor", "super_admin"))):
+    """Fetch all courses owned by the current instructor."""
+    try:
+        courses = db.query(Course).filter(Course.instructor_id == current_user.id).all()
+        return success_response(
+            data=[{
+                "id": c.id,
+                "title": c.title,
+                "description": c.description,
+                "is_published": c.is_published,
+                "created_at": c.created_at.isoformat()
+            } for c in courses],
+            message="Courses fetched successfully"
+        )
+    except Exception as e:
+        return error_response(str(e), "Failed to fetch courses")
+
+@router.post("/courses")
+def create_instructor_course(payload: CourseCreate, db: Session = Depends(get_db), current_user: User = Depends(require_role("instructor", "super_admin"))):
+    """Create a new course owned by the instructor."""
+    try:
+        new_course = Course(
+            title=payload.title,
+            description=payload.description,
+            is_published=payload.is_published,
+            instructor_id=current_user.id
+        )
+        db.add(new_course)
+        db.commit()
+        db.refresh(new_course)
+        
+        return success_response(
+            data={
+                "id": new_course.id,
+                "title": new_course.title,
+                "description": new_course.description,
+                "is_published": new_course.is_published
+            },
+            message="Course created successfully"
+        )
+    except Exception as e:
+        db.rollback()
+        return error_response(str(e), "Failed to create course")
 
 @router.post("/upload")
 def upload_content(

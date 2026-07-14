@@ -158,12 +158,24 @@ async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_
     
     ai_response_text = ai_tutor_service.get_response(db, payload.user_id, prompt, [])
     
-    try:
-        start = ai_response_text.find('[')
-        end = ai_response_text.rfind(']') + 1
-        quiz_data = json.loads(ai_response_text[start:end]) if start != -1 else json.loads(ai_response_text)
-    except Exception:
-        quiz_data = [{"question": "Failed to generate valid quiz format", "options": ["A"], "answer_index": 0, "explanation": "Error"}]
+    quiz_data = None
+    for attempt in range(2):
+        try:
+            start = ai_response_text.find('[')
+            end = ai_response_text.rfind(']') + 1
+            if start != -1 and end > start:
+                json_str = ai_response_text[start:end]
+            else:
+                json_str = ai_response_text
+                
+            quiz_data = json.loads(json_str)
+            break
+        except Exception:
+            if attempt == 0:
+                retry_prompt = "Your previous response was invalid JSON. Return ONLY the raw JSON array without markdown formatting like ```json."
+                ai_response_text = ai_tutor_service.get_response(db, payload.user_id, retry_prompt, [])
+            else:
+                quiz_data = [{"question": "Failed to generate valid quiz format", "options": ["A"], "answer_index": 0, "explanation": "Error"}]
         
     return success_response(data={
         "topic": payload.topic, 
@@ -203,12 +215,24 @@ async def get_session_summary(user_id: int, db: Session = Depends(get_db), curre
     
     ai_response_text = ai_tutor_service.get_response(db, user_id, prompt, [])
     
-    try:
-        start = ai_response_text.find('{')
-        end = ai_response_text.rfind('}') + 1
-        summary_data = json.loads(ai_response_text[start:end]) if start != -1 else json.loads(ai_response_text)
-    except Exception:
-        summary_data = {
+    summary_data = None
+    for attempt in range(2):
+        try:
+            start = ai_response_text.find('{')
+            end = ai_response_text.rfind('}') + 1
+            if start != -1 and end > start:
+                json_str = ai_response_text[start:end]
+            else:
+                json_str = ai_response_text
+                
+            summary_data = json.loads(json_str)
+            break
+        except Exception:
+            if attempt == 0:
+                retry_prompt = "Your previous response was invalid JSON. Return ONLY the raw JSON object without markdown formatting like ```json."
+                ai_response_text = ai_tutor_service.get_response(db, user_id, retry_prompt, [])
+            else:
+                summary_data = {
             "topics_covered": ["Could not parse summary"],
             "key_takeaways": [],
             "unresolved_doubts": [],
