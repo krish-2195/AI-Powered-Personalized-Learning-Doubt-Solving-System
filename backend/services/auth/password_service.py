@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from database.models.postgres_models import PasswordResetToken
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+pwd_context = CryptContext(schemes=["bcrypt", "pbkdf2_sha256"], deprecated="auto")
 
 class PasswordService:
     @staticmethod
