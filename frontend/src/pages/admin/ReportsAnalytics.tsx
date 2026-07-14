@@ -27,19 +27,20 @@ export default function ReportsAnalytics() {
     const fetchStats = async () => {
       try {
         const response = await api.get('/api/admin/stats')
-        if (response.data) {
-          setMlStats(response.data.ml)
+        if (response.data?.data) {
+          const payload = response.data.data;
+          setMlStats(payload.ml)
           
           // Map backend arrays to chart format
-          if (response.data.quiz_history) {
-            setQuizHistory(response.data.quiz_history.map((item: any) => ({
+          if (payload.quiz_history) {
+            setQuizHistory(payload.quiz_history.map((item: any) => ({
               name: item.name,
               value: item.attempts
             })))
           }
           
-          if (response.data.user_growth) {
-            setUserGrowth(response.data.user_growth.map((item: any) => ({
+          if (payload.user_growth) {
+            setUserGrowth(payload.user_growth.map((item: any) => ({
               name: item.name,
               value: item.users
             })))
@@ -169,11 +170,11 @@ export default function ReportsAnalytics() {
               </div>
               <div className="flex justify-between items-center py-2 border-b border-white/5">
                 <span className="text-sm text-slate-400">Prediction Accuracy</span>
-                <span className="text-sm font-bold text-rose-400">{(mlStats?.accuracy || 0) * 100}%</span>
+                <span className="text-sm font-bold text-rose-400">{mlStats?.accuracy || 0}%</span>
               </div>
               <div className="flex justify-between items-center py-2 border-b border-white/5">
                 <span className="text-sm text-slate-400">F1 Score</span>
-                <span className="text-sm font-bold text-white">{mlStats?.f1.toFixed(3)}</span>
+                <span className="text-sm font-bold text-white">{((mlStats?.f1 || 0) / 100).toFixed(3)}</span>
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className="text-sm text-slate-400">Last Training</span>
