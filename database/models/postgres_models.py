@@ -36,6 +36,20 @@ class User(Base):
     topic_performances = relationship("TopicPerformance", back_populates="user")
     learning_sessions = relationship("LearningSession", back_populates="user")
     recommendation_feedback = relationship("RecommendationFeedback", back_populates="user")
+    courses = relationship("Course", back_populates="instructor")
+
+class Course(Base):
+    __tablename__ = "courses"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String, index=True, nullable=False)
+    description = Column(String)
+    instructor_id = Column(Integer, ForeignKey("users.id"))
+    is_published = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    # Relationships
+    instructor = relationship("User", back_populates="courses")
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"
