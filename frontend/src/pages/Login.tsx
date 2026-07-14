@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
 import { Sparkles, Eye, EyeOff, Brain, Target, TrendingUp, Github } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { useGoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../context/AuthContext'
 
 const features = [
@@ -38,7 +39,7 @@ export default function Login() {
   }
 
   const handleGoogleLogin = useGoogleLogin({
-    onSuccess: async (tokenResponse) => {
+    onSuccess: async (tokenResponse: any) => {
       try {
         const user = await registerOAuth({
           email: '',
@@ -64,7 +65,7 @@ export default function Login() {
         console.error('Google login failed', err)
       }
     },
-    onError: (error) => console.error('Google Login Error', error)
+    onError: (error: any) => console.error('Google Login Error', error)
   })
 
   return (

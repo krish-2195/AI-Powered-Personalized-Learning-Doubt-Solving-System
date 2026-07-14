@@ -1,6 +1,5 @@
 import YouTube, { YouTubeProps } from 'react-youtube';
 import { Loader2 } from 'lucide-react';
-import { useVideoPlayer } from './video/useVideoPlayer';
 import VideoThumbnailCover from './video/VideoThumbnailCover';
 import VideoControlBar from './video/VideoControlBar';
 
