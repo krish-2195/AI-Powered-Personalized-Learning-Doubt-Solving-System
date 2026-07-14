@@ -8,7 +8,8 @@ from sqlalchemy import func
 from datetime import datetime, date, timedelta
 
 from database.connection import get_db
-from database.models.postgres_models import User, UserProfile, Topic, QuestionBank, Content, QuizAttempt, PredictionHistory, Recommendation, ExamReadiness
+from database.models.postgres_models import User, UserProfile, Topic, QuestionBank, Content, QuizAttempt, PredictionHistory, Recommendation, ExamReadiness, InvitationToken
+import secrets
 from backend.utils.response_formatter import success_response, error_response
 from ml.services.knowledge_graph import knowledge_graph
 from backend.routers.auth import get_current_admin, oauth2_scheme, _get_user_from_token
@@ -105,6 +106,24 @@ def get_admin_stats(db: Session = Depends(get_db)):
             count = sum(1 for u in all_users if u.created_at and u.created_at.date() <= target_date)
             user_growth.append({"name": target_date.strftime("%b"), "users": count})
             
+        # Recent Activity
+        recent_activity = []
+        recent_users = db.query(User).order_by(User.id.desc()).limit(2).all()
+        for u in recent_users:
+            recent_activity.append({
+                "text": f"New {u.role} account created",
+                "time": u.created_at.strftime("%H:%M") if u.created_at else "Recently", 
+                "type": "user"
+            })
+            
+        recent_content = db.query(Content).order_by(Content.id.desc()).limit(2).all()
+        for c in recent_content:
+            recent_activity.append({
+                "text": f"New {c.content_type} uploaded: {c.title}",
+                "time": "Recently",
+                "type": "content"
+            })
+            
         data_payload = {
             "platform": {
                 "total_users": total_users,
@@ -145,6 +164,7 @@ def get_admin_stats(db: Session = Depends(get_db)):
                 "quiz_attempts": quiz_history,
                 "user_growth": user_growth
             },
+            "recent_activity": recent_activity,
             "system_health": "healthy"
         }
 
@@ -423,4 +443,48 @@ def get_student_details(user_id: int, db: Session = Depends(get_db)):
         return success_response(data=payload, message="Student details fetched successfully")
     except Exception as e:
         return error_response(str(e), "Failed to fetch student details")
+
+class InvitePayload(BaseModel):
+    email: str
+    role: str
+
+class RoleUpdatePayload(BaseModel):
+    role: str
+
+@router.post("/invite")
+def invite_user(payload: InvitePayload, db: Session = Depends(get_db)):
+    """Invite a new user to the platform."""
+    try:
+        existing = db.query(User).filter(User.email == payload.email).first()
+        if existing:
+            return error_response("User already exists", "Conflict")
+            
+        token = secrets.token_urlsafe(32)
+        invitation = InvitationToken(
+            email=payload.email,
+            role=payload.role,
+            token=token,
+            expires_at=datetime.utcnow() + timedelta(days=7)
+        )
+        db.add(invitation)
+        db.commit()
+        return success_response(message=f"Invitation sent to {payload.email}")
+    except Exception as e:
+        db.rollback()
+        return error_response(str(e), "Failed to invite user")
+
+@router.patch("/users/{user_id}/role")
+def update_user_role(user_id: int, payload: RoleUpdatePayload, db: Session = Depends(get_db)):
+    """Update a user's role."""
+    try:
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return error_response("User not found", "Not Found")
+            
+        user.role = payload.role
+        db.commit()
+        return success_response(message=f"User role updated to {payload.role}")
+    except Exception as e:
+        db.rollback()
+        return error_response(str(e), "Failed to update role")
 

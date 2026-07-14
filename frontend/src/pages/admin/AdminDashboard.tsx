@@ -98,18 +98,15 @@ export default function AdminDashboard() {
           <h2 className="text-xl font-bold text-white mb-6">Recent Platform Activity</h2>
           
           <div className="flex-1 space-y-4">
-            {[
-              { text: 'New instructor account created', time: '5m ago', type: 'user' },
-              { text: 'System backup completed successfully', time: '1h ago', type: 'system' },
-              { text: 'Large video upload finished (Course: DSA)', time: '2h ago', type: 'content' },
-              { text: 'Spam filter flagged 3 comments', time: '5h ago', type: 'security' },
-            ].map((log, i) => (
+            {stats?.recent_activity ? stats.recent_activity.map((log: any, i: number) => (
               <div key={i} className="flex items-center gap-4 p-3 rounded-xl hover:bg-white/[0.02] transition-colors border border-transparent hover:border-white/5">
-                <div className="w-2 h-2 rounded-full bg-slate-500 shrink-0" />
+                <div className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
                 <p className="text-sm text-slate-300 flex-1">{log.text}</p>
                 <span className="text-xs font-medium text-slate-500">{log.time}</span>
               </div>
-            ))}
+            )) : (
+              <div className="text-slate-500 text-sm">Loading activity...</div>
+            )}
           </div>
 
           <button className="w-full mt-4 py-3 rounded-xl bg-surface-900 hover:bg-surface-700 text-slate-300 font-bold transition-colors text-sm flex items-center justify-center gap-2 group border border-white/5">
