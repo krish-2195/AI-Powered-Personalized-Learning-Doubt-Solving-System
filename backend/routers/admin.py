@@ -11,7 +11,7 @@ from database.connection import get_db
 from database.models.postgres_models import User, UserProfile, Topic, QuestionBank, Content, QuizAttempt, PredictionHistory, Recommendation, ExamReadiness
 from backend.utils.response_formatter import success_response, error_response
 from ml.services.knowledge_graph import knowledge_graph
-from backend.routers.auth import get_current_admin, oauth2_scheme
+from backend.routers.auth import get_current_admin, oauth2_scheme, _get_user_from_token
 import time
 
 router = APIRouter(dependencies=[Depends(get_current_admin)])
