@@ -13,10 +13,19 @@ class User(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     email = Column(String, unique=True, index=True, nullable=False)
-    hashed_password = Column(String, nullable=False)
+    hashed_password = Column(String, nullable=True)
     full_name = Column(String)
     role = Column(String, default="student")
+    
+    # Auth fields
+    provider = Column(String, default="email")
+    provider_user_id = Column(String, nullable=True)
+    email_verified = Column(Boolean, default=False)
+    profile_picture = Column(String, nullable=True)
+    
     created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    last_login = Column(DateTime, nullable=True)
     is_active = Column(Boolean, default=True)
     
     # Relationships
@@ -47,6 +56,43 @@ class UserProfile(Base):
     
     # Relationship
     user = relationship("User", back_populates="profile")
+
+class EmailVerificationToken(Base):
+    __tablename__ = "email_verification_tokens"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    token = Column(String, unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    used = Column(Boolean, default=False)
+    
+    user = relationship("User")
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    token = Column(String, unique=True, index=True, nullable=False)
+    expires_at = Column(DateTime, nullable=False)
+    used = Column(Boolean, default=False)
+    
+    user = relationship("User")
+
+class Session(Base):
+    __tablename__ = "sessions"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    refresh_token = Column(String, unique=True, index=True, nullable=False)
+    device = Column(String, nullable=True)
+    browser = Column(String, nullable=True)
+    ip_address = Column(String, nullable=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False)
+    last_active = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User")
 
 class Subject(Base):
     __tablename__ = "subjects"
@@ -101,7 +147,7 @@ class TopicPerformance(Base):
     user_id = Column(Integer, ForeignKey("users.id"))
     topic_id = Column(Integer, ForeignKey("topics.id"))
     ewma_accuracy = Column(Float, default=0.0)
-    mastery_level = Column(String, default="Beginner")  # Beginner, Intermediate, Expert
+    mastery_level = Column(String, default="Weak")  # Weak, Moderate, Strong
     last_attempt_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
     # Relationships
@@ -268,3 +314,18 @@ class QuestionBank(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     
     topic = relationship("Topic")
+
+class InvitationToken(Base):
+    __tablename__ = "invitation_tokens"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String, nullable=False)
+    role = Column(String, nullable=False)  # "instructor" or "admin"
+    token = Column(String, unique=True, index=True, nullable=False)
+    invited_by = Column(Integer, ForeignKey("users.id"))
+    expires_at = Column(DateTime, nullable=False)
+    used = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    inviter = relationship("User")
+

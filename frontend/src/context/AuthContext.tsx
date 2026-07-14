@@ -8,6 +8,11 @@ interface User {
   streak_count: number
   longest_streak?: number
   role: string
+  provider: string
+  email_verified: boolean
+  profile_picture?: string | null
+  needs_onboarding?: boolean
+  oauth_data?: any
 }
 
 interface AuthContextValue {
@@ -16,9 +21,26 @@ interface AuthContextValue {
   loading: boolean
   error: string | null
   login: (email: string, password: string) => Promise<User>
-  register: (input: RegisterInput) => Promise<User>
-  logout: () => void
+  register: (input: RegisterInput) => Promise<void>
+  loginWithGoogle: (token: string) => Promise<User>
+  loginWithGitHub: (code: string) => Promise<User>
+  logout: () => Promise<void>
   updateUser: (updates: Partial<User>) => void
+  registerOAuth: (input: OAuthRegisterInput) => Promise<any>
+  setToken: (token: string | null) => void
+}
+
+interface OAuthRegisterInput {
+  email: string
+  fullName: string
+  provider: string
+  providerUserId: string
+  profilePicture?: string
+  course: string
+  subjects: string[]
+  currentLevel: string
+  examTarget: string
+  examTimeline: string
 }
 
 interface RegisterInput {
@@ -50,6 +72,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+  // Listen for the auth_logout event triggered by the axios interceptor
+  useEffect(() => {
+    const handleLogoutEvent = () => {
+      setToken(null)
+      setUser(null)
+      localStorage.removeItem(TOKEN_KEY)
+      localStorage.removeItem(USER_KEY)
+    }
+    window.addEventListener('auth_logout', handleLogoutEvent)
+    return () => window.removeEventListener('auth_logout', handleLogoutEvent)
+  }, [])
+
   useEffect(() => {
     if (token && user) {
       localStorage.setItem(TOKEN_KEY, token)
@@ -66,47 +100,122 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         try {
           const { data } = await api.get('/api/auth/me')
           if (data.success === false) {
-            logout()
+            // Let the interceptor handle 401s and token refresh
           } else if (data.data) {
-             // Sync latest role/streak on hard refresh
              updateUser({
                role: data.data.role,
                streak_count: data.data.streak_count,
-               longest_streak: data.data.longest_streak
+               longest_streak: data.data.longest_streak,
+               email_verified: data.data.email_verified,
+               provider: data.data.provider,
+               profile_picture: data.data.profile_picture
              })
           }
         } catch {
-          logout()
+          // If the interceptor couldn't refresh the token, it triggers auth_logout
         }
       }
     }
     verifySession()
   }, [])
 
+  const _handleAuthSuccess = (data: any) => {
+    setToken(data.data.token)
+    const newUser = {
+      user_id: data.data.user_id,
+      email: data.data.email,
+      full_name: data.data.full_name,
+      role: data.data.role || 'student',
+      streak_count: data.data.streak_count || 0,
+      longest_streak: data.data.longest_streak || 0,
+      provider: data.data.provider || 'email',
+      email_verified: data.data.email_verified || false,
+      profile_picture: data.data.profile_picture || null
+    }
+    setUser(newUser)
+    return newUser
+  }
+
   const login = async (email: string, password: string) => {
     setLoading(true)
     setError(null)
     try {
-      const { data } = await api.post('/api/auth/login', {
-        email,
-        password,
-      })
+      const { data } = await api.post('/api/auth/login', { email, password })
       if (data.success === false) {
         throw new Error(data.error || data.message || 'Login failed')
       }
-      setToken(data.data.token)
-      const newUser = {
-        user_id: data.data.user_id,
-        email: data.data.email,
-        full_name: data.data.full_name,
-        role: data.data.role || 'student',
-        streak_count: data.data.streak_count || 0,
-        longest_streak: data.data.longest_streak || 0,
-      }
-      setUser(newUser)
-      return newUser
+      return _handleAuthSuccess(data)
     } catch (err: any) {
-      setError(err.message || 'Login failed')
+      setError(err.response?.data?.error || err.message || 'Login failed')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loginWithGoogle = async (googleToken: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const { data } = await api.post('/api/auth/google', { token: googleToken })
+      if (data.success === false) {
+        throw new Error(data.error || data.message || 'Login failed')
+      }
+      if (data.data?.needs_onboarding) {
+        return data.data
+      }
+      return _handleAuthSuccess(data)
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'Google login failed')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const loginWithGitHub = async (code: string) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const { data } = await api.get(`/api/auth/github/callback?code=${code}`)
+      if (data.success === false) {
+        throw new Error(data.error || data.message || 'Login failed')
+      }
+      if (data.data?.needs_onboarding) {
+        return data.data
+      }
+      return _handleAuthSuccess(data)
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'GitHub login failed')
+      throw err
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const registerOAuth = async (input: OAuthRegisterInput) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const payload = {
+        email: input.email,
+        full_name: input.fullName,
+        provider: input.provider,
+        provider_user_id: input.providerUserId,
+        profile_picture: input.profilePicture,
+        course: input.course,
+        subjects: input.subjects ?? [],
+        current_level: input.currentLevel,
+        exam_target: input.examTarget,
+        exam_timeline: input.examTimeline,
+      }
+      const { data } = await api.post('/api/auth/register/oauth', payload)
+      if (data.success === false) {
+        throw new Error(data.error || data.message || 'Registration failed')
+      }
+      return _handleAuthSuccess(data)
+    } catch (err: any) {
+      setError(err.response?.data?.error || err.message || 'Registration failed')
       throw err
     } finally {
       setLoading(false)
@@ -131,29 +240,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (data.success === false) {
         throw new Error(data.error || data.message || 'Registration failed')
       }
-      setToken(data.data.token)
-      const newUser = {
-        user_id: data.data.user_id,
-        email: data.data.email,
-        full_name: data.data.full_name,
-        role: data.data.role || 'student',
-        streak_count: data.data.streak_count || 0,
-        longest_streak: data.data.longest_streak || 0,
-      }
-      setUser(newUser)
-      return newUser
+      // Registration no longer automatically logs in (email verification required)
     } catch (err: any) {
-      setError(err.message || 'Registration failed')
+      setError(err.response?.data?.error || err.message || 'Registration failed')
       throw err
     } finally {
       setLoading(false)
     }
   }
 
-  const logout = () => {
-    setToken(null)
-    setUser(null)
-    localStorage.clear()
+  const logout = async () => {
+    try {
+        await api.post('/api/auth/logout')
+    } catch (err) {
+        // Ignore errors on logout
+    } finally {
+        setToken(null)
+        setUser(null)
+        localStorage.removeItem(TOKEN_KEY)
+        localStorage.removeItem(USER_KEY)
+    }
   }
 
   const updateUser = (updates: Partial<User>) => {
@@ -161,7 +267,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ token, user, loading, error, login, register, logout, updateUser }}>
+    <AuthContext.Provider value={{ 
+        token, user, loading, error, 
+        login, register, registerOAuth, loginWithGoogle, loginWithGitHub, 
+        logout, updateUser, setToken 
+    }}>
       {children}
     </AuthContext.Provider>
   )

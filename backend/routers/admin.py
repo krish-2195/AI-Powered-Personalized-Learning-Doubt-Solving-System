@@ -310,16 +310,48 @@ def get_recent_activity(db: Session = Depends(get_db)):
                 "message": f"{user_name} completed {topic_name}"
             })
             
-        # Add a mock system event to show model deployment
-        feed.append({
-            "id": "sys_1",
-            "timestamp": datetime.utcnow().isoformat(),
-            "message": "Model v8 deployed successfully based on 4007 training records.",
-            "type": "system"
-        })
-        
         # Sort feed descending
         feed.sort(key=lambda x: x["timestamp"], reverse=True)
         return success_response(data=feed[:10], message="Activity feed fetched successfully")
     except Exception as e:
         return error_response(str(e), "Failed to fetch activity")
+
+class SystemSettingsRequest(BaseModel):
+    maintenance_mode: bool
+    openai_api_key: str
+    gemini_api_key: str
+    ai_tutor_strictness: str  # e.g., "lenient", "strict"
+
+# In a real app, this should be in the DB. We mock it for the demo.
+_SYSTEM_SETTINGS = {
+    "maintenance_mode": False,
+    "openai_api_key": "sk-... (hidden)",
+    "gemini_api_key": "AIza... (hidden)",
+    "ai_tutor_strictness": "standard"
+}
+
+@router.get("/settings")
+def get_system_settings(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """Only super_admin can get system settings."""
+    user = _get_user_from_token(token, db)
+    if not user or user.role != "super_admin":
+        raise HTTPException(status_code=403, detail="Super Admin privileges required")
+    
+    return success_response(data=_SYSTEM_SETTINGS)
+
+@router.patch("/settings")
+def update_system_settings(payload: SystemSettingsRequest, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    """Only super_admin can update system settings."""
+    user = _get_user_from_token(token, db)
+    if not user or user.role != "super_admin":
+        raise HTTPException(status_code=403, detail="Super Admin privileges required")
+    
+    _SYSTEM_SETTINGS["maintenance_mode"] = payload.maintenance_mode
+    # Update keys only if they are not the placeholder strings
+    if payload.openai_api_key and not payload.openai_api_key.endswith("(hidden)"):
+        _SYSTEM_SETTINGS["openai_api_key"] = payload.openai_api_key
+    if payload.gemini_api_key and not payload.gemini_api_key.endswith("(hidden)"):
+        _SYSTEM_SETTINGS["gemini_api_key"] = payload.gemini_api_key
+    _SYSTEM_SETTINGS["ai_tutor_strictness"] = payload.ai_tutor_strictness
+
+    return success_response(message="System settings updated successfully", data=_SYSTEM_SETTINGS)

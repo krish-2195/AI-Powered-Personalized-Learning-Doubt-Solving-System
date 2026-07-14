@@ -1,7 +1,7 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from backend.routers import auth, users, learning, performance, recommendations, chat, analytics, dashboard, admin, content, streak
+from backend.routers import auth, users, learning, performance, recommendations, chat, analytics, dashboard, admin, content, streak, instructor
 from backend.config import settings
 from database.connection import engine, MongoDBManager, init_postgres_db
 from database.models.postgres_models import Base
@@ -45,6 +45,7 @@ app.include_router(dashboard.router, prefix="/api/dashboard", tags=["Dashboard"]
 app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 app.include_router(content.router, prefix="/api/content", tags=["Content"])
 app.include_router(streak.router, prefix="/api/streak", tags=["Streak"])
+app.include_router(instructor.router)  # Prefix is defined in the router itself
 
 
 @app.get("/")

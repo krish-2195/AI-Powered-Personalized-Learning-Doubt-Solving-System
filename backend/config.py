@@ -10,6 +10,22 @@ class Settings(BaseSettings):
     SECRET_KEY: str = "your-secret-key-change-in-production"
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440  # 24 hours for demo stability
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 30
+    
+    # OAuth & External Services
+    GOOGLE_CLIENT_ID: str = ""
+    GOOGLE_CLIENT_SECRET: str = ""
+    GITHUB_CLIENT_ID: str = ""
+    GITHUB_CLIENT_SECRET: str = ""
+    APPLE_CLIENT_ID: str = ""
+    APPLE_TEAM_ID: str = ""
+    APPLE_KEY_ID: str = ""
+    APPLE_PRIVATE_KEY: str = ""
+    MICROSOFT_CLIENT_ID: str = ""
+    MICROSOFT_CLIENT_SECRET: str = ""
+    RESEND_API_KEY: str = ""
+    EMAIL_FROM: str = "AI Learn <noreply@yourdomain.com>"
+    FRONTEND_URL: str = "http://localhost:3000"
     
     # CORS
     ALLOWED_ORIGINS: List[str] = [
