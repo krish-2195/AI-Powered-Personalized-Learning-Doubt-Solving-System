@@ -32,15 +32,15 @@ export default function ReportsAnalytics() {
           setMlStats(payload.ml)
           
           // Map backend arrays to chart format
-          if (payload.quiz_history) {
-            setQuizHistory(payload.quiz_history.map((item: any) => ({
+          if (payload.charts?.quiz_attempts) {
+            setQuizHistory(payload.charts.quiz_attempts.map((item: any) => ({
               name: item.name,
               value: item.attempts
             })))
           }
           
-          if (payload.user_growth) {
-            setUserGrowth(payload.user_growth.map((item: any) => ({
+          if (payload.charts?.user_growth) {
+            setUserGrowth(payload.charts.user_growth.map((item: any) => ({
               name: item.name,
               value: item.users
             })))
