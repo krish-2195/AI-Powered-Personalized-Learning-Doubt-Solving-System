@@ -90,7 +90,7 @@ def get_learning_path(
             user_subject = CourseMappingService.CSV_TO_USER_SUBJECT.get(subject_name, subject_name) if subject_name else None
             
             # Course filter
-            if active_course_code:
+            if active_course_code and c.program:
                 c_programs = [p.strip().upper() for p in (c.program or "").split(",") if p.strip()]
                 if active_course_code not in c_programs:
                     continue
