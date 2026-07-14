@@ -90,7 +90,7 @@ export default function ReportsAnalytics() {
                 <div className="w-full h-full flex items-center justify-center text-slate-500">Loading chart...</div>
               ) : (
                 userGrowth.map((data, idx) => (
-                  <div key={idx} className="w-full flex flex-col items-center gap-3 group">
+                  <div key={idx} className="w-full h-full flex flex-col items-center justify-end gap-3 group">
                     <div className="w-full relative h-full flex items-end justify-center">
                       <div className="absolute -top-8 bg-surface-700 text-white text-xs font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity">
                         {data.value}
@@ -124,7 +124,7 @@ export default function ReportsAnalytics() {
                 <div className="w-full h-full flex items-center justify-center text-slate-500">Loading chart...</div>
               ) : (
                 quizHistory.map((data, idx) => (
-                  <div key={idx} className="w-full flex flex-col items-center gap-3 group">
+                  <div key={idx} className="w-full h-full flex flex-col items-center justify-end gap-3 group">
                     <div className="w-full relative h-full flex items-end justify-center">
                       <div className="absolute -top-8 bg-surface-700 text-white text-xs font-bold py-1 px-2 rounded opacity-0 group-hover:opacity-100 transition-opacity z-10">
                         {data.value}
