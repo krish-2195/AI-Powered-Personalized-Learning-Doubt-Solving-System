@@ -24,8 +24,8 @@ export default function UserManagement() {
     try {
       setLoading(true)
       const response = await api.get('/api/admin/users')
-      if (response.data) {
-        setUsers(response.data)
+      if (response.data?.data) {
+        setUsers(response.data.data)
       }
     } catch (error) {
       console.error('Failed to fetch users', error)

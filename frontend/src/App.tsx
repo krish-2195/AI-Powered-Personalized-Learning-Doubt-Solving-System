@@ -77,14 +77,12 @@ function App() {
 
         {/* Admin routes */}
         <Route path="/admin" element={protectedAdmin}>
-          <Route element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="users" element={<AdminUsers />} />
-            <Route path="content" element={<AdminContent />} />
-            <Route path="reports" element={<AdminReports />} />
-            <Route path="settings" element={<SystemSettings />} />
-          </Route>
+          <Route index element={<AdminDashboard />} />
+          <Route path="dashboard" element={<AdminDashboard />} />
+          <Route path="users" element={<AdminUsers />} />
+          <Route path="content" element={<AdminContent />} />
+          <Route path="reports" element={<AdminReports />} />
+          <Route path="settings" element={<SystemSettings />} />
         </Route>
 
         {/* Instructor routes */}

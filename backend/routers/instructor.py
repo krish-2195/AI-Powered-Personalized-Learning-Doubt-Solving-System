@@ -36,15 +36,20 @@ def get_instructor_stats(db: Session = Depends(get_db), current_user: User = req
         active_students = db.query(User).filter(User.role == "student").count()
         total_courses = db.query(Course).filter(Course.instructor_id == current_user.id).count()
 
-        avg_score_query = db.query(func.avg(QuizAttempt.score)).scalar()
+        from database.models.postgres_models import LearningLog
+        
+        avg_score_query = db.query(func.avg(QuizAttempt.accuracy)).scalar()
         avg_score = round(avg_score_query, 1) if avg_score_query else 0
+        
+        total_watch_time = db.query(func.sum(LearningLog.duration_seconds)).scalar() or 0
+        watch_time_hrs = round(total_watch_time / 3600, 1)
         
         return success_response(
             data={
                 "active_students": active_students,
                 "total_courses": total_courses,
                 "avg_quiz_score": f"{avg_score}%",
-                "watch_time_hrs": 124  # Mock watch time
+                "watch_time_hrs": watch_time_hrs
             },
             message="Stats fetched successfully"
         )

@@ -180,9 +180,12 @@ def get_all_users(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)
             readiness = readiness_dict.get(u.id, "N/A")
             
             user_list.append({
+                "id": u.id,
                 "user_id": u.id,
+                "full_name": u.full_name,
                 "name": u.full_name or "Unknown",
                 "email": u.email,
+                "role": u.role,
                 "course": profile.course if profile else "N/A",
                 "streak_count": profile.streak_count if profile else 0,
                 "readiness": readiness,
