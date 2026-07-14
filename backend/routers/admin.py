@@ -355,3 +355,69 @@ def update_system_settings(payload: SystemSettingsRequest, token: str = Depends(
     _SYSTEM_SETTINGS["ai_tutor_strictness"] = payload.ai_tutor_strictness
 
     return success_response(message="System settings updated successfully", data=_SYSTEM_SETTINGS)
+@router.get("/users/{user_id}")
+def get_student_details(user_id: int, db: Session = Depends(get_db)):
+    """Fetch enriched detail view for a specific student, including ML predictions and activity."""
+    try:
+        from backend.services.student_stats import student_stats_service
+        from ml.services.ml_service import ml_service
+        from database.models.postgres_models import TopicPerformance, QuizAttempt, LearningLog
+
+        # Fetch stats & readiness
+        stats = student_stats_service.get_student_stats(db, user_id)
+        
+        # Fetch ML overall prediction
+        pred = ml_service.predict_overall_performance(db, user_id)
+        
+        # Fetch Weak Topics
+        weak_tps = db.query(TopicPerformance).join(TopicPerformance.topic).filter(
+            TopicPerformance.user_id == user_id,
+            (TopicPerformance.mastery_level == "Weak") | (TopicPerformance.ewma_accuracy < 60.0)
+        ).all()
+        
+        weak_topics = [
+            {
+                "topic": tp.topic.name if tp.topic else "Unknown Topic",
+                "score": round(tp.ewma_accuracy, 1)
+            }
+            for tp in weak_tps
+        ]
+        
+        # Fetch Recent Activity (quizzes and study logs)
+        recent_activity = []
+        quizzes = db.query(QuizAttempt).filter(QuizAttempt.user_id == user_id).order_by(QuizAttempt.timestamp.desc()).limit(5).all()
+        logs = db.query(LearningLog).filter(LearningLog.user_id == user_id).order_by(LearningLog.timestamp.desc()).limit(5).all()
+        
+        for q in quizzes:
+            recent_activity.append({
+                "type": "Quiz Attempt",
+                "timestamp": q.timestamp.isoformat(),
+                "title": f"Quiz Attempt: {q.topic.name if q.topic else 'General Quiz'} ({int(q.accuracy)}% accuracy)"
+            })
+            
+        for l in logs:
+            recent_activity.append({
+                "type": l.activity_type.capitalize(),
+                "timestamp": l.timestamp.isoformat(),
+                "title": f"Reviewed {l.topic.name if l.topic else 'Learning Resource'}"
+            })
+            
+        recent_activity.sort(key=lambda x: x["timestamp"], reverse=True)
+        
+        payload = {
+            "examReadiness": {
+                "score": stats["exam_readiness"]["score"],
+                "level": stats["exam_readiness"]["label"]
+            },
+            "prediction": {
+                "label": pred["predicted_score"],
+                "confidence": pred["confidence"] / 100.0
+            },
+            "weakTopics": weak_topics,
+            "recentActivity": recent_activity[:5]
+        }
+        
+        return success_response(data=payload, message="Student details fetched successfully")
+    except Exception as e:
+        return error_response(str(e), "Failed to fetch student details")
+

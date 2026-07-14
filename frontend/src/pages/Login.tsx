@@ -1,20 +1,21 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { Sparkles, Eye, EyeOff, Brain, Target, TrendingUp, Github, ChevronDown, ChevronUp, Mail, KeyRound, Smartphone, Fingerprint } from 'lucide-react'
+import { Sparkles, Eye, EyeOff, Brain, Target, TrendingUp, Github } from 'lucide-react'
+import { motion } from 'framer-motion'
 import { useAuth } from '../context/AuthContext'
-import { useGoogleLogin } from '@react-oauth/google'
+
+const features = [
+  { icon: Brain, text: 'AI-powered doubt solving in real time' },
+  { icon: Target, text: 'Personalized study plans & weak-topic tracking' },
+  { icon: TrendingUp, text: 'Exam readiness predictions that improve daily' },
+]
 
 export default function Login() {
   const navigate = useNavigate()
   const location = useLocation()
-  const { login, loginWithGoogle, loading, error } = useAuth()
-  
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  })
+  const { login, registerOAuth, loading, error } = useAuth()
+  const [formData, setFormData] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
-  const [showOtherOptions, setShowOtherOptions] = useState(false)
   const sessionMessage = (location.state as { message?: string } | null)?.message
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -31,90 +32,131 @@ export default function Login() {
     }
   }
 
+  const handleOAuthLogin = (provider: string) => {
+    // Standard OAuth flow for GitHub, etc.
+    window.location.href = `http://localhost:8000/api/auth/${provider}/url`
+  }
+
   const handleGoogleLogin = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       try {
-        const response = await loginWithGoogle(tokenResponse.access_token)
-        if (response.needs_onboarding) {
-          navigate('/register', { state: { oauthData: response.oauth_data } })
-        } else if (response.role === 'admin' || response.role === 'super_admin') {
-          navigate('/admin')
+        const user = await registerOAuth({
+          email: '',
+          fullName: '',
+          provider: 'google',
+          providerUserId: tokenResponse.access_token,
+          course: '',
+          subjects: [],
+          currentLevel: '',
+          examTarget: '',
+          examTimeline: ''
+        })
+        if (user.needs_onboarding) {
+          navigate('/register', { state: { step: 2, oauthData: user.oauth_data } })
         } else {
-          navigate('/dashboard')
+          if (user.role === 'admin' || user.role === 'super_admin') {
+            navigate('/admin')
+          } else {
+            navigate('/dashboard')
+          }
         }
-      } catch {
-        /* error handled in context */
+      } catch (err) {
+        console.error('Google login failed', err)
       }
     },
-    onError: () => {
-      console.error('Google Login Failed')
-    }
-  });
-
-  const handleOAuthLogin = (provider: 'github' | 'microsoft' | 'apple') => {
-    // Redirect to backend to start OAuth flow
-    const apiUrl = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
-    window.location.href = `${apiUrl}/api/auth/${provider}/url`
-  }
+    onError: (error) => console.error('Google Login Error', error)
+  })
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center overflow-hidden px-4 py-10">
+    <div className="relative flex min-h-[100dvh] items-center justify-center overflow-hidden px-4 py-10">
       <div className="absolute inset-0 bg-grid opacity-60" aria-hidden />
-      <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-primary-500/25 blur-3xl floating" aria-hidden />
-      <div className="pointer-events-none absolute -right-16 bottom-6 h-72 w-72 rounded-full bg-accent-500/20 blur-3xl floating" aria-hidden />
 
-      <div className="relative grid w-full max-w-4xl grid-cols-1 overflow-hidden rounded-3xl border border-white/10 glass-panel lg:grid-cols-2 shadow-2xl">
+      {/* Animated ambient orbs */}
+      <motion.div
+        animate={{ y: [0, -18, 0], opacity: [0.25, 0.4, 0.25] }}
+        transition={{ duration: 9, repeat: Infinity, ease: 'easeInOut' }}
+        className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-primary-500/25 blur-3xl"
+        aria-hidden
+      />
+      <motion.div
+        animate={{ y: [0, 14, 0], opacity: [0.2, 0.32, 0.2] }}
+        transition={{ duration: 11, repeat: Infinity, ease: 'easeInOut', delay: 2 }}
+        className="pointer-events-none absolute -right-16 bottom-6 h-72 w-72 rounded-full bg-accent-500/20 blur-3xl"
+        aria-hidden
+      />
+
+      {/* Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        className="relative grid w-full max-w-4xl grid-cols-1 overflow-hidden rounded-3xl border border-white/10 glass-panel lg:grid-cols-2"
+      >
         {/* Brand panel */}
         <div className="relative hidden flex-col justify-between overflow-hidden bg-gradient-to-br from-primary-700/60 via-primary-600/30 to-accent-600/40 p-10 lg:flex">
+          {/* Inner glow orbs */}
           <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
+          <motion.div
+            animate={{ y: [0, -12, 0] }}
+            transition={{ duration: 8, repeat: Infinity, ease: 'easeInOut' }}
+            className="absolute left-4 bottom-20 h-20 w-20 rounded-full bg-accent-500/20 blur-2xl"
+          />
+
           <div className="relative flex items-center gap-3">
-            <div className="sparkle flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-white shadow-lg shadow-white/5 border border-white/10">
+            <div className="sparkle flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 text-white shadow-[0_0_24px_rgba(255,255,255,0.15)]">
               <Sparkles size={22} />
             </div>
             <div>
-              <h1 className="text-xl font-bold text-white leading-none tracking-tight">AI Learn</h1>
-              <p className="mt-1 text-xs text-white/70 font-medium">Adaptive Learning Platform</p>
+              <h1 className="text-xl font-bold text-white leading-none">AI Learn</h1>
+              <p className="mt-1 text-xs text-white/70">Adaptive Learning Platform</p>
             </div>
           </div>
 
           <div className="relative space-y-6">
-            <h2 className="text-3xl font-bold leading-tight text-white text-balance tracking-tight">
+            <h2 className="text-3xl font-bold leading-tight text-white text-balance">
               Learn smarter with a tutor that adapts to you.
             </h2>
             <div className="space-y-4">
-              {[
-                { icon: Brain, text: 'AI-powered doubt solving in real time' },
-                { icon: Target, text: 'Personalized study plans & weak-topic tracking' },
-                { icon: TrendingUp, text: 'Exam readiness predictions that improve daily' },
-              ].map(({ icon: Icon, text }) => (
-                <div key={text} className="flex items-center gap-3 text-sm text-white/90">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/10 border border-white/5">
+              {features.map(({ icon: Icon, text }, idx) => (
+                <motion.div
+                  key={text}
+                  initial={{ opacity: 0, x: -14 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: 0.3 + idx * 0.1, duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                  className="flex items-center gap-3 text-sm text-white/90"
+                >
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white/15 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)]">
                     <Icon size={18} />
                   </div>
-                  <span className="font-medium">{text}</span>
-                </div>
+                  <span>{text}</span>
+                </motion.div>
               ))}
             </div>
           </div>
 
-          <p className="relative text-xs text-white/50 font-medium tracking-wide uppercase">Trusted by focused learners.</p>
+          <p className="relative text-xs text-white/60">Trusted by focused learners preparing for exams.</p>
         </div>
 
         {/* Form panel */}
-        <div className="p-8 sm:p-10 flex flex-col justify-center">
+        <motion.div
+          initial={{ opacity: 0, x: 24 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.55, delay: 0.1, ease: [0.22, 1, 0.36, 1] }}
+          className="p-8 sm:p-10"
+        >
           <div className="mb-8 lg:hidden">
-            <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 to-accent-500 text-white shadow-lg border border-white/10">
+            <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-primary-600 to-accent-500 text-white">
               <Sparkles size={22} />
             </div>
           </div>
-          
-          <div className="mb-8 text-center sm:text-left">
-            <h1 className="text-2xl font-bold text-white tracking-tight">Welcome back</h1>
+
+          <div className="mb-8">
+            <h1 className="text-2xl font-bold text-white">Welcome back</h1>
             <p className="mt-1.5 text-sm text-slate-400">Sign in to continue your learning journey.</p>
           </div>
 
           {sessionMessage && (
-            <div className="mb-5 rounded-xl border border-glow-500/30 bg-glow-500/10 px-4 py-3 text-sm text-glow-200 flex items-center justify-center font-medium">
+            <div className="mb-5 rounded-xl border border-primary-500/30 bg-primary-500/10 px-4 py-2.5 text-sm text-primary-200">
               {sessionMessage}
             </div>
           )}
@@ -148,38 +190,44 @@ export default function Login() {
               <div className="w-full border-t border-white/10"></div>
             </div>
             <div className="relative flex justify-center text-xs font-medium uppercase tracking-wider">
-              <span className="bg-slate-900 px-3 text-slate-500">Or continue with</span>
+              <span className="bg-slate-900 px-3 text-slate-500">Or continue with email</span>
             </div>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="sr-only">Email Address</label>
+              <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-300">
+                Email Address
+              </label>
               <input
+                id="email"
                 type="email"
                 required
-                className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-slate-100 placeholder-slate-500 transition-all focus:border-primary-500/50 focus:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-primary-500/30 font-medium"
+                className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 text-slate-100 placeholder-slate-600 transition-all duration-200 focus:border-primary-500/60 focus:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:shadow-[0_0_0_1px_rgba(124,58,237,0.3)]"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                placeholder="Email address"
+                placeholder="you@example.com"
               />
             </div>
 
             <div>
-              <label className="sr-only">Password</label>
+              <label htmlFor="password" className="mb-2 block text-sm font-medium text-slate-300">
+                Password
+              </label>
               <div className="relative">
                 <input
+                  id="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="w-full rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 pr-12 text-slate-100 placeholder-slate-500 transition-all focus:border-primary-500/50 focus:bg-white/[0.06] focus:outline-none focus:ring-2 focus:ring-primary-500/30 font-medium"
+                  className="w-full rounded-xl border border-white/10 bg-white/[0.05] px-4 py-3 pr-12 text-slate-100 placeholder-slate-600 transition-all duration-200 focus:border-primary-500/60 focus:bg-white/[0.08] focus:outline-none focus:ring-2 focus:ring-primary-500/30 focus:shadow-[0_0_0_1px_rgba(124,58,237,0.3)]"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                  placeholder="Password"
+                  placeholder="••••••••"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword((prev) => !prev)}
-                  className="absolute inset-y-0 right-3 flex items-center text-slate-400 transition-colors hover:text-white"
+                  className="absolute inset-y-0 right-3 flex items-center text-slate-500 transition-colors hover:text-white"
                   aria-label={showPassword ? 'Hide password' : 'Show password'}
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
@@ -187,71 +235,41 @@ export default function Login() {
               </div>
             </div>
 
-            <div className="flex items-center justify-end">
-              <Link to="/forgot-password" className="text-sm font-medium text-primary-400 hover:text-primary-300 transition-colors">
-                Forgot password?
-              </Link>
-            </div>
-
             {error && (
-              <p className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300 font-medium flex items-center justify-center text-center">{error}</p>
+              <motion.p
+                initial={{ opacity: 0, y: -4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="rounded-lg border border-red-500/30 bg-red-500/10 px-3 py-2 text-sm text-red-300"
+              >
+                {error}
+              </motion.p>
             )}
 
-            <button type="submit" className="w-full rounded-xl bg-white px-4 py-3.5 text-sm font-bold text-slate-900 transition-all hover:bg-slate-200 active:bg-slate-300 hover:-translate-y-0.5 active:translate-y-0" disabled={loading}>
-              {loading ? 'Signing in…' : 'Sign In'}
-            </button>
+            <motion.button
+              type="submit"
+              disabled={loading}
+              whileHover={{ scale: loading ? 1 : 1.02, y: loading ? 0 : -1 }}
+              whileTap={{ scale: 0.98 }}
+              className="btn-primary w-full py-3 relative"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  {/* Spinning ring */}
+                  <span className="block w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                  Signing in…
+                </span>
+              ) : 'Sign In'}
+            </motion.button>
           </form>
 
-          <p className="mt-6 text-center text-sm font-medium text-slate-400">
-            Don't have an account?{' '}
-            <Link to="/register" className="font-semibold text-primary-400 transition-colors hover:text-primary-300">
+          <p className="mt-6 text-center text-sm text-slate-400">
+            Don&apos;t have an account?{' '}
+            <Link to="/register" className="font-semibold text-primary-300 transition-colors hover:text-primary-200">
               Sign up
             </Link>
           </p>
-
-          <div className="mt-8 border-t border-white/10 pt-6">
-            <button
-              onClick={() => setShowOtherOptions(!showOtherOptions)}
-              className="flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors"
-            >
-              Other Login Options
-              {showOtherOptions ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </button>
-            
-            <div className={`mt-4 grid gap-3 transition-all duration-300 ease-in-out ${showOtherOptions ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
-              <div className="overflow-hidden flex flex-col gap-2">
-                {[
-                  { name: 'Microsoft', icon: 'M', comingSoon: true },
-                  { name: 'Apple', icon: '', comingSoon: true },
-                  { name: 'Email OTP', icon: <Mail size={16} />, comingSoon: true },
-                  { name: 'Magic Link', icon: <KeyRound size={16} />, comingSoon: true },
-                  { name: 'Phone OTP', icon: <Smartphone size={16} />, comingSoon: true },
-                  { name: 'Passkey / Biometrics', icon: <Fingerprint size={16} />, comingSoon: true },
-                ].map((option) => (
-                  <button 
-                    key={option.name}
-                    disabled
-                    className="flex items-center justify-between w-full rounded-lg border border-white/5 bg-white/[0.01] px-4 py-2.5 text-sm font-medium text-slate-500 opacity-60 cursor-not-allowed"
-                  >
-                    <div className="flex items-center gap-3">
-                      {typeof option.icon === 'string' ? (
-                        <span className="font-bold text-base w-4 text-center">{option.icon}</span>
-                      ) : (
-                        <span className="w-4 flex justify-center">{option.icon}</span>
-                      )}
-                      <span>Continue with {option.name}</span>
-                    </div>
-                    {option.comingSoon && (
-                      <span className="text-[10px] uppercase tracking-wider font-bold bg-white/5 px-2 py-0.5 rounded-full text-slate-400">Soon</span>
-                    )}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   )
 }

@@ -119,7 +119,7 @@ export default function ChatPage() {
   useEffect(() => {
     if (userId) {
       api.get(`/api/dashboard/?user_id=${userId}`)
-        .then(res => setContextData(res.data.data))
+        .then((res: any) => setContextData(res.data.data))
         .catch(console.error)
     }
   }, [userId])
@@ -148,8 +148,8 @@ export default function ChatPage() {
         avg_time_per_question: 120 / quizQuestions.length,
       }
       api.post('/api/learning/quiz/submit', payload)
-        .then(res => setQuizMLResult(res.data.ml_prediction || res.data))
-        .catch(err => console.error('Failed to submit quiz to ML Engine', err))
+        .then((res: any) => setQuizMLResult(res.data.ml_prediction || res.data))
+        .catch((err: any) => console.error('Failed to submit quiz to ML Engine', err))
         .finally(() => setIsSubmittingQuiz(false))
     }
   }, [quizDone, quizMLResult, isSubmittingQuiz, quizQuestions.length, quizScore, userId, detectedTopic])

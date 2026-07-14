@@ -41,6 +41,53 @@ export function useVideoPlayer({ contentId, onComplete }: UseVideoPlayerOptions)
   const [watchStartTime, setWatchStartTime] = useState<Date | null>(null);
   const [accumulatedWatchTime, setAccumulatedWatchTime] = useState(0);
 
+  // Bookmarks state
+  const [bookmarks, setBookmarks] = useState<any[]>([]);
+
+  const fetchBookmarks = useCallback(async () => {
+    if (!user?.user_id || !contentId) return;
+    try {
+      const { data } = await api.get(`/api/learning/bookmarks/${user.user_id}/${contentId}`);
+      if (data?.bookmarks) {
+        setBookmarks(data.bookmarks);
+      }
+    } catch (err) {
+      console.error('Failed to load bookmarks:', err);
+    }
+  }, [user, contentId]);
+
+  const addBookmark = async (note: string) => {
+    if (!user?.user_id || !contentId) return;
+    const nowTime = playerRef.current?.getCurrentTime?.() ?? currentTime;
+    try {
+      const { data } = await api.post('/api/learning/bookmarks', {
+        user_id: String(user.user_id),
+        content_id: String(contentId),
+        timestamp: nowTime,
+        note
+      });
+      if (data?.bookmark) {
+        setBookmarks(prev => [...prev, data.bookmark].sort((a, b) => a.timestamp - b.timestamp));
+      }
+    } catch (err) {
+      console.error('Failed to add bookmark:', err);
+    }
+  };
+
+  const deleteBookmark = async (bookmarkId: string) => {
+    try {
+      await api.delete(`/api/learning/bookmarks/${bookmarkId}`);
+      setBookmarks(prev => prev.filter(b => b.id !== bookmarkId));
+    } catch (err) {
+      console.error('Failed to delete bookmark:', err);
+    }
+  };
+
+  // Load bookmarks on mount / change
+  useEffect(() => {
+    fetchBookmarks();
+  }, [fetchBookmarks]);
+
   // ─── Helpers ────────────────────────────────────────────────────────────────
 
   const formatTime = (secs: number): string => {
@@ -75,8 +122,9 @@ export function useVideoPlayer({ contentId, onComplete }: UseVideoPlayerOptions)
     }
 
     const totalWatchTimeSeconds = accumulatedWatchTime + currentSessionWatchTime;
-    const currentPosition = Math.round(currentTime);
-    const progressVal = duration > 0 ? (currentTime / duration) * 100 : 0;
+    const activeTime = playerRef.current?.getCurrentTime?.() ?? currentTime;
+    const currentPosition = Math.round(activeTime);
+    const progressVal = duration > 0 ? (activeTime / duration) * 100 : 0;
     const hasCompleted = completed || progressVal >= 80.0;
 
     try {
@@ -395,6 +443,8 @@ export function useVideoPlayer({ contentId, onComplete }: UseVideoPlayerOptions)
     isCcActive, hasStarted,
     availableQualities, currentQuality,
     showQualityMenu, setShowQualityMenu,
+    // Bookmarks
+    bookmarks, addBookmark, deleteBookmark,
     // Formatters
     formatTime, formatQualityLabel,
     // YouTube event handlers

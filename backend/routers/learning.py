@@ -285,3 +285,72 @@ def get_next_steps(user_id: str, db: Session = Depends(get_db), current_user = D
         )
         
     return next_steps
+
+@router.get("/knowledge-graph")
+def get_knowledge_graph(current_user = Depends(get_current_user)):
+    """
+    Exposes the Knowledge Graph hierarchy (nodes and directed edges)
+    representing topic prerequisites and syllabus dependencies.
+    """
+    from ml.services.knowledge_graph import knowledge_graph
+    from backend.utils.response_formatter import success_response
+    nodes = list(knowledge_graph.graph.nodes)
+    edges = [{"source": u, "target": v} for u, v in knowledge_graph.graph.edges]
+    return success_response(data={"nodes": nodes, "edges": edges})
+
+class BookmarkCreate(BaseModel):
+    user_id: str
+    content_id: str
+    timestamp: float
+    note: Optional[str] = ""
+
+@router.post("/bookmarks")
+async def add_bookmark(bookmark: BookmarkCreate, current_user = Depends(get_current_user)):
+    """Save a new video bookmark or timestamp revision note in MongoDB."""
+    from database.connection import get_video_bookmarks_collection
+    
+    coll = get_video_bookmarks_collection()
+    new_doc = {
+        "user_id": int(bookmark.user_id) if bookmark.user_id.isdigit() else bookmark.user_id,
+        "content_id": int(bookmark.content_id) if bookmark.content_id.isdigit() else bookmark.content_id,
+        "timestamp": bookmark.timestamp,
+        "note": bookmark.note,
+        "created_at": datetime.utcnow().isoformat()
+    }
+    res = await coll.insert_one(new_doc)
+    new_doc["id"] = str(res.inserted_id)
+    del new_doc["_id"]
+    return {"message": "Bookmark created successfully", "bookmark": new_doc}
+
+@router.get("/bookmarks/{user_id}/{content_id}")
+async def get_bookmarks(user_id: str, content_id: str, current_user = Depends(get_current_user)):
+    """Get all bookmarks/timestamp markers for a user and content ID."""
+    from database.connection import get_video_bookmarks_collection
+    
+    coll = get_video_bookmarks_collection()
+    uid = int(user_id) if user_id.isdigit() else user_id
+    cid = int(content_id) if content_id.isdigit() else content_id
+    
+    cursor = coll.find({"user_id": uid, "content_id": cid}).sort("timestamp", 1)
+    bookmarks = []
+    async for doc in cursor:
+        doc["id"] = str(doc["_id"])
+        del doc["_id"]
+        bookmarks.append(doc)
+    return {"bookmarks": bookmarks}
+
+@router.delete("/bookmarks/{bookmark_id}")
+async def delete_bookmark(bookmark_id: str, current_user = Depends(get_current_user)):
+    """Delete a bookmark/timestamp note by its MongoDB ID."""
+    from database.connection import get_video_bookmarks_collection
+    from bson import ObjectId
+    
+    coll = get_video_bookmarks_collection()
+    try:
+        res = await coll.delete_one({"_id": ObjectId(bookmark_id)})
+        if res.deleted_count > 0:
+            return {"message": "Bookmark deleted successfully"}
+        return {"message": "Bookmark not found", "error": True}
+    except Exception as e:
+        return {"message": f"Failed to delete bookmark: {str(e)}", "error": True}
+

@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, BarChart, BookOpen, ChevronRight, ChevronLeft, CheckCircle2, Target, Play } from 'lucide-react';
+import { ArrowLeft, Clock, BarChart, BookOpen, ChevronRight, ChevronLeft, CheckCircle2, Target, Play, Bookmark, Plus, Trash2 } from 'lucide-react';
 import api from '../lib/api';
 import VideoPlayer from '../components/VideoPlayer';
+import { useVideoPlayer } from '../components/video/useVideoPlayer';
 import { useAuth } from '../context/AuthContext';
 
 interface VideoDetails {
@@ -104,6 +105,8 @@ export default function VideoLearningPage() {
     setProgressPercent(100);
   };
 
+  const player = useVideoPlayer({ contentId: id || '', onComplete: handleVideoComplete });
+
   if (loading) {
     return (
       <div className="flex justify-center items-center h-[70vh]">
@@ -157,8 +160,7 @@ export default function VideoLearningPage() {
           <div className="bg-slate-900/50 rounded-2xl border border-white/10 p-2 shadow-xl backdrop-blur-sm">
             <VideoPlayer 
               videoId={video.youtube_video_id || ''} 
-              contentId={video.id} 
-              onComplete={handleVideoComplete}
+              player={player}
             />
           </div>
 
@@ -215,6 +217,79 @@ export default function VideoLearningPage() {
                   ></div>
                 </div>
               </div>
+            </div>
+          </div>
+
+          {/* Bookmarks & Timestamp Notes */}
+          <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6 space-y-4">
+            <h3 className="text-lg font-display font-bold text-slate-100 flex items-center gap-2">
+              <Bookmark className="w-5 h-5 text-primary-400" /> Bookmarks & Notes
+            </h3>
+            
+            {/* Add Bookmark form */}
+            <form onSubmit={async (e) => {
+              e.preventDefault();
+              const form = e.currentTarget;
+              const input = form.elements.namedItem('bookmarkNote') as HTMLInputElement;
+              if (input && input.value.trim() !== '') {
+                await player.addBookmark(input.value.trim());
+                input.value = '';
+              }
+            }} className="flex gap-2">
+              <input
+                name="bookmarkNote"
+                type="text"
+                placeholder="Add note at current time..."
+                className="flex-1 bg-white/[0.04] border border-white/10 rounded-lg px-3 py-1.5 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-primary-500/50"
+              />
+              <button
+                type="submit"
+                className="bg-primary-500 hover:bg-primary-600 text-white rounded-lg px-3 py-1.5 flex items-center justify-center transition-colors text-xs font-bold"
+                title="Bookmark Current Position"
+              >
+                <Plus className="w-3.5 h-3.5" />
+              </button>
+            </form>
+
+            {/* Bookmarks List */}
+            <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+              {player.bookmarks && player.bookmarks.length > 0 ? (
+                player.bookmarks.map((bm: any) => (
+                  <div 
+                    key={bm.id} 
+                    className="flex items-center justify-between p-2.5 rounded-lg border border-white/5 bg-white/[0.01] hover:bg-white/[0.03] transition-colors"
+                  >
+                    <div 
+                      onClick={() => {
+                        player.playerRef.current?.seekTo(bm.timestamp, true);
+                        player.playerRef.current?.playVideo();
+                      }}
+                      className="flex-1 cursor-pointer"
+                    >
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <span className="text-[10px] font-mono font-bold text-primary-400 bg-primary-500/10 px-1.5 py-0.5 rounded">
+                          {player.formatTime(bm.timestamp)}
+                        </span>
+                        <span className="text-[10px] text-slate-500">
+                          {new Date(bm.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-300 font-medium leading-snug line-clamp-2">
+                        {bm.note || "Bookmark"}
+                      </p>
+                    </div>
+                    <button 
+                      onClick={() => player.deleteBookmark(bm.id)}
+                      className="text-slate-500 hover:text-red-400 p-1 rounded transition-colors ml-2"
+                      title="Delete Bookmark"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-xs text-slate-500 italic py-2">No bookmarks saved yet. Type a note and click the plus button to save key moments!</p>
+              )}
             </div>
           </div>
 
