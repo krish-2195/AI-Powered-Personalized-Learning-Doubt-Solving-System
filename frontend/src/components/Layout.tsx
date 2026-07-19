@@ -5,11 +5,14 @@ import { useAuth } from '../context/AuthContext'
 import PageTransition from './PageTransition'
 import StreakWidget from './StreakWidget'
 import StreakCelebration from './StreakCelebration'
+import NextStepsModal from './NextStepsModal'
+import { useState } from 'react'
 
 const navItems = [
   { path: '/dashboard', icon: Home, label: 'Dashboard' },
   { path: '/learning', icon: BookOpen, label: 'Learning' },
   { path: '/chat', icon: MessageSquare, label: 'AI Tutor' },
+  { path: '/messages', icon: MessageSquare, label: 'Messages' },
   { path: '/analytics', icon: BarChart3, label: 'Analytics' },
   { path: '/profile', icon: User, label: 'Profile' },
 ]
@@ -23,9 +26,23 @@ export default function Layout() {
     ? user.full_name.split(' ').map((n) => n[0]).slice(0, 2).join('').toUpperCase()
     : 'AL'
 
+  const [isNextStepsOpen, setIsNextStepsOpen] = useState(false)
+
   return (
     <div className="relative h-screen overflow-hidden text-slate-50">
       <StreakCelebration />
+      <NextStepsModal isOpen={isNextStepsOpen} onClose={() => setIsNextStepsOpen(false)} userId={user?.user_id || 1} />
+      
+      {/* Floating Magic Wand Button */}
+      <button 
+        onClick={() => setIsNextStepsOpen(true)}
+        className="fixed bottom-8 right-8 z-40 p-4 rounded-full bg-gradient-to-r from-primary-500 to-accent-500 shadow-[0_0_20px_rgba(124,58,237,0.5)] hover:shadow-[0_0_30px_rgba(124,58,237,0.8)] hover:scale-110 active:scale-95 transition-all text-white group flex items-center justify-center"
+        aria-label="What should I do next?"
+        title="What should I do next?"
+      >
+        <Sparkles size={24} className="group-hover:animate-pulse" />
+      </button>
+
       <div className="absolute inset-0 bg-grid opacity-70" aria-hidden />
       <div className="pointer-events-none absolute -left-24 top-8 h-72 w-72 rounded-full bg-primary-500/25 blur-3xl floating" aria-hidden />
       <div className="pointer-events-none absolute -right-16 bottom-10 h-72 w-72 rounded-full bg-accent-500/20 blur-3xl floating" aria-hidden />

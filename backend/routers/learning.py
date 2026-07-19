@@ -8,6 +8,7 @@ from database.connection import get_db
 from database.models.postgres_models import QuizAttempt as DBQuizAttempt, PerformanceRecord, Topic
 from ml.services.ml_service import ml_service
 from backend.routers.auth import get_current_user
+from backend.utils.response_formatter import success_response, error_response
 
 router = APIRouter()
 
@@ -150,8 +151,10 @@ def track_video_progress(progress_data: VideoProgress, db: Session = Depends(get
         "progress": new_log.completion_percentage
     }
 
+import asyncio
+
 @router.post("/quiz/submit")
-def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Submit quiz attempt, store in QuizAttempt, update PerformanceRecord,
     and soon trigger ML prediction.
@@ -204,8 +207,8 @@ def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db), current_u
             
         db.commit()
         
-        # 4. Trigger ML Service
-        ml_prediction = ml_service.predict_weakness(db, user_id_int, topic_id)
+        # 4. Trigger ML Service (Run in a separate thread so it doesn't block the async event loop)
+        ml_prediction = await asyncio.to_thread(ml_service.predict_weakness, db, user_id_int, topic_id)
     else:
         db.commit()
         
@@ -298,6 +301,8 @@ def get_knowledge_graph(current_user = Depends(get_current_user)):
     edges = [{"source": u, "target": v} for u, v in knowledge_graph.graph.edges]
     return success_response(data={"nodes": nodes, "edges": edges})
 
+from database.models.postgres_models import Bookmark, Note
+
 class BookmarkCreate(BaseModel):
     user_id: str
     content_id: str
@@ -305,52 +310,201 @@ class BookmarkCreate(BaseModel):
     note: Optional[str] = ""
 
 @router.post("/bookmarks")
-async def add_bookmark(bookmark: BookmarkCreate, current_user = Depends(get_current_user)):
-    """Save a new video bookmark or timestamp revision note in MongoDB."""
-    from database.connection import get_video_bookmarks_collection
+async def add_bookmark(bookmark: BookmarkCreate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """Save a new video bookmark or timestamp revision note in PostgreSQL."""
+    uid = int(bookmark.user_id) if str(bookmark.user_id).isdigit() else 1
+    cid = int(bookmark.content_id) if str(bookmark.content_id).isdigit() else 1
     
-    coll = get_video_bookmarks_collection()
-    new_doc = {
-        "user_id": int(bookmark.user_id) if bookmark.user_id.isdigit() else bookmark.user_id,
-        "content_id": int(bookmark.content_id) if bookmark.content_id.isdigit() else bookmark.content_id,
-        "timestamp": bookmark.timestamp,
-        "note": bookmark.note,
-        "created_at": datetime.utcnow().isoformat()
-    }
-    res = await coll.insert_one(new_doc)
-    new_doc["id"] = str(res.inserted_id)
-    del new_doc["_id"]
-    return {"message": "Bookmark created successfully", "bookmark": new_doc}
+    new_doc = Bookmark(
+        user_id=uid,
+        content_id=cid,
+        timestamp=bookmark.timestamp,
+        note=bookmark.note
+    )
+    db.add(new_doc)
+    db.commit()
+    db.refresh(new_doc)
+    
+    return {"message": "Bookmark created successfully", "bookmark": {"id": new_doc.id, "timestamp": new_doc.timestamp, "note": new_doc.note}}
 
 @router.get("/bookmarks/{user_id}/{content_id}")
-async def get_bookmarks(user_id: str, content_id: str, current_user = Depends(get_current_user)):
-    """Get all bookmarks/timestamp markers for a user and content ID."""
-    from database.connection import get_video_bookmarks_collection
+async def get_bookmarks(user_id: str, content_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """Get all bookmarks/timestamp markers for a user and content ID from PostgreSQL."""
+    uid = int(user_id) if str(user_id).isdigit() else 1
+    cid = int(content_id) if str(content_id).isdigit() else 1
     
-    coll = get_video_bookmarks_collection()
-    uid = int(user_id) if user_id.isdigit() else user_id
-    cid = int(content_id) if content_id.isdigit() else content_id
+    db_bookmarks = db.query(Bookmark).filter(Bookmark.user_id == uid, Bookmark.content_id == cid).order_by(Bookmark.timestamp.asc()).all()
     
-    cursor = coll.find({"user_id": uid, "content_id": cid}).sort("timestamp", 1)
     bookmarks = []
-    async for doc in cursor:
-        doc["id"] = str(doc["_id"])
-        del doc["_id"]
-        bookmarks.append(doc)
+    for b in db_bookmarks:
+        bookmarks.append({
+            "id": b.id,
+            "timestamp": b.timestamp,
+            "note": b.note,
+            "created_at": b.created_at.isoformat() if b.created_at else None
+        })
     return {"bookmarks": bookmarks}
 
 @router.delete("/bookmarks/{bookmark_id}")
-async def delete_bookmark(bookmark_id: str, current_user = Depends(get_current_user)):
-    """Delete a bookmark/timestamp note by its MongoDB ID."""
-    from database.connection import get_video_bookmarks_collection
-    from bson import ObjectId
-    
-    coll = get_video_bookmarks_collection()
+async def delete_bookmark(bookmark_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """Delete a bookmark/timestamp note by its PostgreSQL ID."""
     try:
-        res = await coll.delete_one({"_id": ObjectId(bookmark_id)})
-        if res.deleted_count > 0:
+        bid = int(bookmark_id)
+        res = db.query(Bookmark).filter(Bookmark.id == bid).delete()
+        db.commit()
+        if res > 0:
             return {"message": "Bookmark deleted successfully"}
         return {"message": "Bookmark not found", "error": True}
     except Exception as e:
         return {"message": f"Failed to delete bookmark: {str(e)}", "error": True}
 
+class NoteCreate(BaseModel):
+    title: str
+    note_text: str
+    course_id: Optional[int] = None
+    subject_id: Optional[int] = None
+    topic_id: Optional[int] = None
+    content_id: Optional[int] = None
+
+class NoteUpdate(BaseModel):
+    title: Optional[str] = None
+    note_text: Optional[str] = None
+
+@router.post("/notes")
+async def create_note(note: NoteCreate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """Create a new note in PostgreSQL."""
+    new_note = Note(
+        user_id=current_user.id,
+        title=note.title,
+        note_text=note.note_text,
+        course_id=note.course_id,
+        subject_id=note.subject_id,
+        topic_id=note.topic_id,
+        content_id=note.content_id
+    )
+    db.add(new_note)
+    db.commit()
+    db.refresh(new_note)
+    return success_response(data={"note_id": new_note.id}, message="Note created successfully")
+
+@router.get("/notes")
+async def get_notes(
+    course_id: Optional[int] = None, 
+    subject_id: Optional[int] = None, 
+    topic_id: Optional[int] = None, 
+    content_id: Optional[int] = None,
+    db: Session = Depends(get_db), 
+    current_user = Depends(get_current_user)
+):
+    """Retrieve notes for the current user, optionally filtered by course, subject, topic, or content."""
+    query = db.query(Note).filter(Note.user_id == current_user.id)
+    if course_id:
+        query = query.filter(Note.course_id == course_id)
+    if subject_id:
+        query = query.filter(Note.subject_id == subject_id)
+    if topic_id:
+        query = query.filter(Note.topic_id == topic_id)
+    if content_id:
+        query = query.filter(Note.content_id == content_id)
+        
+    notes = query.order_by(Note.updated_at.desc()).all()
+    
+    result = []
+    for n in notes:
+        result.append({
+            "id": n.id,
+            "title": n.title,
+            "note_text": n.note_text,
+            "course_id": n.course_id,
+            "subject_id": n.subject_id,
+            "topic_id": n.topic_id,
+            "content_id": n.content_id,
+            "updated_at": n.updated_at.isoformat() if n.updated_at else None
+        })
+    return success_response(data={"notes": result})
+
+@router.put("/notes/{note_id}")
+async def update_note(note_id: int, note_update: NoteUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """Update an existing note."""
+    note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
+    if not note:
+        return error_response("Note not found or unauthorized", "Not Found")
+        
+    if note_update.title is not None:
+        note.title = note_update.title
+    if note_update.note_text is not None:
+        note.note_text = note_update.note_text
+        
+    db.commit()
+    return success_response(message="Note updated successfully")
+
+@router.delete("/notes/{note_id}")
+async def delete_note(note_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """Delete a note."""
+    res = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).delete()
+    db.commit()
+    if res > 0:
+        return success_response(message="Note deleted successfully")
+    return error_response("Note not found or unauthorized", "Not Found")
+
+@router.get("/next-steps/{user_id}")
+def get_next_steps(user_id: int, db: Session = Depends(get_db)):
+    """Generate 3 intelligent actionable next steps based on user's weak topics."""
+    try:
+        from ml.services.ml_service import ml_service
+        from ml.services.knowledge_graph import knowledge_graph
+        
+        # Get overall prediction to find weak topics
+        pred = ml_service.predict_overall_performance(db, user_id)
+        
+        weak_topics = []
+        if pred and pred.get("topic_details"):
+            for t in pred["topic_details"]:
+                if t.get("mastery") == "Weak":
+                    weak_topics.append(t["topic"])
+                    
+        # Fallback to general topics if no weak topics found
+        if not weak_topics:
+            weak_topics = ["Arrays", "Linked Lists", "Trees"]
+            
+        target_topic = weak_topics[0]
+        prereqs = knowledge_graph.get_prerequisites(target_topic)
+        prereq_str = " -> ".join(prereqs[:2]) if prereqs else "Fundamentals"
+        
+        steps = [
+            {
+                "topic": target_topic,
+                "action": "Watch Video",
+                "title": f"Review {target_topic} Concepts",
+                "rationale": f"Your mastery in {target_topic} is currently weak.",
+                "estimated_time_minutes": 15
+            },
+            {
+                "topic": target_topic,
+                "action": "Take Quiz",
+                "title": f"Practice {target_topic}",
+                "rationale": "Test your knowledge after reviewing the video.",
+                "estimated_time_minutes": 10
+            },
+            {
+                "topic": prereqs[0] if prereqs else "Fundamentals",
+                "action": "Review Prerequisite",
+                "title": f"Brush up on {prereq_str}",
+                "rationale": f"Understanding this is required for {target_topic}.",
+                "estimated_time_minutes": 20
+            }
+        ]
+        
+        return success_response(data=steps, message="Next steps generated successfully")
+    except Exception as e:
+        return error_response(str(e), "Failed to generate next steps")
+
+@router.get("/topic/{topic_name}/prerequisites")
+def get_topic_prerequisites(topic_name: str):
+    """Get prerequisites for a topic from the Knowledge Graph."""
+    try:
+        from ml.services.knowledge_graph import knowledge_graph
+        prereqs = knowledge_graph.get_prerequisites(topic_name)
+        return success_response(data={"prerequisites": prereqs}, message="Prerequisites fetched successfully")
+    except Exception as e:
+        return error_response(str(e), "Failed to fetch prerequisites")

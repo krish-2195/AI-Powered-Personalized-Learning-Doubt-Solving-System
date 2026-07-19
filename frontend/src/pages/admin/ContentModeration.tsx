@@ -139,9 +139,9 @@ export default function ContentModeration() {
                           {activeTab === 'videos' ? <Video size={12} /> : <FileText size={12} />}
                           {item.content_type}
                         </span>
-                        {Math.random() > 0.7 && (
+                        {item.reports_count > 0 && (
                            <span className="text-xs font-bold text-rose-400 flex items-center gap-1">
-                             <AlertTriangle size={12} /> 3 User Reports
+                             <AlertTriangle size={12} /> {item.reports_count} User Reports
                            </span>
                         )}
                       </div>

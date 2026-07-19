@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate, useLocation, Link } from 'react-router-dom'
-import { Sparkles, Eye, EyeOff, Brain, Target, TrendingUp, Github } from 'lucide-react'
+import { Sparkles, Eye, EyeOff, Brain, Target, TrendingUp, Github, ChevronDown, ChevronUp, Mail, KeyRound, Smartphone, Fingerprint } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useGoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../context/AuthContext'
@@ -17,6 +17,7 @@ export default function Login() {
   const { login, registerOAuth, loading, error } = useAuth()
   const [formData, setFormData] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
+  const [showOtherOptions, setShowOtherOptions] = useState(false)
   const sessionMessage = (location.state as { message?: string } | null)?.message
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -274,6 +275,49 @@ export default function Login() {
               Sign up
             </Link>
           </p>
+
+          <div className="mt-8 border-t border-white/10 pt-6">
+            <button
+              type="button"
+              onClick={() => setShowOtherOptions(!showOtherOptions)}
+              className="flex w-full items-center justify-center gap-2 text-sm font-medium text-slate-500 hover:text-slate-300 transition-colors"
+            >
+              Other Login Options
+              {showOtherOptions ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+            </button>
+            
+            <div className={`mt-4 grid gap-3 transition-all duration-300 ease-in-out ${showOtherOptions ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}>
+              <div className="overflow-hidden flex flex-col gap-2">
+                {[
+                  { name: 'Microsoft', icon: 'M', comingSoon: true },
+                  { name: 'Apple', icon: '', comingSoon: true },
+                  { name: 'Email OTP', icon: <Mail size={16} />, comingSoon: true },
+                  { name: 'Magic Link', icon: <KeyRound size={16} />, comingSoon: true },
+                  { name: 'Phone OTP', icon: <Smartphone size={16} />, comingSoon: true },
+                  { name: 'Passkey / Biometrics', icon: <Fingerprint size={16} />, comingSoon: true },
+                ].map((option) => (
+                  <button 
+                    key={option.name}
+                    type="button"
+                    disabled
+                    className="flex items-center justify-between w-full rounded-lg border border-white/5 bg-white/[0.01] px-4 py-2.5 text-sm font-medium text-slate-500 opacity-60 cursor-not-allowed"
+                  >
+                    <div className="flex items-center gap-3">
+                      {typeof option.icon === 'string' ? (
+                        <span className="font-bold text-base w-4 text-center">{option.icon}</span>
+                      ) : (
+                        <span className="w-4 flex justify-center">{option.icon}</span>
+                      )}
+                      <span>Continue with {option.name}</span>
+                    </div>
+                    {option.comingSoon && (
+                      <span className="text-[10px] uppercase tracking-wider font-semibold bg-white/5 px-2 py-0.5 rounded-sm">Coming Soon</span>
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
         </motion.div>
       </motion.div>
     </div>

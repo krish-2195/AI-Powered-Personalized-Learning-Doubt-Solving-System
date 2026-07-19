@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import { ArrowLeft, Clock, BarChart, BookOpen, ChevronRight, ChevronLeft, CheckCircle2, Target, Play, Bookmark, Plus, Trash2 } from 'lucide-react';
+import { ArrowLeft, Clock, BarChart, BookOpen, ChevronRight, ChevronLeft, CheckCircle2, Target, Play, Bookmark, Plus, Trash2, MessageSquarePlus } from 'lucide-react';
 import api from '../lib/api';
 import VideoPlayer from '../components/VideoPlayer';
 import { useVideoPlayer } from '../components/video/useVideoPlayer';
@@ -157,11 +157,19 @@ export default function VideoLearningPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Content Area */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-slate-900/50 rounded-2xl border border-white/10 p-2 shadow-xl backdrop-blur-sm">
+          <div className="bg-slate-900/50 rounded-2xl border border-white/10 p-2 shadow-xl backdrop-blur-sm relative group">
             <VideoPlayer 
               videoId={video.youtube_video_id || ''} 
               player={player}
             />
+            {/* AI Tutor Confused Button */}
+            <button
+              onClick={() => navigate(`/chat?prefill=${encodeURIComponent(`I need help understanding ${video.topic} from the video.`)}`)}
+              className="absolute top-6 right-6 opacity-0 group-hover:opacity-100 transition-opacity bg-surface-900/90 backdrop-blur border border-primary-500/50 text-white px-4 py-2 rounded-xl shadow-lg flex items-center gap-2 hover:bg-primary-500 hover:border-primary-400 z-10"
+            >
+              <MessageSquarePlus className="w-4 h-4 text-primary-400 group-hover:text-white" />
+              <span className="font-semibold text-sm">I'm confused</span>
+            </button>
           </div>
 
           <div className="bg-white/[0.02] border border-white/5 rounded-2xl p-6">

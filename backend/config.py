@@ -53,7 +53,8 @@ class Settings(BaseSettings):
     OPENAI_API_KEY: str = ""
     HUGGINGFACE_API_KEY: str = ""
     GEMINI_API_KEY: str = ""
-    GEMINI_MODEL: str = "gemini-2.5-flash"
+    GEMINI_MODEL: str = "gemini-3.5-flash"
+    GEMINI_FALLBACK_MODEL: str = "gemini-3.1-flash-lite"
     
     class Config:
         env_file = ".env"

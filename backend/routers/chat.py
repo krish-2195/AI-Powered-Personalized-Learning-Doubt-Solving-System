@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 from typing import List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 
@@ -12,8 +12,22 @@ from database.models.postgres_models import QuestionBank, Topic
 from backend.services.ai_tutor import ai_tutor_service
 from backend.utils.response_formatter import success_response, error_response
 from backend.routers.auth import get_current_user
+from backend.limiter import limiter
 
 router = APIRouter()
+
+@router.get("/session-summary/{session_id}")
+async def get_session_summary(session_id: str, current_user = Depends(get_current_user)):
+    """Fetch the session summary by session ID."""
+    collection = get_chat_history_collection()
+    cursor = collection.find({"session_id": session_id}).sort("timestamp", -1).limit(10)
+    history_docs = await cursor.to_list(length=10)
+    
+    if not history_docs:
+        return error_response("Session not found")
+        
+    return success_response(data={"summary": "Detailed summary feature coming soon", "messages_count": len(history_docs)})
+
 
 class ChatMessage(BaseModel):
     user_id: int
@@ -28,7 +42,8 @@ class QuizGenerateRequest(BaseModel):
     quiz_type: str = "hybrid"
 
 @router.post("/message")
-async def ask_ai_tutor(payload: ChatMessage, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+@limiter.limit("20/minute")
+async def ask_ai_tutor(request: Request, payload: ChatMessage, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """Context-aware AI tutor response using OpenAI."""
     collection = get_chat_history_collection()
     
@@ -70,7 +85,8 @@ async def ask_ai_tutor(payload: ChatMessage, db: Session = Depends(get_db), curr
     }, message="AI Responded")
 
 @router.post("/generate-quiz")
-async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+@limiter.limit("5/minute")
+async def generate_quiz(request: Request, payload: QuizGenerateRequest, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Checks the PostgreSQL QuestionBank first. 
     If not enough questions exist, uses OpenAI as a fallback dynamic generator.
@@ -156,7 +172,7 @@ async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_
         "2. Structure the 'explanation' string EXACTLY like this with markdown bolding: '**Why?** [Explanation of the correct answer]. **Key takeaway:** [Bullet point or short summary].'"
     )
     
-    ai_response_text = ai_tutor_service.get_response(db, payload.user_id, prompt, [])
+    ai_response_text = ai_tutor_service.get_response(db, payload.user_id, prompt, [], feature="Quiz")
     
     quiz_data = None
     for attempt in range(2):
@@ -173,7 +189,7 @@ async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_
         except Exception:
             if attempt == 0:
                 retry_prompt = "Your previous response was invalid JSON. Return ONLY the raw JSON array without markdown formatting like ```json."
-                ai_response_text = ai_tutor_service.get_response(db, payload.user_id, retry_prompt, [])
+                ai_response_text = ai_tutor_service.get_response(db, payload.user_id, retry_prompt, [], feature="Quiz")
             else:
                 quiz_data = [{"question": "Failed to generate valid quiz format", "options": ["A"], "answer_index": 0, "explanation": "Error"}]
         
@@ -183,9 +199,9 @@ async def generate_quiz(payload: QuizGenerateRequest, db: Session = Depends(get_
         "questions": quiz_data
     })
 
-@router.get("/session-summary/{user_id}")
-async def get_session_summary(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    """Generates an AI summary of the user's recent chats."""
+@router.post("/end-session/{user_id}")
+async def end_session(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    """Generates an AI summary of the user's recent chats and saves to MongoDB."""
     collection = get_chat_history_collection()
     
     # Get last 20 messages for context
@@ -213,7 +229,7 @@ async def get_session_summary(user_id: int, db: Session = Depends(get_db), curre
         f"Transcript:\n{chat_text}"
     )
     
-    ai_response_text = ai_tutor_service.get_response(db, user_id, prompt, [])
+    ai_response_text = ai_tutor_service.get_response(db, user_id, prompt, [], feature="Summary")
     
     summary_data = None
     for attempt in range(2):
@@ -230,19 +246,26 @@ async def get_session_summary(user_id: int, db: Session = Depends(get_db), curre
         except Exception:
             if attempt == 0:
                 retry_prompt = "Your previous response was invalid JSON. Return ONLY the raw JSON object without markdown formatting like ```json."
-                ai_response_text = ai_tutor_service.get_response(db, user_id, retry_prompt, [])
+                ai_response_text = ai_tutor_service.get_response(db, user_id, retry_prompt, [], feature="Summary")
             else:
                 summary_data = {
-            "topics_covered": ["Could not parse summary"],
-            "key_takeaways": [],
-            "unresolved_doubts": [],
-            "recommended_next_steps": []
-        }
+                    "topics_covered": ["Could not parse summary"],
+                    "key_takeaways": [],
+                    "unresolved_doubts": [],
+                    "recommended_next_steps": []
+                }
         
-    summary_data["user_id"] = str(user_id)
+    summary_data["user_id"] = user_id
     summary_data["total_messages"] = len(history_docs) * 2
+    summary_data["timestamp"] = datetime.utcnow()
     
-    return summary_data
+    from database.connection import get_session_summary_collection
+    summary_collection = get_session_summary_collection()
+    await summary_collection.insert_one(summary_data)
+    
+    summary_data.pop("_id", None)
+    
+    return success_response(data=summary_data, message="Session ended and summarized")
 
 @router.get("/history/{user_id}")
 async def get_latest_chat_history(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):

@@ -60,7 +60,7 @@ class AITutorService:
 
         return prompt
 
-    def get_response(self, db: Session, user_id: int, message: str, chat_history: List[Dict[str, str]]) -> str:
+    def get_response(self, db: Session, user_id: int, message: str, chat_history: List[Dict[str, str]], feature: str = "Tutor") -> str:
         """Sends history and context to the abstracted LLM service."""
         system_prompt = self._build_system_prompt(db, user_id)
         
@@ -68,7 +68,10 @@ class AITutorService:
         return llm_service.generate_response(
             system_prompt=system_prompt,
             user_message=message,
-            chat_history=chat_history
+            chat_history=chat_history,
+            db=db,
+            user_id=user_id,
+            feature=feature
         )
 
 ai_tutor_service = AITutorService()

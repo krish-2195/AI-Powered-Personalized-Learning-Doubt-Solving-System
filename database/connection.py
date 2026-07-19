@@ -63,23 +63,9 @@ def get_db():
 
 def init_postgres_db():
     """Initialize PostgreSQL database tables"""
-    Base.metadata.create_all(bind=engine)
-    
-    # Run migrations/updates
-    from sqlalchemy import text
-    with engine.connect() as conn:
-        try:
-            conn.execute(text("ALTER TABLE learning_logs ADD COLUMN IF NOT EXISTS last_position INTEGER DEFAULT 0;"))
-            conn.commit()
-        except Exception:
-            try:
-                # SQLite fallback
-                conn.execute(text("ALTER TABLE learning_logs ADD COLUMN last_position INTEGER DEFAULT 0;"))
-                conn.commit()
-            except Exception:
-                pass # Already exists
-                
-    print("PostgreSQL database tables created and updated successfully")
+    # Now managed by Alembic
+    # Base.metadata.create_all(bind=engine)
+    print("PostgreSQL database tables initialized via Alembic")
 
 # MongoDB setup
 class MongoDBManager:

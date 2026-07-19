@@ -15,12 +15,14 @@ from backend.routers.auth import get_current_user
 
 router = APIRouter()
 
+import asyncio
+
 @router.get("/prediction/")
-def get_prediction(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def get_prediction(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     """
     Returns the user's overall ML prediction status.
     Used by ChatPage sidebar to display prediction badge.
     """
     from ml.services.ml_service import ml_service
-    res = ml_service.predict_overall_performance(db, user_id)
+    res = await asyncio.to_thread(ml_service.predict_overall_performance, db, user_id)
     return success_response(data=res)

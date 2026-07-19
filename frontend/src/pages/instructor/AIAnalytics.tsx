@@ -1,45 +1,132 @@
-import { useState, useEffect } from 'react'
-import { BrainCircuit, AlertTriangle, Lightbulb, TrendingDown, Users, BookOpen, ChevronRight, Activity } from 'lucide-react'
-import api from '../../lib/api'
+import { useState, useEffect } from 'react';
+import { BrainCircuit, AlertTriangle, Lightbulb, TrendingDown, Users, BookOpen, ChevronRight, Activity, CheckCircle2, X } from 'lucide-react';
+import api from '../../lib/api';
 
 type StruggleTopic = {
-  topic: string
-  student_count: number
-  severity: 'high' | 'critical' | 'medium' | 'low'
-}
+  topic: string;
+  student_count: number;
+  severity: 'high' | 'critical' | 'medium' | 'low';
+};
 
 export default function AIAnalytics() {
-  const [strugglingTopics, setStrugglingTopics] = useState<StruggleTopic[]>([])
-  const [loading, setLoading] = useState(true)
+  const [strugglingTopics, setStrugglingTopics] = useState<StruggleTopic[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Modals state
+  const [activeModal, setActiveModal] = useState<'message' | 'assign' | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<string | null>(null);
+  const [messageBody, setMessageBody] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isGeneratingPlan, setIsGeneratingPlan] = useState(false);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchAnalytics = async () => {
       try {
-        const response = await api.get('/api/instructor/struggling-topics')
+        const response = await api.get('/api/instructor/struggling-topics');
         if (response.data?.data) {
-          setStrugglingTopics(response.data.data)
+          setStrugglingTopics(response.data.data);
         }
       } catch (error) {
-        console.error('Failed to fetch AI analytics', error)
+        console.error('Failed to fetch AI analytics', error);
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
-    fetchAnalytics()
-  }, [])
+    };
+    fetchAnalytics();
+  }, []);
 
   const getSeverityStyles = (severity: string) => {
     switch (severity) {
       case 'critical':
-        return { color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/30', bar: 'bg-rose-500', icon: AlertTriangle }
+        return { color: 'text-rose-400', bg: 'bg-rose-500/10', border: 'border-rose-500/30', bar: 'bg-rose-500', icon: AlertTriangle };
       case 'high':
-        return { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30', bar: 'bg-amber-500', icon: TrendingDown }
+        return { color: 'text-amber-400', bg: 'bg-amber-500/10', border: 'border-amber-500/30', bar: 'bg-amber-500', icon: TrendingDown };
       case 'medium':
-        return { color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30', bar: 'bg-blue-500', icon: Activity }
+        return { color: 'text-blue-400', bg: 'bg-blue-500/10', border: 'border-blue-500/30', bar: 'bg-blue-500', icon: Activity };
       default:
-        return { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', bar: 'bg-emerald-500', icon: Lightbulb }
+        return { color: 'text-emerald-400', bg: 'bg-emerald-500/10', border: 'border-emerald-500/30', bar: 'bg-emerald-500', icon: Lightbulb };
     }
-  }
+  };
+
+  const handleOpenModal = (type: 'message' | 'assign', topic: string) => {
+    setSelectedTopic(topic);
+    setMessageBody('');
+    setActiveModal(type);
+    setSuccessMessage(null);
+  };
+
+  const handleSendMessage = async () => {
+    if (!selectedTopic || !messageBody.trim()) return;
+    setIsSubmitting(true);
+    
+    try {
+      await api.post('/api/messages/send-to-topic', {
+        topic: selectedTopic,
+        subject: `Instructor Message regarding ${selectedTopic}`,
+        body: messageBody
+      });
+      setSuccessMessage('Message sent successfully to struggling students.');
+      setTimeout(() => {
+        setActiveModal(null);
+        setSuccessMessage(null);
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to send message:', error);
+      alert('Failed to send message.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleAssignReading = async () => {
+    if (!selectedTopic) return;
+    setIsSubmitting(true);
+    
+    try {
+      // In a real app, you would let the instructor select the specific Content ID.
+      // For now, we'll send a general assignment message.
+      await api.post('/api/messages/send-to-topic', {
+        topic: selectedTopic,
+        subject: `New Reading Assignment: ${selectedTopic}`,
+        body: `Please review the latest uploaded materials for the topic: ${selectedTopic}.`
+      });
+      setSuccessMessage('Reading assignment sent successfully.');
+      setTimeout(() => {
+        setActiveModal(null);
+        setSuccessMessage(null);
+      }, 2000);
+    } catch (error) {
+      console.error('Failed to assign reading:', error);
+      alert('Failed to assign reading.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleGenerateAIPlan = async () => {
+    if (strugglingTopics.length === 0) return;
+    setIsGeneratingPlan(true);
+    const topTopic = strugglingTopics[0].topic;
+    
+    try {
+      const response = await api.post('/api/instructor/generate-plan', { topic: topTopic });
+      if (response.data.success) {
+        // Send the generated plan to the students
+        await api.post('/api/messages/send-to-topic', {
+          topic: topTopic,
+          subject: `AI Study Plan: ${topTopic}`,
+          body: response.data.data.plan
+        });
+        alert(`AI Study Plan generated and sent to students struggling with ${topTopic}!`);
+      }
+    } catch (error) {
+      console.error('Failed to generate AI plan:', error);
+      alert('Failed to generate AI Study Plan.');
+    } finally {
+      setIsGeneratingPlan(false);
+    }
+  };
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12 relative">
@@ -61,7 +148,6 @@ export default function AIAnalytics() {
       </header>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
         {/* Left Column - The Top Struggles */}
         <div className="lg:col-span-2 space-y-6">
           <h2 className="text-xl font-bold text-white flex items-center gap-2">
@@ -84,8 +170,8 @@ export default function AIAnalytics() {
               </div>
             ) : (
               strugglingTopics.map((topic, idx) => {
-                const styles = getSeverityStyles(topic.severity)
-                const Icon = styles.icon
+                const styles = getSeverityStyles(topic.severity);
+                const Icon = styles.icon;
                 
                 return (
                   <div key={idx} className="bg-surface-800 border border-white/[0.06] rounded-2xl p-6 hover:border-white/10 transition-colors group">
@@ -108,17 +194,23 @@ export default function AIAnalytics() {
                     </div>
 
                     <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                      <button className="flex-1 bg-surface-700 hover:bg-surface-600 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => handleOpenModal('assign', topic.topic)}
+                        className="flex-1 bg-surface-700 hover:bg-surface-600 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
+                      >
                         <BookOpen size={16} className="text-slate-400" />
                         Assign Reading
                       </button>
-                      <button className="flex-1 bg-surface-700 hover:bg-surface-600 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => handleOpenModal('message', topic.topic)}
+                        className="flex-1 bg-surface-700 hover:bg-surface-600 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
+                      >
                         <Users size={16} className="text-slate-400" />
                         Message Students
                       </button>
                     </div>
                   </div>
-                )
+                );
               })
             )}
           </div>
@@ -162,9 +254,13 @@ export default function AIAnalytics() {
               </div>
             </div>
             
-            <button className="w-full mt-8 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 group">
-              Generate AI Study Plan
-              <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />
+            <button 
+              onClick={handleGenerateAIPlan}
+              disabled={isGeneratingPlan || strugglingTopics.length === 0}
+              className="w-full mt-8 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-4 rounded-xl transition-all shadow-lg shadow-indigo-500/25 flex items-center justify-center gap-2 group disabled:opacity-50"
+            >
+              {isGeneratingPlan ? 'Generating...' : 'Generate AI Study Plan'}
+              {!isGeneratingPlan && <ChevronRight size={18} className="group-hover:translate-x-1 transition-transform" />}
             </button>
           </div>
           
@@ -205,11 +301,72 @@ export default function AIAnalytics() {
             </div>
           </div>
         </div>
-        
       </div>
-    </div>
-  )
-}
 
-// Ensure the CheckCircle2 icon is imported for the empty state
-import { CheckCircle2 } from 'lucide-react'
+      {/* Modals Overlay */}
+      {activeModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-surface-800 border border-white/[0.06] rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
+            <div className="flex items-center justify-between p-6 border-b border-white/[0.06]">
+              <h3 className="text-xl font-bold text-white">
+                {activeModal === 'message' ? `Message Students (${selectedTopic})` : `Assign Reading (${selectedTopic})`}
+              </h3>
+              <button 
+                onClick={() => setActiveModal(null)}
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <div className="p-6">
+              {successMessage ? (
+                <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-xl flex items-center gap-3">
+                  <CheckCircle2 size={24} />
+                  {successMessage}
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {activeModal === 'message' ? (
+                    <>
+                      <p className="text-slate-400 text-sm">
+                        This message will be sent directly to all students currently flagged as struggling with <strong className="text-white">{selectedTopic}</strong>.
+                      </p>
+                      <textarea
+                        value={messageBody}
+                        onChange={(e) => setMessageBody(e.target.value)}
+                        placeholder="Type your encouraging message or instructions here..."
+                        rows={5}
+                        className="w-full bg-surface-900 border border-white/[0.06] rounded-xl p-4 text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors resize-none"
+                      />
+                      <button
+                        onClick={handleSendMessage}
+                        disabled={isSubmitting || !messageBody.trim()}
+                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? 'Sending...' : 'Send Message'}
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-slate-400 text-sm">
+                        Are you sure you want to assign reading materials for <strong className="text-white">{selectedTopic}</strong> to all struggling students?
+                      </p>
+                      <button
+                        onClick={handleAssignReading}
+                        disabled={isSubmitting}
+                        className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        {isSubmitting ? 'Assigning...' : 'Confirm Assignment'}
+                      </button>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

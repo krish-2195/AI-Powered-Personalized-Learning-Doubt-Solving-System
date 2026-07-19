@@ -15,6 +15,7 @@ const ChatPage = lazy(() => import('./pages/ChatPage'))
 const ProfilePage = lazy(() => import('./pages/ProfilePage'))
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'))
 const VideoLearningPage = lazy(() => import('./pages/VideoLearningPage'))
+const StudentMessages = lazy(() => import('./pages/student/Messages'))
 
 // Admin pages (Phase 3)
 const AdminLayout = lazy(() => import('./components/AdminLayout'))
@@ -32,6 +33,8 @@ const QuestionBank = lazy(() => import('./pages/instructor/QuestionBank'))
 const AIAnalytics = lazy(() => import('./pages/instructor/AIAnalytics'))
 const InstructorCourses = lazy(() => import('./pages/instructor/InstructorCourses'))
 const StudentAnalytics = lazy(() => import('./pages/instructor/StudentAnalytics'))
+const InstructorMessages = lazy(() => import('./pages/instructor/Messages'))
+const InstructorProfile = lazy(() => import('./pages/instructor/Profile'))
 
 function App() {
   const { token, user } = useAuth()
@@ -94,6 +97,8 @@ function App() {
           <Route path="courses" element={<InstructorCourses />} />
           <Route path="analytics" element={<StudentAnalytics />} />
           <Route path="ai-analytics" element={<AIAnalytics />} />
+          <Route path="messages" element={<InstructorMessages />} />
+          <Route path="profile" element={<InstructorProfile />} />
         </Route>
         
         {/* Student routes */}
@@ -103,6 +108,7 @@ function App() {
           <Route path="learning" element={isAuthenticated ? <Learning /> : redirect} />
           <Route path="learning/video/:id" element={isAuthenticated ? <VideoLearningPage /> : redirect} />
           <Route path="chat" element={isAuthenticated ? <ChatPage /> : redirect} />
+          <Route path="messages" element={isAuthenticated ? <StudentMessages /> : redirect} />
           <Route path="profile" element={isAuthenticated ? <ProfilePage /> : redirect} />
           <Route path="analytics" element={isAuthenticated ? <AnalyticsPage /> : redirect} />
         </Route>

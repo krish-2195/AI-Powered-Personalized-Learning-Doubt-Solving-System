@@ -85,3 +85,25 @@ PROJECT_STATUS.md
 .venv/
 ml/models/*.pkl
 ml/artifacts/model_versions/*.pkl
+
+# Backups & temporary files
+backup_*.csv
+backups/
+*.zip
+
+# URL check outputs
+url_check_*.csv
+
+# Uploads directory
+uploads/
+
+# Temporary/one-off scripts
+extract.py
+reset_db.py
+scripts/create_assets.py
+scripts/create_assets2.py
+scripts/demo_flow.py
+test_api.py
+
+# SQLite fallback DB
+learning_platform.db

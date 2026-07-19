@@ -1,4 +1,6 @@
-import { Sparkles, CheckCircle2, XCircle, Target } from 'lucide-react'
+import { Sparkles, CheckCircle2, XCircle, Target, BookOpen } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import api from '../../lib/api'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import remarkMath from 'remark-math'
@@ -15,6 +17,7 @@ interface QuizTabProps {
   detectedTopic: string
   quizScore: number
   quizDone: boolean
+  quizMLResult?: string | null
   onSelectAnswer: (qIdx: number, optIdx: number) => void
   onSetDifficulty: (d: string) => void
   onSetCount: (c: number) => void
@@ -24,9 +27,24 @@ interface QuizTabProps {
 
 export default function QuizTab({
   isBaseline, isGeneratingQuiz, quizQuestions, selectedAnswers,
-  quizDifficulty, quizCount, detectedTopic, quizScore, quizDone,
+  quizDifficulty, quizCount, detectedTopic, quizScore, quizDone, quizMLResult,
   onSelectAnswer, onSetDifficulty, onSetCount, onGenerateQuiz, onBackToChat,
 }: QuizTabProps) {
+  const [prerequisites, setPrerequisites] = useState<string[]>([])
+  
+  useEffect(() => {
+    if (quizDone && quizQuestions.length > 0) {
+      const scorePercentage = quizScore / quizQuestions.length;
+      if (scorePercentage < 0.6 && detectedTopic) {
+        api.get(`/api/learning/topic/${encodeURIComponent(detectedTopic)}/prerequisites`)
+          .then((res: any) => {
+            setPrerequisites(res.data.data?.prerequisites || []);
+          })
+          .catch((err: any) => console.error(err));
+      }
+    }
+  }, [quizDone, quizScore, quizQuestions.length, detectedTopic]);
+
   return (
     <div className="flex-1 min-h-0 overflow-y-auto px-4 py-8 custom-scrollbar relative">
       {!isBaseline && (
@@ -117,6 +135,43 @@ export default function QuizTab({
                 {quizDone && <p className="text-sm font-bold text-slate-300 mt-2">Score: {quizScore}/{quizQuestions.length}</p>}
               </div>
             </div>
+
+            {/* ML Prediction Result */}
+            {quizDone && quizMLResult && (
+              <div className={`p-4 rounded-xl border flex items-center gap-3 mb-6 ${
+                quizMLResult === 'Strong' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
+                quizMLResult === 'Moderate' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                'bg-red-500/10 border-red-500/20 text-red-400'
+              }`}>
+                <Sparkles className="shrink-0" size={20} />
+                <div>
+                  <p className="text-sm font-bold uppercase tracking-wider opacity-80 mb-0.5">AI Mastery Prediction</p>
+                  <p className="text-base font-medium">Your current mastery level is <strong className="text-white">{quizMLResult}</strong></p>
+                </div>
+              </div>
+            )}
+
+            {/* Prerequisite Context on Failure */}
+            {quizDone && quizQuestions.length > 0 && (quizScore / quizQuestions.length) < 0.6 && prerequisites.length > 0 && (
+              <div className="p-5 rounded-2xl border border-blue-500/30 bg-blue-500/10 mb-6 flex gap-4">
+                <div className="shrink-0 mt-1">
+                  <BookOpen className="text-blue-400" size={24} />
+                </div>
+                <div>
+                  <h3 className="font-bold text-blue-300 mb-1">Struggling with {detectedTopic}?</h3>
+                  <p className="text-sm text-blue-200/80 mb-3">
+                    Our AI tutor noticed you might have gaps in the fundamental prerequisites. Before trying again, consider reviewing:
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {prerequisites.map((prereq, idx) => (
+                      <span key={idx} className="px-3 py-1 bg-blue-500/20 text-blue-300 rounded-full text-xs font-semibold">
+                        {prereq}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Question cards */}
             {quizQuestions.map((item, idx) => {

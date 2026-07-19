@@ -11,8 +11,8 @@ from database.models.postgres_models import User, UserProfile, InvitationToken
 from backend.utils.response_formatter import success_response, error_response
 from backend.services.gamification import GamificationService
 
-# Import the new Auth services
 from backend.services.auth import TokenService, PasswordService, EmailService, OAuthService, SessionService
+from backend.limiter import limiter
 
 router = APIRouter()
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/auth/login")
@@ -59,7 +59,8 @@ class AcceptInviteRequest(BaseModel):
     password: str
 
 @router.post("/register")
-def register(user: UserRegister, db: Session = Depends(get_db)):
+@limiter.limit("5/minute")
+def register(request: Request, user: UserRegister, db: Session = Depends(get_db)):
     """Register a new user, send verification email, and persist to PostgreSQL."""
     from backend.utils.course_mapping import CourseMappingService
     if not CourseMappingService.validate_course_subject(user.course.strip(), user.subjects):
@@ -210,7 +211,8 @@ def accept_invite(payload: AcceptInviteRequest, response: Response, db: Session 
         return error_response(str(e), "Registration Failed")
 
 @router.post("/login")
-def login(payload: LoginRequest, response: Response, request: Request, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
     email = payload.email.strip().lower()
     user = db.query(User).filter(User.email == email).first()
 
@@ -504,7 +506,7 @@ def _handle_oauth_login(user_info, response: Response, request: Request, db: Ses
     return success_response(data=user_data, message="Login successful")
 
 @router.get("/me")
-def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def get_me(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """Return the authenticated user profile summary."""
     try:
         payload = TokenService.decode_access_token(token)
@@ -540,6 +542,25 @@ def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(
     }
     
     return success_response(data=user_data, message="Profile fetched successfully")
+
+def _get_user_from_token(token: str, db: Session) -> User:
+    try:
+        payload = TokenService.decode_access_token(token)
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Invalid token")
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+        
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=401, detail="User not found")
+        
+    return user
+
+def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)) -> User:
+    """Dependency to get the current authenticated user."""
+    return _get_user_from_token(token, db)
 
 def get_current_admin(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     """Return the authenticated admin user or raise 403."""

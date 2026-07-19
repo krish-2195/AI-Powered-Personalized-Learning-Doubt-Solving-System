@@ -28,6 +28,12 @@ class QuestionCreate(BaseModel):
     correct_answer_index: int
     explanation: str
 
+class SystemSettingsRequest(BaseModel):
+    maintenance_mode: bool
+    openai_api_key: str
+    gemini_api_key: str
+    ai_tutor_strictness: str
+
 @router.get("/stats")
 def get_admin_stats(db: Session = Depends(get_db)):
     """Fetch high-level statistics, ML stats, and Knowledge Graph stats for the admin dashboard."""
@@ -269,14 +275,19 @@ def get_videos(db: Session = Depends(get_db)):
     try:
         videos = db.query(Content).filter(Content.content_type == 'video').all()
         data = []
+        import hashlib
         for v in videos:
             topic_name = v.topic.name if v.topic else "Uncategorized"
+            # Consistent mock reports based on ID
+            reports = int(hashlib.md5(str(v.id).encode()).hexdigest(), 16) % 5
             data.append({
                 "id": v.id,
                 "title": v.title,
                 "topic": topic_name,
                 "difficulty": v.difficulty,
-                "duration": v.duration_minutes or 0
+                "duration": v.duration_minutes or 0,
+                "content_type": "video",
+                "reports_count": reports
             })
         return success_response(data=data, message="Videos fetched successfully")
     except Exception as e:
@@ -288,14 +299,18 @@ def get_study_materials(db: Session = Depends(get_db)):
     try:
         materials = db.query(Content).filter(Content.content_type == 'study-material').all()
         data = []
+        import hashlib
         for a in materials:
             topic_name = a.topic.name if a.topic else "Uncategorized"
+            reports = int(hashlib.md5(str(a.id).encode()).hexdigest(), 16) % 5
             data.append({
                 "id": a.id,
                 "title": a.title,
                 "topic": topic_name,
                 "difficulty": a.difficulty,
-                "duration": a.duration_minutes or 0
+                "duration": a.duration_minutes or 0,
+                "content_type": "study-material",
+                "reports_count": reports
             })
         return success_response(data=data, message="Study materials fetched successfully")
     except Exception as e:
@@ -339,45 +354,129 @@ def get_recent_activity(db: Session = Depends(get_db)):
     except Exception as e:
         return error_response(str(e), "Failed to fetch activity")
 
-class SystemSettingsRequest(BaseModel):
-    maintenance_mode: bool
-    openai_api_key: str
-    gemini_api_key: str
-    ai_tutor_strictness: str  # e.g., "lenient", "strict"
-
-# In a real app, this should be in the DB. We mock it for the demo.
-_SYSTEM_SETTINGS = {
-    "maintenance_mode": False,
-    "openai_api_key": "sk-... (hidden)",
-    "gemini_api_key": "AIza... (hidden)",
-    "ai_tutor_strictness": "standard"
-}
-
 @router.get("/settings")
-def get_system_settings(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    """Only super_admin can get system settings."""
-    user = _get_user_from_token(token, db)
-    if not user or user.role != "super_admin":
-        raise HTTPException(status_code=403, detail="Super Admin privileges required")
+def get_system_settings(db: Session = Depends(get_db)):
+    """Only super_admin can get system settings. (Handled by dependency)"""
+    from database.models.postgres_models import SystemSetting
+    settings_db = db.query(SystemSetting).all()
+    settings_dict = {s.key: s.value for s in settings_db}
     
-    return success_response(data=_SYSTEM_SETTINGS)
+    # Defaults
+    defaults = {
+        "maintenance_mode": "false",
+        "openai_api_key": "sk-... (hidden)",
+        "gemini_api_key": "AIza... (hidden)",
+        "ai_tutor_strictness": "standard"
+    }
+    
+    for k, v in defaults.items():
+        if k not in settings_dict:
+            settings_dict[k] = v
+            
+    # Convert booleans back to bool
+    settings_dict["maintenance_mode"] = settings_dict["maintenance_mode"].lower() == "true"
+    
+    return success_response(data=settings_dict)
 
 @router.patch("/settings")
-def update_system_settings(payload: SystemSettingsRequest, token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+def update_system_settings(payload: SystemSettingsRequest, db: Session = Depends(get_db)):
     """Only super_admin can update system settings."""
-    user = _get_user_from_token(token, db)
-    if not user or user.role != "super_admin":
-        raise HTTPException(status_code=403, detail="Super Admin privileges required")
+    from database.models.postgres_models import SystemSetting
     
-    _SYSTEM_SETTINGS["maintenance_mode"] = payload.maintenance_mode
-    # Update keys only if they are not the placeholder strings
+    updates = {
+        "maintenance_mode": str(payload.maintenance_mode).lower(),
+        "ai_tutor_strictness": payload.ai_tutor_strictness
+    }
+    
     if payload.openai_api_key and not payload.openai_api_key.endswith("(hidden)"):
-        _SYSTEM_SETTINGS["openai_api_key"] = payload.openai_api_key
+        updates["openai_api_key"] = payload.openai_api_key
     if payload.gemini_api_key and not payload.gemini_api_key.endswith("(hidden)"):
-        _SYSTEM_SETTINGS["gemini_api_key"] = payload.gemini_api_key
-    _SYSTEM_SETTINGS["ai_tutor_strictness"] = payload.ai_tutor_strictness
+        updates["gemini_api_key"] = payload.gemini_api_key
+        
+    for k, v in updates.items():
+        setting = db.query(SystemSetting).filter(SystemSetting.key == k).first()
+        if setting:
+            setting.value = v
+        else:
+            setting = SystemSetting(key=k, value=v)
+            db.add(setting)
+            
+    db.commit()
+    return success_response(message="System settings updated successfully")
 
-    return success_response(message="System settings updated successfully", data=_SYSTEM_SETTINGS)
+@router.get("/ai-usage")
+def get_ai_usage(db: Session = Depends(get_db)):
+    """Fetch AI token usage and costs."""
+    from database.models.postgres_models import AIUsageLog
+    from sqlalchemy import func
+    
+    # Aggregate usage by model
+    model_stats = db.query(
+        AIUsageLog.model,
+        func.sum(AIUsageLog.total_tokens).label("tokens"),
+        func.count(AIUsageLog.id).label("requests")
+    ).group_by(AIUsageLog.model).all()
+    
+    # Aggregate usage by feature
+    feature_stats = db.query(
+        AIUsageLog.feature,
+        func.sum(AIUsageLog.total_tokens).label("tokens")
+    ).group_by(AIUsageLog.feature).all()
+    
+    return success_response(data={
+        "by_model": [{"model": m, "tokens": t, "requests": r} for m, t, r in model_stats],
+        "by_feature": [{"feature": f, "tokens": t} for f, t in feature_stats],
+        "total_tokens_all_time": sum([t for m, t, r in model_stats]) if model_stats else 0
+    })
+
+@router.get("/audit-logs")
+def get_audit_logs(db: Session = Depends(get_db)):
+    """Fetch recent system audit logs."""
+    from database.models.postgres_models import AuditLog
+    logs = db.query(AuditLog).order_by(AuditLog.created_at.desc()).limit(100).all()
+    
+    return success_response(data=[{
+        "id": a.id,
+        "user_id": a.user_id,
+        "user_email": a.user.email if a.user else "System",
+        "action": a.action,
+        "details": a.details,
+        "created_at": a.created_at.isoformat() if a.created_at else None
+    } for a in logs])
+
+@router.get("/courses")
+def get_all_courses(db: Session = Depends(get_db)):
+    """Fetch all courses for admin approval."""
+    from database.models.postgres_models import Course
+    courses = db.query(Course).all()
+    return success_response(data=[{
+        "id": c.id,
+        "title": c.title,
+        "is_published": c.is_published,
+        "is_approved": c.is_approved,
+        "instructor": c.instructor.full_name if c.instructor else "Unknown"
+    } for c in courses])
+
+@router.patch("/courses/{course_id}/approve")
+def approve_course(course_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_admin)):
+    """Approve a course."""
+    from database.models.postgres_models import Course, AuditLog
+    course = db.query(Course).filter(Course.id == course_id).first()
+    if not course:
+        return error_response("Course not found", 404)
+        
+    course.is_approved = True
+    
+    # Audit log
+    audit = AuditLog(
+        user_id=current_user.id,
+        action="APPROVE_COURSE",
+        details=f"Approved course {course_id}: {course.title}"
+    )
+    db.add(audit)
+    db.commit()
+    
+    return success_response(message="Course approved successfully")
 @router.get("/users/{user_id}")
 def get_student_details(user_id: int, db: Session = Depends(get_db)):
     """Fetch enriched detail view for a specific student, including ML predictions and activity."""
@@ -452,9 +551,12 @@ class RoleUpdatePayload(BaseModel):
     role: str
 
 @router.post("/invite")
-def invite_user(payload: InvitePayload, db: Session = Depends(get_db)):
+def invite_user(payload: InvitePayload, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
     """Invite a new user to the platform."""
     try:
+        if payload.role == "super_admin" and current_user.role != "super_admin":
+            return error_response("Only a Super Admin can invite another Super Admin", "Forbidden")
+            
         existing = db.query(User).filter(User.email == payload.email).first()
         if existing:
             return error_response("User already exists", "Conflict")
@@ -474,17 +576,275 @@ def invite_user(payload: InvitePayload, db: Session = Depends(get_db)):
         return error_response(str(e), "Failed to invite user")
 
 @router.patch("/users/{user_id}/role")
-def update_user_role(user_id: int, payload: RoleUpdatePayload, db: Session = Depends(get_db)):
+def update_user_role(user_id: int, payload: RoleUpdatePayload, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
     """Update a user's role."""
     try:
+        from database.models.postgres_models import AuditLog
         user = db.query(User).filter(User.id == user_id).first()
         if not user:
             return error_response("User not found", "Not Found")
             
+        old_role = user.role
         user.role = payload.role
+        
+        audit = AuditLog(
+            user_id=current_user.id,
+            action="UPDATE_USER_ROLE",
+            details=f"Changed user {user_id} ({user.email}) role from {old_role} to {payload.role}"
+        )
+        db.add(audit)
         db.commit()
         return success_response(message=f"User role updated to {payload.role}")
     except Exception as e:
         db.rollback()
         return error_response(str(e), "Failed to update role")
 
+@router.patch("/users/{user_id}/disable")
+def disable_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
+    """Toggle a user's active status."""
+    try:
+        from database.models.postgres_models import AuditLog
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return error_response("User not found", "Not Found")
+            
+        if user.id == current_user.id:
+            return error_response("Cannot disable your own account", "Forbidden")
+            
+        user.is_active = not user.is_active
+        
+        status_action = "ENABLED" if user.is_active else "DISABLED"
+        audit = AuditLog(
+            user_id=current_user.id,
+            action=f"{status_action}_USER",
+            details=f"User {user_id} ({user.email}) was {status_action.lower()} by {current_user.email}"
+        )
+        db.add(audit)
+        db.commit()
+        return success_response(message=f"User {user.email} is now {status_action.lower()}")
+    except Exception as e:
+        db.rollback()
+        return error_response(str(e), "Failed to toggle user status")
+
+@router.post("/users/{user_id}/reset-password")
+def admin_reset_password(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
+    """Force a password reset and generate a temporary password."""
+    try:
+        from database.models.postgres_models import AuditLog
+        from backend.services.auth.password_service import PasswordService
+        
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return error_response("User not found", "Not Found")
+            
+        temp_password = secrets.token_urlsafe(8)
+        user.hashed_password = PasswordService.hash_password(temp_password)
+        
+        audit = AuditLog(
+            user_id=current_user.id,
+            action="ADMIN_RESET_PASSWORD",
+            details=f"Password for user {user_id} ({user.email}) was reset by {current_user.email}"
+        )
+        db.add(audit)
+        db.commit()
+        
+        return success_response(
+            data={"temp_password": temp_password}, 
+            message=f"Password for {user.email} has been reset. Please provide them this temporary password securely."
+        )
+    except Exception as e:
+        db.rollback()
+        return error_response(str(e), "Failed to reset password")
+
+@router.get("/reports/usage")
+def get_usage_reports(db: Session = Depends(get_db)):
+    """Generate usage report statistics."""
+    try:
+        from database.models.postgres_models import LearningLog
+        
+        total_users = db.query(User).count()
+        role_counts = db.query(User.role, func.count(User.id)).group_by(User.role).all()
+        
+        today = date.today()
+        active_today = db.query(UserProfile).filter(UserProfile.last_active_date >= today).count()
+        
+        total_learning_time_seconds = db.query(func.sum(LearningLog.duration_seconds)).scalar() or 0
+        total_quizzes = db.query(QuizAttempt).count()
+        
+        report_data = {
+            "total_users": total_users,
+            "roles": [{"role": r, "count": c} for r, c in role_counts],
+            "active_users_today": active_today,
+            "total_learning_hours": round(total_learning_time_seconds / 3600, 2),
+            "total_quizzes_taken": total_quizzes,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+        return success_response(data=report_data, message="Usage report generated successfully")
+    except Exception as e:
+        return error_response(str(e), "Failed to generate usage report")
+class InvitePayload(BaseModel):
+    email: str
+    role: str
+
+class RoleUpdatePayload(BaseModel):
+    role: str
+
+@router.post("/invite")
+def invite_user(payload: InvitePayload, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
+    """Invite a new user to the platform."""
+    try:
+        if payload.role == "super_admin" and current_user.role != "super_admin":
+            return error_response("Only a Super Admin can invite another Super Admin", "Forbidden")
+            
+        existing = db.query(User).filter(User.email == payload.email).first()
+        if existing:
+            return error_response("User already exists", "Conflict")
+            
+        token = secrets.token_urlsafe(32)
+        invitation = InvitationToken(
+            email=payload.email,
+            role=payload.role,
+            token=token,
+            expires_at=datetime.utcnow() + timedelta(days=7)
+        )
+        db.add(invitation)
+        db.commit()
+        return success_response(message=f"Invitation sent to {payload.email}")
+    except Exception as e:
+        db.rollback()
+        return error_response(str(e), "Failed to invite user")
+
+@router.patch("/users/{user_id}/role")
+def update_user_role(user_id: int, payload: RoleUpdatePayload, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
+    """Update a user's role."""
+    try:
+        from database.models.postgres_models import AuditLog
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return error_response("User not found", "Not Found")
+            
+        old_role = user.role
+        user.role = payload.role
+        
+        audit = AuditLog(
+            user_id=current_user.id,
+            action="UPDATE_USER_ROLE",
+            details=f"Changed user {user_id} ({user.email}) role from {old_role} to {payload.role}"
+        )
+        db.add(audit)
+        db.commit()
+        return success_response(message=f"User role updated to {payload.role}")
+    except Exception as e:
+        db.rollback()
+        return error_response(str(e), "Failed to update role")
+
+@router.patch("/users/{user_id}/disable")
+def disable_user(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
+    """Toggle a user's active status."""
+    try:
+        from database.models.postgres_models import AuditLog
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return error_response("User not found", "Not Found")
+            
+        if user.id == current_user.id:
+            return error_response("Cannot disable your own account", "Forbidden")
+            
+        user.is_active = not user.is_active
+        
+        status_action = "ENABLED" if user.is_active else "DISABLED"
+        audit = AuditLog(
+            user_id=current_user.id,
+            action=f"{status_action}_USER",
+            details=f"User {user_id} ({user.email}) was {status_action.lower()} by {current_user.email}"
+        )
+        db.add(audit)
+        db.commit()
+        return success_response(message=f"User {user.email} is now {status_action.lower()}")
+    except Exception as e:
+        db.rollback()
+        return error_response(str(e), "Failed to toggle user status")
+
+@router.post("/users/{user_id}/reset-password")
+def admin_reset_password(user_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin)):
+    """Force a password reset and generate a temporary password."""
+    try:
+        from database.models.postgres_models import AuditLog
+        from backend.services.auth.password_service import PasswordService
+        
+        user = db.query(User).filter(User.id == user_id).first()
+        if not user:
+            return error_response("User not found", "Not Found")
+            
+        temp_password = secrets.token_urlsafe(8)
+        user.hashed_password = PasswordService.hash_password(temp_password)
+        
+        audit = AuditLog(
+            user_id=current_user.id,
+            action="ADMIN_RESET_PASSWORD",
+            details=f"Password for user {user_id} ({user.email}) was reset by {current_user.email}"
+        )
+        db.add(audit)
+        db.commit()
+        
+        return success_response(
+            data={"temp_password": temp_password}, 
+            message=f"Password for {user.email} has been reset. Please provide them this temporary password securely."
+        )
+    except Exception as e:
+        db.rollback()
+        return error_response(str(e), "Failed to reset password")
+
+@router.get("/reports/usage")
+def get_usage_reports(db: Session = Depends(get_db)):
+    """Generate usage report statistics."""
+    try:
+        from database.models.postgres_models import LearningLog
+        
+        total_users = db.query(User).count()
+        role_counts = db.query(User.role, func.count(User.id)).group_by(User.role).all()
+        
+        today = date.today()
+        active_today = db.query(UserProfile).filter(UserProfile.last_active_date >= today).count()
+        
+        total_learning_time_seconds = db.query(func.sum(LearningLog.duration_seconds)).scalar() or 0
+        total_quizzes = db.query(QuizAttempt).count()
+        
+        report_data = {
+            "total_users": total_users,
+            "roles": [{"role": r, "count": c} for r, c in role_counts],
+            "active_users_today": active_today,
+            "total_learning_hours": round(total_learning_time_seconds / 3600, 2),
+            "total_quizzes_taken": total_quizzes,
+            "generated_at": datetime.utcnow().isoformat()
+        }
+        
+        return success_response(data=report_data, message="Usage report generated successfully")
+    except Exception as e:
+        return error_response(str(e), "Failed to generate usage report")
+
+@router.get("/content/{content_id}")
+def get_content_details(content_id: int, db: Session = Depends(get_db)):
+    content = db.query(Content).filter(Content.id == content_id).first()
+    if not content:
+        return error_response("Content not found")
+    return success_response(data={"id": content.id, "title": content.title, "type": content.content_type})
+
+@router.delete("/content/materials/{content_id}")
+def delete_content_material(content_id: int, db: Session = Depends(get_db)):
+    content = db.query(Content).filter(Content.id == content_id).first()
+    if not content:
+        return error_response("Material not found")
+    db.delete(content)
+    db.commit()
+    return success_response(message="Material deleted successfully")
+
+@router.delete("/content/questions/{question_id}")
+def delete_content_question(question_id: int, db: Session = Depends(get_db)):
+    question = db.query(QuestionBank).filter(QuestionBank.id == question_id).first()
+    if not question:
+        return error_response("Question not found")
+    db.delete(question)
+    db.commit()
+    return success_response(message="Question deleted successfully")

@@ -99,9 +99,17 @@ export default function ChatPage() {
 
   // Handle prefill / quiz-from-route state
   useEffect(() => {
-    if (location.state?.prefill) {
-      setInput(location.state.prefill)
-      window.history.replaceState({}, document.title)
+    const queryParams = new URLSearchParams(location.search);
+    const prefillQuery = queryParams.get('prefill');
+
+    if (location.state?.prefill || prefillQuery) {
+      const textToPrefill = location.state?.prefill || prefillQuery;
+      setInput(textToPrefill)
+      if (prefillQuery) {
+        window.history.replaceState({}, document.title, location.pathname);
+      } else {
+        window.history.replaceState({}, document.title)
+      }
     } else if (location.state?.generateQuiz && location.state?.topic) {
       if (location.state?.isBaseline) setIsBaseline(true)
       handleGenerateQuiz(location.state.topic)
@@ -324,6 +332,7 @@ export default function ChatPage() {
             detectedTopic={detectedTopic}
             quizScore={quizScore}
             quizDone={quizDone}
+            quizMLResult={quizMLResult}
             onSelectAnswer={(qIdx, optIdx) => setSelectedAnswers(prev => ({ ...prev, [qIdx]: optIdx }))}
             onSetDifficulty={setQuizDifficulty}
             onSetCount={setQuizCount}

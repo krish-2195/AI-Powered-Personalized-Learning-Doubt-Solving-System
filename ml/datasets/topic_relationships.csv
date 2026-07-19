@@ -1,96 +1,96 @@
 parent_topic,child_topic
 Programming Basics,Functions
-Programming Basics,Arrays
 Programming Basics,Complexity Analysis
-Functions,Recursion
+Programming Basics,Classes
+Programming Basics,Python Basics
+Programming Basics,Discrete Mathematics
+Discrete Mathematics,Linear Algebra
+Discrete Mathematics,Probability
+Probability,Statistics
+Statistics,Calculus
+Linear Algebra,Calculus
+Discrete Mathematics,Complexity Analysis
+Discrete Mathematics,Divide and Conquer
+Discrete Mathematics,Backtracking
+Linear Algebra,Dimensionality Reduction
+Linear Algebra,Neural Networks
+Probability,Bayesian Statistics
+Statistics,Descriptive Statistics
+Statistics,Probability Distributions
+Descriptive Statistics,Hypothesis Testing
+Hypothesis Testing,Regression Analysis
+Regression Analysis,Experimental Design
+Probability,ML Basics
+Statistics,ML Basics
+Calculus,Neural Networks
+Calculus,Training Techniques
+Classes,Objects
+Classes,Inheritance
+Objects,Encapsulation
+Objects,Constructors and Destructors
+Inheritance,Polymorphism
+Polymorphism,Abstraction
+Abstraction,Patterns Overview
+Abstraction,SOLID
+Programming Basics,Arrays
 Complexity Analysis,Arrays
-Complexity Analysis,Sorting
-Arrays,Searching
 Arrays,Sorting
-Arrays,Two Pointer Technique
-Arrays,Sliding Window
-Searching,Binary Search
-Sorting,Merge Sort
-Sorting,Quick Sort
-Recursion,Trees
+Arrays,Searching
+Arrays,Stacks
+Functions,Recursion
 Recursion,Backtracking
-Recursion,Dynamic Programming Basics
-Trees,Binary Search Trees
-Trees,Tree Traversals
-Trees,Heap
-Binary Search Trees,AVL Trees
-Binary Search Trees,Segment Trees
-Tree Traversals,BFS
-Tree Traversals,DFS
-Heap,Priority Queue
 Linked Lists,Stacks
 Linked Lists,Queues
-Linked Lists,Hash Tables
-Stacks,Expression Evaluation
-Stacks,Monotonic Stack
-Queues,BFS
-BFS,Shortest Path Algorithms
-DFS,Topological Sort
-DFS,Cycle Detection
-Graphs,BFS
-Graphs,DFS
-Graphs,Shortest Path Algorithms
-Graphs,Minimum Spanning Tree
-Graphs,Topological Sort
-Shortest Path Algorithms,Dijkstra Algorithm
-Shortest Path Algorithms,Bellman Ford Algorithm
-Dynamic Programming Basics,Knapsack Problem
-Dynamic Programming Basics,Longest Common Subsequence
-DBMS Basics,ER Model
-DBMS Basics,Relational Model
-ER Model,Relational Model
-Relational Model,Functional Dependencies
-Functional Dependencies,Normalization
-Normalization,First Normal Form
-First Normal Form,Second Normal Form
-Second Normal Form,Third Normal Form
-Third Normal Form,BCNF
-Normalization,SQL
-SQL,Basic Queries
-Basic Queries,Joins
-Basic Queries,Aggregation Functions
+Stacks,Recursion
+Queues,Trees
+Recursion,Trees
+Trees,Graphs
+Sorting,Searching
+Complexity Analysis,Divide and Conquer
+Divide and Conquer,Dynamic Programming
+Dynamic Programming,Greedy Algorithms
+Greedy Algorithms,Backtracking
+Backtracking,String Algorithms
+Graphs,Dynamic Programming
+Graphs,Greedy Algorithms
+Programming Basics,ER Model
+ER Model,SQL
+SQL,Normalization
+Normalization,Transactions
+Transactions,Indexing
+SQL,Joins
 Joins,Subqueries
-Joins,Views
-Subqueries,Window Functions
-Aggregation Functions,Group By and Having
-SQL,Transactions
+SQL,Aggregation Functions
+Aggregation Functions,Window Functions
 Transactions,ACID Properties
 ACID Properties,Concurrency Control
-Concurrency Control,Locks and Locking Protocols
-Concurrency Control,Deadlock in DBMS
-Locks and Locking Protocols,Isolation Levels
-Transactions,Indexing
+Concurrency Control,Isolation Levels
 Indexing,B Tree and B+ Tree
-Indexing,Hashing
-Operating System Basics,Processes
-Operating System Basics,Memory Basics
+Programming Basics,Processes
 Processes,Threads
-Processes,CPU Scheduling
+Threads,Scheduling
+Scheduling,Deadlocks
+Deadlocks,Memory Management
 Processes,Inter-Process Communication
 Threads,Thread Synchronization
 Thread Synchronization,Mutex and Semaphores
 Mutex and Semaphores,Producer Consumer Problem
-CPU Scheduling,FCFS and SJF
-FCFS and SJF,Round Robin Scheduling
+Scheduling,CPU Scheduling
+CPU Scheduling,Round Robin Scheduling
 Round Robin Scheduling,Priority Scheduling
-CPU Scheduling,Deadlocks
 Deadlocks,Deadlock Detection
 Deadlocks,Deadlock Prevention
 Deadlock Prevention,Bankers Algorithm
-Memory Basics,Memory Management
 Memory Management,Paging
 Memory Management,Segmentation
 Paging,Virtual Memory
 Virtual Memory,Page Replacement Algorithms
-Computer Networks Basics,OSI Model
-OSI Model,Physical Layer
-OSI Model,Data Link Layer
-OSI Model,Network Layer
+Programming Basics,OSI
+OSI,TCP/IP
+TCP/IP,Routing
+Routing,DNS
+DNS,HTTP
+OSI,Physical Layer
 Physical Layer,Data Link Layer
 Data Link Layer,Network Layer
 Network Layer,TCP/IP
@@ -103,26 +103,132 @@ Routing,Dynamic Routing
 Dynamic Routing,RIP
 Dynamic Routing,OSPF
 OSPF,BGP
-Routing,DNS
-DNS,HTTP
 HTTP,HTTPS and TLS
-HTTP,HTTP Methods and Status Codes
-Programming Basics,Classes
-Classes,Objects
-Classes,Access Modifiers
-Objects,Constructors and Destructors
-Objects,Encapsulation
-Access Modifiers,Encapsulation
-Encapsulation,Inheritance
-Inheritance,Single Inheritance
-Inheritance,Multiple Inheritance
-Single Inheritance,Method Overriding
-Multiple Inheritance,Diamond Problem
-Method Overriding,Polymorphism
-Polymorphism,Compile Time Polymorphism
-Polymorphism,Runtime Polymorphism
-Runtime Polymorphism,Abstraction
-Abstraction,Abstract Classes
-Abstraction,Interfaces
-Abstract Classes,Design Patterns
-Interfaces,Design Patterns
+Python Basics,NumPy
+NumPy,Pandas
+Pandas,Data Visualization
+Data Visualization,Data Pipelines
+Python Basics,Python Environment
+NumPy,Neural Networks
+Data Pipelines,MLOps Basics
+ML Basics,AI Basics
+Complexity Analysis,AI Basics
+AI Basics,Search
+Search,Game Theory
+Game Theory,Knowledge Representation
+Python Basics,ML Basics
+ML Basics,Supervised Learning
+Supervised Learning,Ensemble Methods
+ML Basics,Unsupervised Learning
+Supervised Learning,Model Evaluation
+Unsupervised Learning,Model Evaluation
+Model Evaluation,Dimensionality Reduction
+Dimensionality Reduction,ML Engineering
+Ensemble Methods,ML Engineering
+ML Engineering,Neural Networks
+Neural Networks,PyTorch
+PyTorch,CNN
+PyTorch,RNN
+CNN,Transfer Learning
+RNN,Transformers
+CNN,Transformers
+Transformers,Transfer Learning
+Transfer Learning,Training Techniques
+Python Basics,Text Preprocessing
+Text Preprocessing,Text Representation
+Text Representation,Text Classification
+Text Classification,Transformers for NLP
+Transformers,Transformers for NLP
+Transformers for NLP,Seq2Seq
+Seq2Seq,NER
+CNN,Image Processing
+Image Processing,Image Classification
+Image Classification,Object Detection
+Object Detection,Segmentation
+Transformers,Vision Transformers
+Segmentation,Vision Transformers
+Vision Transformers,Video Analysis
+Transformers,GenAI Basics
+Training Techniques,GenAI Basics
+GenAI Basics,Diffusion Models
+GenAI Basics,Prompt Engineering
+Prompt Engineering,RAG
+RAG,LLM Applications
+LLM Applications,LLM Fine-Tuning
+Transformers for NLP,GenAI Basics
+ML Engineering,MLOps Basics
+MLOps Basics,Experiment Tracking
+Experiment Tracking,Model Deployment
+Model Deployment,Data Versioning
+Data Versioning,Pipeline Orchestration
+Pipeline Orchestration,Model Monitoring
+Programming Basics,Frontend Basics
+Frontend Basics,JavaScript
+JavaScript,Frontend Frameworks
+JavaScript,Backend Development
+Frontend Frameworks,Full Stack
+Backend Development,Full Stack
+Full Stack,Web Security
+Backend Development,API Design
+SQL,Backend Development
+Operating System Basics,Cloud Basics
+Processes,Cloud Basics
+Cloud Basics,AWS
+AWS,Containers
+Containers,Kubernetes
+AWS,Serverless
+AWS,Cloud Storage
+Cloud Basics,Cloud Security
+Kubernetes,Cloud Security
+OSI,Security Basics
+TCP/IP,Security Basics
+Security Basics,Network Security
+Security Basics,Cryptography
+Cryptography,Ethical Hacking
+Network Security,Ethical Hacking
+Ethical Hacking,Application Security
+Application Security,Security Operations
+Security Operations,IAM
+Web Security,Application Security
+Programming Basics,SDLC
+SDLC,Requirements
+Requirements,Project Management
+Requirements,Design
+Design,Code Quality
+Code Quality,Version Control
+Patterns Overview,Creational Patterns
+Creational Patterns,Structural Patterns
+Structural Patterns,Behavioral Patterns
+Behavioral Patterns,SOLID
+SOLID,Applied Patterns
+Code Quality,Testing Basics
+Testing Basics,Unit Testing
+Unit Testing,TDD
+TDD,Integration Testing
+Integration Testing,Performance Testing
+Performance Testing,Test Automation
+Version Control,DevOps Basics
+Cloud Basics,DevOps Basics
+DevOps Basics,CI/CD
+CI/CD,IaC
+IaC,Configuration Management
+Configuration Management,Monitoring
+Monitoring,SRE
+Test Automation,CI/CD
+Containers,CI/CD
+SQL,Fundamentals
+Indexing,Fundamentals
+OSI,Fundamentals
+Fundamentals,Scalability
+Scalability,Database Design
+Database Design,Case Studies
+Case Studies,Distributed Systems
+Distributed Systems,Architecture
+Kubernetes,Distributed Systems
+Cloud Basics,Distributed Systems
+Monitoring,Architecture
+Python Basics,Descriptive Statistics
+Descriptive Statistics,Probability Distributions
+Probability Distributions,Hypothesis Testing
+Hypothesis Testing,Bayesian Statistics
+Bayesian Statistics,Regression Analysis

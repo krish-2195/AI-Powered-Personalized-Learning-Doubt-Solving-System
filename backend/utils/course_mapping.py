@@ -55,6 +55,32 @@ class CourseMappingService:
             'Computer Vision',
             'Generative AI',
             'MLOps'
+        ],
+        'Other': [
+            'Mathematics',
+            'Object-Oriented Programming (OOP)',
+            'Data Structures',
+            'Algorithms',
+            'Database Management System (DBMS)',
+            'Operating Systems (OS)',
+            'Computer Networks (CN)',
+            'Python',
+            'Artificial Intelligence Fundamentals',
+            'Machine Learning',
+            'Deep Learning',
+            'NLP',
+            'Computer Vision',
+            'Generative AI',
+            'MLOps',
+            'Web Development',
+            'Cloud Computing',
+            'Cyber Security',
+            'Software Engineering',
+            'Design Patterns',
+            'Testing',
+            'DevOps',
+            'System Design',
+            'Statistics'
         ]
     }
 

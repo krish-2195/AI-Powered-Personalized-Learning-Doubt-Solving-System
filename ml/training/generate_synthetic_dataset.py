@@ -10,6 +10,7 @@ import numpy as np
 import pandas as pd
 import networkx as nx
 import json
+from pathlib import Path
 
 np.random.seed(42)
 
@@ -17,13 +18,18 @@ np.random.seed(42)
 # 1. Load real topic structure from your own datasets
 # ──────────────────────────────────────────────────────────────────
 
-with open('/mnt/user-data/uploads/question_bank__1_.json') as f:
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+QUESTION_BANK_PATH = BASE_DIR / "datasets" / "question_bank.json"
+TOPIC_RELATIONSHIPS_PATH = BASE_DIR / "datasets" / "topic_relationships.csv"
+
+with open(QUESTION_BANK_PATH) as f:
     qb = json.load(f)
 qb_df = pd.DataFrame(qb)
 
 topic_subject_map = qb_df[['topic', 'topic_id', 'subject']].drop_duplicates().set_index('topic')
 
-rel = pd.read_csv('/mnt/user-data/uploads/topic_relationships.csv')
+rel = pd.read_csv(TOPIC_RELATIONSHIPS_PATH)
 G = nx.DiGraph()
 for _, row in rel.iterrows():
     G.add_edge(row['parent_topic'], row['child_topic'])
@@ -196,5 +202,6 @@ print()
 print("Summary stats:")
 print(df.describe())
 
-df.to_csv('/home/claude/synth_data/ai_learn_performance_dataset.csv', index=False)
-print("\nSaved to ai_learn_performance_dataset.csv")
+OUTPUT_PATH = BASE_DIR / "datasets" / "ai_learn_performance_dataset.csv"
+df.to_csv(OUTPUT_PATH, index=False)
+print(f"\nSaved to {OUTPUT_PATH}")

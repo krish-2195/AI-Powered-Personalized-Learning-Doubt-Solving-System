@@ -46,10 +46,12 @@ class Course(Base):
     description = Column(String)
     instructor_id = Column(Integer, ForeignKey("users.id"))
     is_published = Column(Boolean, default=False)
+    is_approved = Column(Boolean, default=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     
     # Relationships
     instructor = relationship("User", back_populates="courses")
+    subjects = relationship("Subject", back_populates="course")
 
 class UserProfile(Base):
     __tablename__ = "user_profiles"
@@ -112,11 +114,13 @@ class Subject(Base):
     __tablename__ = "subjects"
     
     id = Column(Integer, primary_key=True, index=True)
+    course_id = Column(Integer, ForeignKey("courses.id"), nullable=True)
     name = Column(String, unique=True, index=True, nullable=False)
     description = Column(String)
     
     # Relationships
     topics = relationship("Topic", back_populates="subject")
+    course = relationship("Course", back_populates="subjects")
 
 class Topic(Base):
     __tablename__ = "topics"
@@ -343,3 +347,83 @@ class InvitationToken(Base):
     
     inviter = relationship("User")
 
+class Note(Base):
+    __tablename__ = "notes"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    course_id = Column(Integer, ForeignKey("courses.id"), nullable=True)
+    subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
+    content_id = Column(Integer, ForeignKey("content.id"), nullable=True)
+    title = Column(String)
+    note_text = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    
+    user = relationship("User")
+
+class Bookmark(Base):
+    __tablename__ = "bookmarks"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    content_id = Column(Integer, ForeignKey("content.id"))
+    timestamp = Column(Float, nullable=True)  # Video playback timestamp
+    note = Column(String, nullable=True)      # Optional note at that timestamp
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User")
+
+class AIUsageLog(Base):
+    __tablename__ = "ai_usage"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    feature = Column(String) # Tutor, Quiz, Study Plan, Summary
+    model = Column(String)
+    prompt_tokens = Column(Integer, default=0)
+    completion_tokens = Column(Integer, default=0)
+    total_tokens = Column(Integer, default=0)
+    estimated_cost = Column(Float, default=0.0)
+    request_time_ms = Column(Integer, default=0)
+    status = Column(String, default="success") # success, error, rate_limit
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User")
+
+class AuditLog(Base):
+    __tablename__ = "audit_logs"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True) # Could be system
+    action = Column(String)
+    details = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    
+    user = relationship("User")
+
+class SystemSetting(Base):
+    __tablename__ = "system_settings"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    key = Column(String, unique=True, index=True)
+    value = Column(String) # JSON or string
+    updated_by = Column(Integer, ForeignKey("users.id"), nullable=True)
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
+class Message(Base):
+    __tablename__ = "messages"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"))
+    receiver_id = Column(Integer, ForeignKey("users.id"))
+    subject = Column(String)
+    body = Column(String)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    related_content_id = Column(Integer, ForeignKey("content.id"), nullable=True)
+    
+    sender = relationship("User", foreign_keys=[sender_id])
+    receiver = relationship("User", foreign_keys=[receiver_id])
+    related_content = relationship("Content")
