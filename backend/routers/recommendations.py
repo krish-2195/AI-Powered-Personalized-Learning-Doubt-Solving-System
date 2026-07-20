@@ -5,12 +5,12 @@ from typing import List
 from database.connection import get_db
 from ml.services.recommendation import recommendation_service
 from backend.utils.response_formatter import success_response, error_response
-from backend.routers.auth import get_current_user
+from backend.routers.auth import verify_user_ownership
 
 router = APIRouter()
 
 @router.get("/personalized/{user_id}")
-def get_personalized_recommendations(user_id: int, top_n: int = 10, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_personalized_recommendations(user_id: int, top_n: int = 10, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Get personalized learning recommendations using TF-IDF + SVD hybrid filtering,
     adjusted dynamically by Knowledge Graph dependencies.
@@ -54,7 +54,7 @@ class RecommendationFeedbackPayload(BaseModel):
     time_spent: int = 0
 
 @router.post("/feedback")
-def record_recommendation_feedback(payload: RecommendationFeedbackPayload, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def record_recommendation_feedback(payload: RecommendationFeedbackPayload, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Record feedback on recommendations (e.g. clicks) to tune SVD weights.
     """

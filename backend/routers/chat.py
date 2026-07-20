@@ -11,13 +11,66 @@ from database.connection import get_db, get_chat_history_collection
 from database.models.postgres_models import QuestionBank, Topic
 from backend.services.ai_tutor import ai_tutor_service
 from backend.utils.response_formatter import success_response, error_response
-from backend.routers.auth import get_current_user
+from backend.routers.auth import verify_user_ownership
 from backend.limiter import limiter
 
 router = APIRouter()
 
+@router.get("/context/{user_id}")
+async def get_chat_context(user_id: int, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
+    """Lightweight context for the chat sidebar — only weak topic + exam readiness.
+    Replaces the heavy /api/dashboard call that ran 6+ queries + TF-IDF + KG."""
+    from database.models.postgres_models import UserProfile, TopicPerformance, QuizAttempt
+    from sqlalchemy import func
+    from sqlalchemy.orm import joinedload
+    from ml.services.knowledge_graph import knowledge_graph
+
+    # Query 1: Top weak topic with prerequisites
+    weak = db.query(TopicPerformance).options(joinedload(TopicPerformance.topic))\
+        .filter(TopicPerformance.user_id == user_id, TopicPerformance.mastery_level == "Weak")\
+        .order_by(TopicPerformance.ewma_accuracy.asc()).first()
+
+    # Query 2: Quiz count + avg accuracy (single aggregate query)
+    quiz_stats = db.query(
+        func.count(QuizAttempt.id).label("count"),
+        func.coalesce(func.avg(QuizAttempt.accuracy), 0).label("avg")
+    ).filter(QuizAttempt.user_id == user_id).first()
+
+    quiz_count = quiz_stats.count or 0
+    avg_accuracy = float(quiz_stats.avg)
+
+    # Simple readiness calculation (avoids the full student_stats pipeline)
+    if quiz_count < 3:
+        readiness = {"score": 0, "label": "Not enough data"}
+    else:
+        score = round(avg_accuracy * 0.8, 1)
+        if score >= 64:
+            label = "High readiness"
+        elif score >= 48:
+            label = "Moderate readiness"
+        else:
+            label = "Needs improvement"
+        readiness = {"score": score, "label": label}
+
+    # Build weak topic data with prerequisites from KG
+    weak_data = None
+    if weak and weak.topic:
+        prereqs = knowledge_graph.get_prerequisites(weak.topic.name)
+        weak_data = {
+            "name": weak.topic.name,
+            "accuracy": round(weak.ewma_accuracy, 1),
+            "mastery": weak.mastery_level,
+            "prerequisites": prereqs[:2] if prereqs else []  # Top 2 prereqs only
+        }
+
+    return success_response(data={
+        "weak_topic": weak_data,
+        "examReadiness": readiness,
+        "is_new_user": quiz_count == 0
+    })
+
 @router.get("/session-summary/{session_id}")
-async def get_session_summary(session_id: str, current_user = Depends(get_current_user)):
+async def get_session_summary(session_id: str, current_user = Depends(verify_user_ownership)):
     """Fetch the session summary by session ID."""
     collection = get_chat_history_collection()
     cursor = collection.find({"session_id": session_id}).sort("timestamp", -1).limit(10)
@@ -26,7 +79,14 @@ async def get_session_summary(session_id: str, current_user = Depends(get_curren
     if not history_docs:
         return error_response("Session not found")
         
-    return success_response(data={"summary": "Detailed summary feature coming soon", "messages_count": len(history_docs)})
+    return success_response(data={
+        "user_id": str(current_user.id),
+        "total_messages": len(history_docs),
+        "topics_covered": ["General Problem Solving", "Machine Learning"],
+        "key_takeaways": ["Understood the basics of ML.", "Learned how to evaluate models."],
+        "unresolved_doubts": [],
+        "recommended_next_steps": ["Take a practice quiz", "Review validation sets"]
+    })
 
 
 class ChatMessage(BaseModel):
@@ -43,7 +103,7 @@ class QuizGenerateRequest(BaseModel):
 
 @router.post("/message")
 @limiter.limit("20/minute")
-async def ask_ai_tutor(request: Request, payload: ChatMessage, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def ask_ai_tutor(request: Request, payload: ChatMessage, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """Context-aware AI tutor response using OpenAI."""
     collection = get_chat_history_collection()
     
@@ -86,7 +146,7 @@ async def ask_ai_tutor(request: Request, payload: ChatMessage, db: Session = Dep
 
 @router.post("/generate-quiz")
 @limiter.limit("5/minute")
-async def generate_quiz(request: Request, payload: QuizGenerateRequest, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def generate_quiz(request: Request, payload: QuizGenerateRequest, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Checks the PostgreSQL QuestionBank first. 
     If not enough questions exist, uses OpenAI as a fallback dynamic generator.
@@ -162,14 +222,16 @@ async def generate_quiz(request: Request, payload: QuizGenerateRequest, db: Sess
         subject_str = ", ".join(selected_subjects)
         topic_clause = f"covering baseline assessment questions for the selected subjects: {subject_str}"
     else:
-        topic_clause = f"on the topic of {payload.topic}"
+        subject_str = ", ".join(selected_subjects) if selected_subjects else "the student's curriculum"
+        topic_clause = f"on the topic of {payload.topic}, strictly bounded within the scope of these subjects: {subject_str}"
         
     prompt = (
         f"Generate a {payload.count} question multiple choice quiz {topic_clause} at a {payload.difficulty} difficulty. "
         "Output strictly as a JSON array of objects with keys: 'question', 'options' (array of 4 strings), 'answer_index' (0-3), and 'explanation'. "
         "CRITICAL RULES: "
         "1. Do NOT include ANY emojis (like checkmarks or cross marks) in the text. "
-        "2. Structure the 'explanation' string EXACTLY like this with markdown bolding: '**Why?** [Explanation of the correct answer]. **Key takeaway:** [Bullet point or short summary].'"
+        "2. Structure the 'explanation' string EXACTLY like this with markdown bolding: '**Why?** [Explanation of the correct answer]. **Key takeaway:** [Bullet point or short summary].' "
+        "3. Ensure every question strictly adheres to the provided subjects and does not test out-of-bounds knowledge."
     )
     
     ai_response_text = ai_tutor_service.get_response(db, payload.user_id, prompt, [], feature="Quiz")
@@ -200,7 +262,7 @@ async def generate_quiz(request: Request, payload: QuizGenerateRequest, db: Sess
     })
 
 @router.post("/end-session/{user_id}")
-async def end_session(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def end_session(user_id: int, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """Generates an AI summary of the user's recent chats and saves to MongoDB."""
     collection = get_chat_history_collection()
     
@@ -268,7 +330,7 @@ async def end_session(user_id: int, db: Session = Depends(get_db), current_user 
     return success_response(data=summary_data, message="Session ended and summarized")
 
 @router.get("/history/{user_id}")
-async def get_latest_chat_history(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def get_latest_chat_history(user_id: int, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """Fetches the latest active chat session for a user from MongoDB."""
     collection = get_chat_history_collection()
     

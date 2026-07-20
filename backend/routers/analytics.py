@@ -3,7 +3,7 @@ from typing import List, Dict, Any
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session, joinedload
 from sqlalchemy import func
-from backend.routers.auth import get_current_user
+from backend.routers.auth import verify_user_ownership
 
 from database.connection import get_db
 from database.models.postgres_models import QuizAttempt, TopicPerformance
@@ -12,7 +12,7 @@ from backend.utils.response_formatter import success_response, error_response
 router = APIRouter()
 
 @router.get("/summary/{user_id}")
-def get_analytics_summary(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_analytics_summary(user_id: int, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """Fetch real performance trends and weak topics from PostgreSQL."""
     try:
         # 1. Fetch Weak Topics
@@ -113,7 +113,7 @@ import os
 import json
 
 @router.get("/model-metrics")
-def get_model_metrics(current_user = Depends(get_current_user)):
+def get_model_metrics(current_user = Depends(verify_user_ownership)):
     """
     Returns the Random Forest model training and evaluation metrics,
     including overall accuracy, classification report, confusion matrix, and feature importance.

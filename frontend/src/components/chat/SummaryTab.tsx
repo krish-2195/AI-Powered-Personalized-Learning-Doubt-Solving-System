@@ -53,11 +53,11 @@ export default function SummaryTab({ isGeneratingSummary, summary, onBackToChat 
             </div>
 
             {/* Topics covered */}
-            {summary.topics_covered.length > 0 && (
+            {(summary.topics_covered || []).length > 0 && (
               <div>
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Topics Covered</h3>
                 <div className="flex flex-wrap gap-2">
-                  {summary.topics_covered.map((t, i) => (
+                  {(summary.topics_covered || []).map((t, i) => (
                     <span key={i} className="px-3 py-1 bg-surface-800 text-slate-300 border border-white/10 rounded-lg text-sm font-medium">{t}</span>
                   ))}
                 </div>
@@ -65,11 +65,11 @@ export default function SummaryTab({ isGeneratingSummary, summary, onBackToChat 
             )}
 
             {/* Recommendations */}
-            {summary.recommended_next_steps.length > 0 && (
+            {(summary.recommended_next_steps || []).length > 0 && (
               <div>
                 <h3 className="text-sm font-bold text-slate-500 uppercase tracking-widest mb-4">Next Recommendation</h3>
                 <div className="space-y-3">
-                  {summary.recommended_next_steps.map((item, idx) => (
+                  {(summary.recommended_next_steps || []).map((item, idx) => (
                     <div key={idx} className="flex items-start gap-3 text-[14px] text-slate-300 leading-relaxed bg-surface-800 p-4 rounded-xl border border-white/[0.08]">
                       <Target size={18} className="text-accent-400 shrink-0 mt-0.5" />
                       <span className="font-semibold">{item}</span>

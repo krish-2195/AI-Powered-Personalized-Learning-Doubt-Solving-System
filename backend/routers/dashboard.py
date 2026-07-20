@@ -5,7 +5,7 @@ from starlette.concurrency import run_in_threadpool
 
 from database.connection import get_db, get_activity_logs_collection, get_daily_quests_collection
 from database.models.postgres_models import UserProfile, TopicPerformance, QuizAttempt, Topic, LearningLog
-from backend.routers.auth import get_current_user
+from backend.routers.auth import verify_user_ownership
 from ml.services.recommendation import recommendation_service
 from backend.utils.response_formatter import success_response, error_response
 
@@ -108,7 +108,7 @@ def _fetch_postgres_data(user_id: int, db: Session, total_topics: int):
     }
 
 @router.get("/")
-async def get_dashboard(user_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def get_dashboard(user_id: int, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Aggregates data from PostgreSQL and MongoDB to power the student's main dashboard.
     """

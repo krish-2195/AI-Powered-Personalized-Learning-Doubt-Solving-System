@@ -466,7 +466,7 @@ export default function Dashboard() {
                       ))}
                       <li className="flex items-center justify-between text-amber-300/80">
                         <span>⚠️ Weak Penalty</span>
-                        <span className="font-mono">-{examReadiness?.metrics?.weak_penalty || 0}%</span>
+                        <span className="font-mono">-{100 - (examReadiness?.metrics?.weak_penalty ?? 100)}%</span>
                       </li>
                     </ul>
                   </div>

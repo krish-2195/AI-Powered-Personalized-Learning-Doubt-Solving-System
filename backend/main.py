@@ -18,6 +18,14 @@ async def lifespan(app: FastAPI):
     # Startup
     init_postgres_db()
     MongoDBManager.connect_db()
+    
+    # Create MongoDB indexes for fast chat history lookups
+    from database.connection import get_chat_history_collection
+    chat_coll = get_chat_history_collection()
+    await chat_coll.create_index([("user_id", 1), ("timestamp", -1)])
+    await chat_coll.create_index([("session_id", 1), ("timestamp", 1)])
+    print("MongoDB chat_history indexes ensured")
+    
     yield
     # Shutdown
     MongoDBManager.close_db()

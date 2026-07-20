@@ -8,7 +8,7 @@ from backend.config import settings
 from database.models.postgres_models import Base
 
 # PostgreSQL setup
-POSTGRES_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}?sslmode=require&connect_timeout=4"
+POSTGRES_URL = f"postgresql://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
 SQLITE_FALLBACK_URL = "sqlite:///./learning_platform.db"
 
 

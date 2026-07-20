@@ -10,6 +10,7 @@ export default function ContextSidebar({ contextData, detectedTopic }: ContextSi
   const examScore = contextData?.examReadiness?.score ?? 0
   const examLabel = contextData?.examReadiness?.label ?? ''
   const hasExamData = !contextData?.is_new_user && examScore > 0
+  const weakTopic = contextData?.weak_topic
 
   return (
     <div className="hidden xl:flex w-[300px] bg-[#0c0d12] flex-col text-slate-300 relative z-20 border-l border-white/[0.06] shadow-[-10px_0_30px_-15px_rgba(0,0,0,0.5)]">
@@ -34,17 +35,29 @@ export default function ContextSidebar({ contextData, detectedTopic }: ContextSi
                 <p className="text-[10px] text-slate-500 font-bold mb-3 uppercase tracking-[0.18em] flex items-center gap-1.5">
                   <AlertTriangle size={11} className="text-red-400" /> Weak Topic
                 </p>
-                <p className="text-white font-bold text-base mb-4 leading-tight">{detectedTopic}</p>
+                <p className="text-white font-bold text-base mb-4 leading-tight">
+                  {weakTopic?.name || detectedTopic}
+                </p>
 
                 <div className="space-y-3">
                   {[
-                    { label: 'Accuracy', value: '28%', valueClass: 'text-slate-200 font-bold' },
+                    { label: 'Accuracy', value: weakTopic ? `${weakTopic.accuracy}%` : '—', valueClass: 'text-slate-200 font-bold' },
                     {
                       label: 'Mastery',
-                      value: 'Weak',
-                      valueClass: 'text-[11px] font-bold bg-red-500/20 text-red-400 px-2 py-0.5 rounded-md',
+                      value: weakTopic?.mastery || '—',
+                      valueClass: `text-[11px] font-bold px-2 py-0.5 rounded-md ${
+                        weakTopic?.mastery === 'Weak'
+                          ? 'bg-red-500/20 text-red-400'
+                          : weakTopic?.mastery === 'Moderate'
+                          ? 'bg-yellow-500/20 text-yellow-400'
+                          : 'bg-emerald-500/20 text-emerald-400'
+                      }`,
                     },
-                    { label: 'Prerequisites', value: 'Arrays', valueClass: 'text-slate-200 font-medium' },
+                    {
+                      label: 'Prerequisites',
+                      value: weakTopic?.prerequisites?.length ? weakTopic.prerequisites.join(', ') : 'None',
+                      valueClass: 'text-slate-200 font-medium'
+                    },
                   ].map(({ label, value, valueClass }) => (
                     <div key={label} className="flex justify-between items-center text-sm">
                       <span className="text-slate-500">{label}</span>
@@ -55,7 +68,9 @@ export default function ContextSidebar({ contextData, detectedTopic }: ContextSi
 
                 <div className="mt-4 pt-4 border-t border-white/[0.05]">
                   <p className="text-[10px] text-slate-500 font-bold uppercase tracking-[0.18em] mb-1.5">Recommended</p>
-                  <p className="text-sm font-medium text-slate-400">2 videos, 1 quiz</p>
+                  <p className="text-sm font-medium text-slate-400">
+                    {weakTopic ? 'Review prerequisites first' : 'Start a quiz to identify weak areas'}
+                  </p>
                 </div>
               </div>
             </motion.div>

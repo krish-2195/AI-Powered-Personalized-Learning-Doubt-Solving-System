@@ -77,7 +77,7 @@ class EmailVerificationToken(Base):
     __tablename__ = "email_verification_tokens"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     token = Column(String, unique=True, index=True, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     used = Column(Boolean, default=False)
@@ -88,7 +88,7 @@ class PasswordResetToken(Base):
     __tablename__ = "password_reset_tokens"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     token = Column(String, unique=True, index=True, nullable=False)
     expires_at = Column(DateTime, nullable=False)
     used = Column(Boolean, default=False)
@@ -99,7 +99,7 @@ class Session(Base):
     __tablename__ = "sessions"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     refresh_token = Column(String, unique=True, index=True, nullable=False)
     device = Column(String, nullable=True)
     browser = Column(String, nullable=True)
@@ -140,7 +140,7 @@ class Content(Base):
     __tablename__ = "content"
     
     id = Column(Integer, primary_key=True, index=True)
-    topic_id = Column(Integer, ForeignKey("topics.id"))
+    topic_id = Column(Integer, ForeignKey("topics.id"), index=True)
     content_type = Column(String)  # video, quiz, article
     title = Column(String, nullable=False)
     description = Column(String)
@@ -162,8 +162,8 @@ class TopicPerformance(Base):
     __tablename__ = "topic_performance"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    topic_id = Column(Integer, ForeignKey("topics.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"), index=True)
     ewma_accuracy = Column(Float, default=0.0)
     mastery_level = Column(String, default="Weak")  # Weak, Moderate, Strong
     last_attempt_date = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
@@ -176,10 +176,10 @@ class LearningLog(Base):
     __tablename__ = "learning_logs"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     activity_type = Column(String)  # video, quiz, chat, revision
     resource_id = Column(String)
-    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True, index=True)
     duration_seconds = Column(Integer)
     completed = Column(Boolean, default=False)
     timestamp = Column(DateTime, default=datetime.utcnow)
@@ -198,9 +198,9 @@ class QuizAttempt(Base):
     __tablename__ = "quiz_attempts"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     quiz_id = Column(String)
-    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True, index=True)
     questions_count = Column(Integer)
     correct_answers = Column(Integer)
     accuracy = Column(Float)
@@ -217,8 +217,8 @@ class PerformanceRecord(Base):
     __tablename__ = "performance_records"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True, index=True)
     accuracy = Column(Float)
     avg_time_seconds = Column(Float)
     total_attempts = Column(Integer)
@@ -234,8 +234,8 @@ class WeakTopic(Base):
     __tablename__ = "weak_topics"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True, index=True)
     weakness_score = Column(Float)
     reason = Column(String)
     identified_at = Column(DateTime, default=datetime.utcnow)
@@ -246,7 +246,7 @@ class LearningSession(Base):
     __tablename__ = "learning_sessions"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     login_time = Column(DateTime, default=datetime.utcnow)
     logout_time = Column(DateTime, nullable=True)
     study_duration = Column(Integer, nullable=True)
@@ -258,8 +258,8 @@ class RecommendationFeedback(Base):
     __tablename__ = "recommendation_feedback"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    content_id = Column(Integer, ForeignKey("content.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    content_id = Column(Integer, ForeignKey("content.id"), index=True)
     recommended_at = Column(DateTime, default=datetime.utcnow)
     clicked = Column(Boolean, default=False)
     opened_at = Column(DateTime, nullable=True)
@@ -276,8 +276,8 @@ class PredictionHistory(Base):
     __tablename__ = "prediction_history"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    topic_id = Column(Integer, ForeignKey("topics.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"), index=True)
     prediction = Column(String)  # Weak, Moderate, Strong
     confidence = Column(Float)
     model_version = Column(String)
@@ -290,10 +290,10 @@ class Recommendation(Base):
     __tablename__ = "recommendations"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     recommendation_type = Column(String)  # video, quiz, revision
     resource_id = Column(String)
-    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True, index=True)
     reason = Column(String)
     relevance_score = Column(Float)
     created_at = Column(DateTime, default=datetime.utcnow)
@@ -304,7 +304,7 @@ class ExamReadiness(Base):
     __tablename__ = "exam_readiness"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     readiness_score = Column(Float)
     readiness_level = Column(String)  # Low, Medium, High
     success_probability = Column(Float)
@@ -316,7 +316,7 @@ class QuestionBank(Base):
     __tablename__ = "question_bank"
     
     id = Column(Integer, primary_key=True, index=True)
-    topic_id = Column(Integer, ForeignKey("topics.id"))
+    topic_id = Column(Integer, ForeignKey("topics.id"), index=True)
     difficulty = Column(String)
     question = Column(String, nullable=False)
     option_a = Column(String, nullable=False)
@@ -351,10 +351,10 @@ class Note(Base):
     __tablename__ = "notes"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
     course_id = Column(Integer, ForeignKey("courses.id"), nullable=True)
     subject_id = Column(Integer, ForeignKey("subjects.id"), nullable=True)
-    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True)
+    topic_id = Column(Integer, ForeignKey("topics.id"), nullable=True, index=True)
     content_id = Column(Integer, ForeignKey("content.id"), nullable=True)
     title = Column(String)
     note_text = Column(String)
@@ -367,8 +367,8 @@ class Bookmark(Base):
     __tablename__ = "bookmarks"
     
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    content_id = Column(Integer, ForeignKey("content.id"))
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    content_id = Column(Integer, ForeignKey("content.id"), index=True)
     timestamp = Column(Float, nullable=True)  # Video playback timestamp
     note = Column(String, nullable=True)      # Optional note at that timestamp
     created_at = Column(DateTime, default=datetime.utcnow)

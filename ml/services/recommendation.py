@@ -165,10 +165,13 @@ class HybridRecommendationEngine:
                 
             boost = 1.0
             
-            # Prioritize matching course
+            # Strictly filter by course if both are defined
             if user_course_code and program_str:
                 c_programs = [p.strip().upper() for p in program_str.split(",") if p.strip()]
-                if user_course_code in c_programs:
+                if user_course_code not in c_programs:
+                    # Content is explicitly for another course, filter it out
+                    continue
+                else:
                     boost *= 1.5
                     
             # Prioritize matching subjects

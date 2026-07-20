@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from database.connection import get_db
 from database.models.postgres_models import QuizAttempt as DBQuizAttempt, PerformanceRecord, Topic
 from ml.services.ml_service import ml_service
-from backend.routers.auth import get_current_user
+from backend.routers.auth import verify_user_ownership
 from backend.utils.response_formatter import success_response, error_response
 
 router = APIRouter()
@@ -49,7 +49,7 @@ class NextStep(BaseModel):
 from database.models.postgres_models import LearningLog, TopicPerformance, Content
 
 @router.get("/video-progress/{user_id}/{content_id}")
-def get_video_progress(user_id: str, content_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_video_progress(user_id: str, content_id: str, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Get the latest playback progress/resume position for a video content
     """
@@ -77,7 +77,7 @@ def get_video_progress(user_id: str, content_id: str, db: Session = Depends(get_
     }
 
 @router.post("/video-progress")
-def track_video_progress(progress_data: VideoProgress, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def track_video_progress(progress_data: VideoProgress, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Track or update video watching progress in PostgreSQL (avoiding duplicate writes in same session)
     """
@@ -154,7 +154,7 @@ def track_video_progress(progress_data: VideoProgress, db: Session = Depends(get
 import asyncio
 
 @router.post("/quiz/submit")
-async def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Submit quiz attempt, store in QuizAttempt, update PerformanceRecord,
     and soon trigger ML prediction.
@@ -224,7 +224,7 @@ async def submit_quiz(quiz_data: QuizAttempt, db: Session = Depends(get_db), cur
     }
 
 @router.get("/history/{user_id}")
-def get_learning_history(user_id: str, limit: int = 50, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_learning_history(user_id: str, limit: int = 50, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Get user's learning activity history from PostgreSQL LearningLogs and QuizAttempts
     """
@@ -257,7 +257,7 @@ def get_learning_history(user_id: str, limit: int = 50, db: Session = Depends(ge
     }
 
 @router.get("/next-steps/{user_id}", response_model=List[NextStep])
-def get_next_steps(user_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_next_steps(user_id: str, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Suggest next steps using live ML Recommendation Engine
     """
@@ -290,7 +290,7 @@ def get_next_steps(user_id: str, db: Session = Depends(get_db), current_user = D
     return next_steps
 
 @router.get("/knowledge-graph")
-def get_knowledge_graph(current_user = Depends(get_current_user)):
+def get_knowledge_graph(current_user = Depends(verify_user_ownership)):
     """
     Exposes the Knowledge Graph hierarchy (nodes and directed edges)
     representing topic prerequisites and syllabus dependencies.
@@ -310,7 +310,7 @@ class BookmarkCreate(BaseModel):
     note: Optional[str] = ""
 
 @router.post("/bookmarks")
-async def add_bookmark(bookmark: BookmarkCreate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def add_bookmark(bookmark: BookmarkCreate, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """Save a new video bookmark or timestamp revision note in PostgreSQL."""
     uid = int(bookmark.user_id) if str(bookmark.user_id).isdigit() else 1
     cid = int(bookmark.content_id) if str(bookmark.content_id).isdigit() else 1
@@ -328,7 +328,7 @@ async def add_bookmark(bookmark: BookmarkCreate, db: Session = Depends(get_db), 
     return {"message": "Bookmark created successfully", "bookmark": {"id": new_doc.id, "timestamp": new_doc.timestamp, "note": new_doc.note}}
 
 @router.get("/bookmarks/{user_id}/{content_id}")
-async def get_bookmarks(user_id: str, content_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def get_bookmarks(user_id: str, content_id: str, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """Get all bookmarks/timestamp markers for a user and content ID from PostgreSQL."""
     uid = int(user_id) if str(user_id).isdigit() else 1
     cid = int(content_id) if str(content_id).isdigit() else 1
@@ -346,7 +346,7 @@ async def get_bookmarks(user_id: str, content_id: str, db: Session = Depends(get
     return {"bookmarks": bookmarks}
 
 @router.delete("/bookmarks/{bookmark_id}")
-async def delete_bookmark(bookmark_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def delete_bookmark(bookmark_id: str, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """Delete a bookmark/timestamp note by its PostgreSQL ID."""
     try:
         bid = int(bookmark_id)
@@ -371,7 +371,7 @@ class NoteUpdate(BaseModel):
     note_text: Optional[str] = None
 
 @router.post("/notes")
-async def create_note(note: NoteCreate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def create_note(note: NoteCreate, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """Create a new note in PostgreSQL."""
     new_note = Note(
         user_id=current_user.id,
@@ -394,7 +394,7 @@ async def get_notes(
     topic_id: Optional[int] = None, 
     content_id: Optional[int] = None,
     db: Session = Depends(get_db), 
-    current_user = Depends(get_current_user)
+    current_user = Depends(verify_user_ownership)
 ):
     """Retrieve notes for the current user, optionally filtered by course, subject, topic, or content."""
     query = db.query(Note).filter(Note.user_id == current_user.id)
@@ -424,7 +424,7 @@ async def get_notes(
     return success_response(data={"notes": result})
 
 @router.put("/notes/{note_id}")
-async def update_note(note_id: int, note_update: NoteUpdate, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def update_note(note_id: int, note_update: NoteUpdate, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """Update an existing note."""
     note = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).first()
     if not note:
@@ -439,7 +439,7 @@ async def update_note(note_id: int, note_update: NoteUpdate, db: Session = Depen
     return success_response(message="Note updated successfully")
 
 @router.delete("/notes/{note_id}")
-async def delete_note(note_id: int, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+async def delete_note(note_id: int, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """Delete a note."""
     res = db.query(Note).filter(Note.id == note_id, Note.user_id == current_user.id).delete()
     db.commit()

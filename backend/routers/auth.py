@@ -603,3 +603,19 @@ def require_role(*allowed_roles):
         return user
     return Depends(dependency)
 
+def verify_user_ownership(request: Request, current_user: User = Depends(get_current_user)):
+    """
+    Dependency that extracts user_id from path or query params and verifies
+    that the authenticated user either owns the data or has a privileged role.
+    """
+    user_id_str = request.path_params.get("user_id") or request.query_params.get("user_id")
+    if user_id_str:
+        try:
+            target_id = int(user_id_str)
+        except ValueError:
+            raise HTTPException(status_code=400, detail="Invalid user_id format")
+            
+        if current_user.role not in ["admin", "super_admin", "instructor"] and current_user.id != target_id:
+            raise HTTPException(status_code=403, detail="Not authorized to access this user's data")
+            
+    return current_user

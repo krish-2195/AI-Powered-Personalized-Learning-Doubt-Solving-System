@@ -2,7 +2,7 @@ import datetime
 from datetime import datetime
 from typing import List, Dict
 from sqlalchemy.orm import Session
-from database.models.postgres_models import TopicPerformance, QuizAttempt, LearningSession
+from database.models.postgres_models import TopicPerformance, QuizAttempt, LearningSession, UserProfile
 from ml.services.knowledge_graph import knowledge_graph
 from ml.services.llm_service import llm_service
 from ml.services.recommendation import recommendation_service
@@ -13,10 +13,15 @@ class AITutorService:
 
     def _build_system_prompt(self, db: Session, user_id: int) -> str:
         """Builds a context-aware prompt injecting weak topics, KG prerequisites, recent quizzes, recommendations, and session data."""
+        profile = db.query(UserProfile).filter(UserProfile.user_id == user_id).first()
+        course_name = profile.course if profile and profile.course else "their enrolled course"
+        subjects_str = ", ".join(profile.subjects) if profile and profile.subjects else "their curriculum"
+        
         prompt = (
             "You are the AI Tutor for 'AI Learn', a personalized learning platform. "
             "Unlike a general chatbot, you have deep insight into the student's learning profile. "
-            "Your goal is to help undergraduate Computer Science students master concepts based on their history. "
+            f"Your goal is to help students master concepts specifically within the bounds of '{course_name}', focusing strictly on these subjects: {subjects_str}. "
+            "CRITICAL: Do NOT provide information, generate quizzes, or answer questions that fall outside of the student's selected course and subjects. Keep all analogies and explanations highly relevant to their specific curriculum. "
             "Always personalize your answers using their quiz performance, weak topics, prerequisite relationships, and recent activity. "
             "When asked what you can do, emphasize that you can analyze quiz results, identify weak topics, map prerequisite gaps using a Knowledge Graph, track exam readiness, recommend specific videos/articles, and generate personalized practice quizzes. "
             "Encourage understanding and problem-solving skills instead of simply giving raw answers.\n"

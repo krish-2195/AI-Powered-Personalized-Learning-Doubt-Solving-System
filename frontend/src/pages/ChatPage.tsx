@@ -35,6 +35,7 @@ export default function ChatPage() {
   const [isGeneratingSummary, setIsGeneratingSummary] = useState(false)
   const [isBaseline, setIsBaseline] = useState(false)
   const [onboardingStep, setOnboardingStep] = useState(0)
+  const [hasSubmitted, setHasSubmitted] = useState(false)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const { user } = useAuth()
@@ -132,10 +133,10 @@ export default function ChatPage() {
     }
   }, [onboardingStep, navigate])
 
-  // Fetch dashboard context for sidebar
+  // Fetch lightweight context for sidebar (replaces heavy /api/dashboard call)
   useEffect(() => {
     if (userId) {
-      api.get(`/api/dashboard/?user_id=${userId}`)
+      api.get(`/api/chat/context/${userId}`)
         .then((res: any) => setContextData(res.data.data))
         .catch(console.error)
     }
@@ -147,29 +148,6 @@ export default function ChatPage() {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
   }, [messages, isThinking, activeTab])
-
-  // Auto-submit quiz results to ML when quiz is complete
-  useEffect(() => {
-    if (quizDone && !quizMLResult && !isSubmittingQuiz) {
-      setIsSubmittingQuiz(true)
-      const payload = {
-        user_id: String(userId),
-        quiz_id: `quiz-${Date.now()}`,
-        topic: detectedTopic,
-        questions_count: quizQuestions.length,
-        correct_answers: quizScore,
-        time_taken_seconds: 120,
-        attempt_number: 1,
-        difficulty: 'medium',
-        topic_id: null,
-        avg_time_per_question: 120 / quizQuestions.length,
-      }
-      api.post('/api/learning/quiz/submit', payload)
-        .then((res: any) => setQuizMLResult(res.data.ml_prediction || res.data))
-        .catch((err: any) => console.error('Failed to submit quiz to ML Engine', err))
-        .finally(() => setIsSubmittingQuiz(false))
-    }
-  }, [quizDone, quizMLResult, isSubmittingQuiz, quizQuestions.length, quizScore, userId, detectedTopic])
 
   // Auto-fetch summary when switching to summary tab
   useEffect(() => {
@@ -215,6 +193,7 @@ export default function ChatPage() {
     setError(null)
     setSelectedAnswers({})
     setQuizMLResult(null)
+    setHasSubmitted(false)
     setIsSubmittingQuiz(false)
     setIsGeneratingQuiz(true)
     setActiveTab('quiz')
@@ -237,14 +216,44 @@ export default function ChatPage() {
     setError(null)
     setIsGeneratingSummary(true)
     try {
-      const { data } = await api.get(`/api/chat/session-summary/${userId}`)
-      setSummary(data)
+      const { data } = await api.get(`/api/chat/session-summary/${sessionId}`)
+      if (data.success === false) {
+        setSummary(null)
+      } else {
+        setSummary(data.data)
+      }
       setActiveTab('summary')
     } catch (err: any) {
       setError(err.message || 'Could not generate session summary')
     } finally {
       setIsGeneratingSummary(false)
     }
+  }
+
+  const handleSubmitQuiz = () => {
+    if (isSubmittingQuiz) return;
+    setHasSubmitted(true)
+    setIsSubmittingQuiz(true)
+    const payload = {
+      user_id: String(userId),
+      quiz_id: `quiz-${Date.now()}`,
+      topic: detectedTopic,
+      questions_count: quizQuestions.length,
+      correct_answers: quizScore,
+      time_taken_seconds: 120,
+      attempt_number: 1,
+      difficulty: 'medium',
+      topic_id: null,
+      avg_time_per_question: 120 / quizQuestions.length,
+    }
+    api.post('/api/learning/quiz/submit', payload)
+      .then((res: any) => {
+        // Ensure string to avoid React object rendering crash
+        const mlPrediction = res.data.ml_prediction || res.data.performance_category || 'Evaluated'
+        setQuizMLResult(typeof mlPrediction === 'string' ? mlPrediction : JSON.stringify(mlPrediction))
+      })
+      .catch((err: any) => console.error('Failed to submit quiz to ML Engine', err))
+      .finally(() => setIsSubmittingQuiz(false))
   }
 
   // ─── Render ──────────────────────────────────────────────────────────────────
@@ -332,11 +341,14 @@ export default function ChatPage() {
             detectedTopic={detectedTopic}
             quizScore={quizScore}
             quizDone={quizDone}
+            hasSubmitted={hasSubmitted}
+            isSubmittingQuiz={isSubmittingQuiz}
             quizMLResult={quizMLResult}
             onSelectAnswer={(qIdx, optIdx) => setSelectedAnswers(prev => ({ ...prev, [qIdx]: optIdx }))}
             onSetDifficulty={setQuizDifficulty}
             onSetCount={setQuizCount}
             onGenerateQuiz={() => handleGenerateQuiz(undefined, 'hybrid')}
+            onSubmitQuiz={handleSubmitQuiz}
             onBackToChat={() => setActiveTab('chat')}
           />
         )}

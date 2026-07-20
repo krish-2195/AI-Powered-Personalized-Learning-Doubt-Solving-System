@@ -17,23 +17,26 @@ interface QuizTabProps {
   detectedTopic: string
   quizScore: number
   quizDone: boolean
+  hasSubmitted?: boolean
+  isSubmittingQuiz?: boolean
   quizMLResult?: string | null
   onSelectAnswer: (qIdx: number, optIdx: number) => void
   onSetDifficulty: (d: string) => void
   onSetCount: (c: number) => void
   onGenerateQuiz: () => void
+  onSubmitQuiz?: () => void
   onBackToChat: () => void
 }
 
 export default function QuizTab({
   isBaseline, isGeneratingQuiz, quizQuestions, selectedAnswers,
-  quizDifficulty, quizCount, detectedTopic, quizScore, quizDone, quizMLResult,
-  onSelectAnswer, onSetDifficulty, onSetCount, onGenerateQuiz, onBackToChat,
+  quizDifficulty, quizCount, detectedTopic, quizScore, quizDone, hasSubmitted, isSubmittingQuiz, quizMLResult,
+  onSelectAnswer, onSetDifficulty, onSetCount, onGenerateQuiz, onSubmitQuiz, onBackToChat,
 }: QuizTabProps) {
   const [prerequisites, setPrerequisites] = useState<string[]>([])
   
   useEffect(() => {
-    if (quizDone && quizQuestions.length > 0) {
+    if (hasSubmitted && quizQuestions.length > 0) {
       const scorePercentage = quizScore / quizQuestions.length;
       if (scorePercentage < 0.6 && detectedTopic) {
         api.get(`/api/learning/topic/${encodeURIComponent(detectedTopic)}/prerequisites`)
@@ -43,7 +46,7 @@ export default function QuizTab({
           .catch((err: any) => console.error(err));
       }
     }
-  }, [quizDone, quizScore, quizQuestions.length, detectedTopic]);
+  }, [hasSubmitted, quizScore, quizQuestions.length, detectedTopic]);
 
   return (
     <div className="flex-1 min-h-0 overflow-y-auto px-4 py-8 custom-scrollbar relative">
@@ -132,12 +135,12 @@ export default function QuizTab({
                     style={{ width: `${(Object.keys(selectedAnswers).length / quizQuestions.length) * 100}%` }}
                   />
                 </div>
-                {quizDone && <p className="text-sm font-bold text-slate-300 mt-2">Score: {quizScore}/{quizQuestions.length}</p>}
+                {hasSubmitted && <p className="text-sm font-bold text-slate-300 mt-2">Score: {quizScore}/{quizQuestions.length}</p>}
               </div>
             </div>
 
             {/* ML Prediction Result */}
-            {quizDone && quizMLResult && (
+            {hasSubmitted && quizMLResult && (
               <div className={`p-4 rounded-xl border flex items-center gap-3 mb-6 ${
                 quizMLResult === 'Strong' ? 'bg-green-500/10 border-green-500/20 text-green-400' :
                 quizMLResult === 'Moderate' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
@@ -152,7 +155,7 @@ export default function QuizTab({
             )}
 
             {/* Prerequisite Context on Failure */}
-            {quizDone && quizQuestions.length > 0 && (quizScore / quizQuestions.length) < 0.6 && prerequisites.length > 0 && (
+            {hasSubmitted && quizQuestions.length > 0 && (quizScore / quizQuestions.length) < 0.6 && prerequisites.length > 0 && (
               <div className="p-5 rounded-2xl border border-blue-500/30 bg-blue-500/10 mb-6 flex gap-4">
                 <div className="shrink-0 mt-1">
                   <BookOpen className="text-blue-400" size={24} />
@@ -176,7 +179,6 @@ export default function QuizTab({
             {/* Question cards */}
             {quizQuestions.map((item, idx) => {
               const picked = selectedAnswers[idx]
-              const answered = picked !== undefined
               const correct = picked === item.answer_index
               return (
                 <div key={idx} className="bg-surface-850/60 backdrop-blur-xl backdrop-saturate-150 p-6 rounded-2xl border border-white/[0.08] space-y-4">
@@ -192,8 +194,8 @@ export default function QuizTab({
                       const isCorrect = optIdx === item.answer_index
                       const isPicked = optIdx === picked
                       let cls = 'text-[14px] px-5 py-3.5 rounded-xl border w-full text-left transition-all flex items-center gap-3 font-medium '
-                      if (!answered) {
-                        cls += 'border-white/[0.08] hover:bg-surface-800 hover:border-white/10 cursor-pointer bg-transparent text-slate-300'
+                      if (!hasSubmitted) {
+                        cls += 'border-white/[0.08] hover:bg-surface-800 hover:border-white/10 cursor-pointer text-slate-300 ' + (isPicked ? 'bg-primary-500/20 border-primary-500/50' : 'bg-transparent')
                       } else if (isCorrect) {
                         cls += 'border-green-500/50 bg-green-500/10 text-green-400'
                       } else if (isPicked) {
@@ -205,17 +207,17 @@ export default function QuizTab({
                         <button
                           key={optIdx}
                           className={cls}
-                          disabled={answered}
+                          disabled={hasSubmitted}
                           onClick={() => onSelectAnswer(idx, optIdx)}
                         >
                           <span className={`w-6 h-6 rounded-full border text-[12px] flex items-center justify-center shrink-0 font-bold ${
-                            !answered ? 'border-white/10 text-slate-500' :
+                            !hasSubmitted ? (isPicked ? 'border-primary-500 bg-primary-500 text-white' : 'border-white/10 text-slate-500') :
                             isCorrect ? 'border-green-500 bg-green-500 text-white' :
                             isPicked ? 'border-red-500 bg-red-500 text-white' :
                             'border-white/[0.08] text-slate-700'
                           }`}>
-                            {answered && isCorrect ? <CheckCircle2 size={14} /> :
-                             answered && isPicked ? <XCircle size={14} /> :
+                            {hasSubmitted && isCorrect ? <CheckCircle2 size={14} /> :
+                             hasSubmitted && isPicked ? <XCircle size={14} /> :
                              String.fromCharCode(65 + optIdx)}
                           </span>
                           {opt}
@@ -224,7 +226,7 @@ export default function QuizTab({
                     })}
                   </div>
 
-                  {answered && (
+                  {hasSubmitted && (
                     <div className={`text-[14px] p-5 rounded-xl mt-4 border ${correct
                       ? 'bg-green-500/5 text-green-300 border-green-500/20'
                       : 'bg-red-500/5 text-red-300 border-red-500/20'}`}
@@ -247,6 +249,39 @@ export default function QuizTab({
                 </div>
               )
             })}
+            
+            {/* Submit Button at Bottom */}
+            {quizDone && !hasSubmitted && (
+              <button 
+                onClick={onSubmitQuiz} 
+                disabled={isSubmittingQuiz}
+                className="w-full py-4 mt-6 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl shadow-lg shadow-primary-900/20 transition-all flex justify-center items-center gap-2"
+              >
+                {isSubmittingQuiz ? (
+                  <><div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" /> Submitting Quiz...</>
+                ) : (
+                  <><Sparkles size={18} /> Submit Quiz for AI Evaluation</>
+                )}
+              </button>
+            )}
+
+            {/* Post-Submission Actions */}
+            {hasSubmitted && (
+              <div className="flex flex-col sm:flex-row gap-4 mt-8 pt-6 border-t border-white/[0.08]">
+                <button
+                  onClick={onBackToChat}
+                  className="flex-1 py-3.5 bg-surface-800 hover:bg-surface-700 text-white font-bold rounded-xl border border-white/[0.08] transition-all flex justify-center items-center gap-2"
+                >
+                  Return to Chat
+                </button>
+                <button
+                  onClick={onGenerateQuiz}
+                  className="flex-1 py-3.5 bg-primary-600 hover:bg-primary-500 text-white font-bold rounded-xl shadow-lg shadow-primary-900/20 transition-all flex justify-center items-center gap-2"
+                >
+                  <Sparkles size={16} /> Practice Again
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>

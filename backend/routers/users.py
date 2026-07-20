@@ -7,7 +7,7 @@ from sqlalchemy import func
 from database.connection import get_db
 from database.models.postgres_models import User, UserProfile as DBUserProfile, LearningLog, QuizAttempt, TopicPerformance
 from backend.utils.response_formatter import success_response, error_response
-from backend.routers.auth import get_current_user
+from backend.routers.auth import verify_user_ownership
 
 router = APIRouter()
 
@@ -30,7 +30,7 @@ class UpdateProfile(BaseModel):
     exam_timeline: Optional[str] = None
 
 @router.get("/profile/{user_id}", response_model=UserProfileResponse)
-def get_user_profile(user_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_user_profile(user_id: str, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Get user profile and learning preferences from PostgreSQL
     """
@@ -57,7 +57,7 @@ def get_user_profile(user_id: str, db: Session = Depends(get_db), current_user =
     )
 
 @router.put("/profile/{user_id}")
-def update_user_profile(user_id: str, profile_data: UpdateProfile, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def update_user_profile(user_id: str, profile_data: UpdateProfile, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Update user profile information in PostgreSQL
     """
@@ -97,7 +97,7 @@ def update_user_profile(user_id: str, profile_data: UpdateProfile, db: Session =
     return success_response(data={"user_id": str(uid)}, message="Profile updated successfully")
 
 @router.get("/stats/{user_id}")
-def get_user_stats(user_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+def get_user_stats(user_id: str, db: Session = Depends(get_db), current_user = Depends(verify_user_ownership)):
     """
     Get user learning statistics by aggregating PostgreSQL records
     """
